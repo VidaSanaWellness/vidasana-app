@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "name": "vidasana-wellness",
+    "slug": "vidasana-wellness",
+    "scheme": "vidasana-wellness",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "icon": "./src/assets/icon.png",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "userInterfaceStyle": "automatic",
+    "experiments": {
+      "typedRoutes": true,
+      "tsconfigPaths": true
+    },
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff",
+      "image": "./src/assets/splash.png"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./src/assets/favicon.png"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vidasanawellness"
+    },
+    "android": {
+      "package": "com.vidasanawellness",
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-localization",
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
+      "expo-secure-store"
+    ]
+  }
+}
