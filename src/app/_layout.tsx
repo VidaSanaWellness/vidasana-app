@@ -3,19 +3,23 @@ import '../../global.css';
 import '../../nativewind-svg-interop';
 import {useEffect} from 'react';
 import {Stack} from 'expo-router';
-import AppProvider from '@/provider';
+import {useFonts} from 'expo-font';
 import {useAppStore} from '@/store';
+import AppProvider from '@/provider';
 import * as SplashScreen from 'expo-splash-screen';
 
 SplashScreen.preventAutoHideAsync();
 
-export const unstable_settings = {
-  initialRouteName: '(tabs)',
-};
+export const unstable_settings = {initialRouteName: 'index'};
 
 export default function RootLayout() {
-  const guard = useAppStore((e) => e.session);
-  console.log('🚀 ~ RootLayout ~ guard:', guard);
+  const session = useAppStore((e) => e.session!);
+  const user = session?.user;
+  console.log('🚀 ~ RootLayout ~ user:', user);
+
+  // useFonts({
+  //   TwemojiMozilla: require('../../node_modules/react-native-country-select/lib/assets/fonts/TwemojiMozilla.woff2'),
+  // });
 
   useEffect(() => {
     SplashScreen.hideAsync();
@@ -24,11 +28,20 @@ export default function RootLayout() {
   return (
     <AppProvider>
       <Stack screenOptions={{headerShown: false}}>
-        <Stack.Protected guard={!!guard}>
-          <Stack.Screen name="(tabs)" />
+        <Stack.Protected guard={!user}>
+          <Stack.Screen name="auth" />
         </Stack.Protected>
-        <Stack.Protected guard={!guard}>
-          <Stack.Screen name="auth/index" />
+        <Stack.Protected guard={!user?.user_metadata?.role}>
+          <Stack.Screen name="selectRole" />
+        </Stack.Protected>
+        <Stack.Protected guard={user?.user_metadata?.role === 'USER'}>
+          <Stack.Screen name="(user)" />
+        </Stack.Protected>
+        <Stack.Protected guard={user?.user_metadata?.role === 'PROVIDER'}>
+          <Stack.Screen name="(provider)" />
+        </Stack.Protected>
+        <Stack.Protected guard={!!user}>
+          <Stack.Screen name="edit-profile" />
         </Stack.Protected>
       </Stack>
     </AppProvider>

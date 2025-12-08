@@ -18,15 +18,10 @@
       "typedRoutes": true,
       "tsconfigPaths": true
     },
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "image": "./src/assets/splash.png"
-    },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./src/assets/favicon.png"
+      "favicon": "./src/assets/icon.png"
     },
     "ios": {
       "supportsTablet": true,
@@ -35,13 +30,14 @@
     "android": {
       "package": "com.vidasanawellness",
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#fff",
+        "foregroundImage": "./src/assets/adaptive-icon.png"
       }
     },
     "plugins": [
       "expo-router",
       "expo-sqlite",
+      "expo-secure-store",
       "expo-localization",
       [
         "expo-dev-client",
@@ -49,7 +45,15 @@
           "launchMode": "most-recent"
         }
       ],
-      "expo-secure-store"
+      [
+        "expo-splash-screen",
+        {
+          "imageWidth": 200,
+          "backgroundColor": "#FFFFFF",
+          "image": "./src/assets/logo.png"
+        }
+      ],
+      "expo-font"
     ]
   }
 }

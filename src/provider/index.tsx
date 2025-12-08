@@ -1,11 +1,16 @@
-import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
 import {StatusBar} from 'expo-status-bar';
+import storage from 'expo-sqlite/kv-store';
 import {useQueryClientState} from '@/hooks';
+import {supabase, toastConfig} from '@/utils';
 import {ReactElement, useEffect} from 'react';
+import Toast from 'react-native-toast-message';
+import {QueryClient} from '@tanstack/react-query';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {PersistQueryClientProvider} from '@tanstack/react-query-persist-client';
+import {createAsyncStoragePersister} from '@tanstack/query-async-storage-persister';
 
 const queryClient = new QueryClient({
   defaultOptions: {queries: {retry: 2, staleTime: __DEV__ ? 0 : 1000 * 60 * 10}},
@@ -13,14 +18,11 @@ const queryClient = new QueryClient({
 
 const AppProvider = ({children}: {children: ReactElement}) => {
   useQueryClientState();
-
+  const {top} = useSafeAreaInsets();
   const setSession = useAppStore((s) => s.setSession);
 
   useEffect(() => {
-    const {data} = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', {event: _event, session});
-      setSession(session);
-    });
+    const {data} = supabase.auth.onAuthStateChange((e, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
 
@@ -28,10 +30,11 @@ const AppProvider = ({children}: {children: ReactElement}) => {
     <>
       <StatusBar translucent style="auto" backgroundColor="transparent" />
       <GestureHandlerRootView className="flex-1">
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider client={queryClient} persistOptions={{persister: createAsyncStoragePersister({storage})}}>
           <KeyboardProvider>{children}</KeyboardProvider>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </GestureHandlerRootView>
+      <Toast position="top" topOffset={top} config={toastConfig} />
     </>
   );
 };

@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
-import { deleteItemAsync, getItemAsync, setItemAsync } from 'expo-secure-store';
+import {Database} from '@/types';
+import {createClient} from '@supabase/supabase-js';
+import {deleteItemAsync, getItemAsync, setItemAsync} from 'expo-secure-store';
 
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => getItemAsync(key),
@@ -13,15 +14,6 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
-export const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL ?? '',
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: false,
-      storage: ExpoSecureStoreAdapter as any,
-    },
-  }
-);
+export const supabase = createClient<Database>(process.env.EXPO_PUBLIC_SUPABASE_URL ?? '', process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '', {
+  auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storage: ExpoSecureStoreAdapter as any},
+});
