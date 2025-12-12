@@ -29,6 +29,7 @@ const Register = () => {
       const {error} = await supabase.from('profile').insert({name: fullName, country: '', phone: phone});
       if (error) throw error;
     } catch (e: any) {
+      console.log('🚀 ~ onSubmit ~ e:', e);
       Toast.show({type: 'error', text1: e?.message});
     }
   };

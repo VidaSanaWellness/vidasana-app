@@ -57,11 +57,28 @@ export default function EventsScreen() {
 
               <View>
                 {/* Date/Time */}
-                <View className="mb-1 flex-row items-center">
-                  <Feather name="clock" size={12} color="#6B7280" />
-                  <Text className="ml-1 text-xs text-gray-600">
-                    {item.start_at} - {item.end_at}
-                  </Text>
+                {/* Date/Time */}
+                <View className="mb-1 flex-col">
+                  {/* Start Time */}
+                  <View className="mb-1 flex-row items-center">
+                    <Feather name="clock" size={12} color="#6B7280" />
+                    <Text className="ml-1 text-xs text-gray-600">
+                      Start:{' '}
+                      {item.start_at
+                        ? `${new Date(item.start_at).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${new Date(item.start_at).getDate().toString().padStart(2, '0')}/${(new Date(item.start_at).getMonth() + 1).toString().padStart(2, '0')}/${new Date(item.start_at).getFullYear().toString().slice(-2)}`
+                        : ''}
+                    </Text>
+                  </View>
+                  {/* End Time */}
+                  <View className="flex-row items-center">
+                    <Feather name="clock" size={12} color="#6B7280" />
+                    <Text className="ml-1 text-xs text-gray-600">
+                      End:{' '}
+                      {item.end_at
+                        ? `${new Date(item.end_at).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${new Date(item.end_at).getDate().toString().padStart(2, '0')}/${(new Date(item.end_at).getMonth() + 1).toString().padStart(2, '0')}/${new Date(item.end_at).getFullYear().toString().slice(-2)}`
+                        : ''}
+                    </Text>
+                  </View>
                 </View>
                 {/* We could add Date here if available in your schema */}
               </View>

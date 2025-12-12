@@ -51,13 +51,13 @@ const SelectRoleScreen = () => {
     mutationFn: async (role: Role) => {
       const {error} = await supabase.auth.updateUser({data: {role}});
       if (error) throw error;
-      const profile = await supabase.from('profile').update({role}).eq('user', user?.id).select();
+      const profile = await supabase.from('profile').update({role}).eq('id', user?.id).select();
       if (profile.error) throw profile.error;
       await query.invalidateQueries({queryKey: ['PROFILE']});
       if (role === 'provider') {
         const file = await uploadFile(document!, 'provider_docs', `${user?.id}/${document?.name}`);
         if (file.error) throw file.error;
-        const {error} = await supabase.from('provider').insert({US, stripe, document: file.data?.path, user: profile.data[0].id});
+        const {error} = await supabase.from('provider').insert({US, stripe, document: file.data?.path});
         if (error) throw error;
       }
     },

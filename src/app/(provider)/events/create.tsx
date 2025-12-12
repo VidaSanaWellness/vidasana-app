@@ -3,7 +3,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {supabase, uploadFile} from '@/utils/supabase';
 import {Tables} from '@/types';
 import {useForm, Controller} from 'react-hook-form';
-import {useQuery, useMutation} from '@tanstack/react-query';
+import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useRouter} from 'expo-router';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image, Alert} from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -33,6 +33,7 @@ type FormValues = {
 
 export default function CreateEventScreen() {
   const {back} = useRouter();
+  const queryClient = useQueryClient();
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | 'book_till' | null>(null);
   const [datePickerMode, setDatePickerMode] = useState<'date' | 'time' | 'datetime'>('datetime');
@@ -103,7 +104,7 @@ export default function CreateEventScreen() {
           book_till: data.book_till ? data.book_till.toISOString() : null,
           images: uploadedImagePaths,
           provider: user.id,
-          status: 'active', // Default status? Since schema has status string.
+          active: true,
         })
         .select()
         .single();
@@ -129,6 +130,7 @@ export default function CreateEventScreen() {
     },
     onSuccess: () => {
       Toast.show({type: 'success', text1: 'Success', text2: 'Event created successfully!'});
+      queryClient.invalidateQueries({queryKey: ['events']});
       back();
     },
     onError: (error: any) => {
