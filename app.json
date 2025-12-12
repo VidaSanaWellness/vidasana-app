@@ -5,14 +5,9 @@
     "name": "vidasana-wellness",
     "slug": "vidasana-wellness",
     "scheme": "vidasana-wellness",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
     "icon": "./src/assets/icon.png",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "userInterfaceStyle": "automatic",
     "experiments": {
       "typedRoutes": true,

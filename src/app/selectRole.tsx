@@ -51,6 +51,7 @@ const SelectRoleScreen = () => {
     mutationFn: async (role: Role) => {
       const {error} = await supabase.auth.updateUser({data: {role}});
       if (error) throw error;
+      await supabase.auth.refreshSession();
       const profile = await supabase.from('profile').update({role}).eq('id', user?.id).select();
       if (profile.error) throw profile.error;
       await query.invalidateQueries({queryKey: ['PROFILE']});
