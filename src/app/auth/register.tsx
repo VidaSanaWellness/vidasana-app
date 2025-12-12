@@ -25,11 +25,9 @@ const Register = () => {
       if (!agreeToTerms) return Alert.alert('Terms Required', 'Please agree to the terms and conditions');
       const {email, phone, password, fullName} = data;
       const {data: authData, error: signUpError} = await supabase.auth.signUp({email, password, options: {data: {full_name: fullName}}});
-
-      if (signUpError) return Alert.alert('Sign Up Error', signUpError.message);
-
-      const {error} = await supabase.from('profile').insert({name: fullName, country: '', phone: phone, user: authData.user?.id!});
-      throw error;
+      if (signUpError) throw signUpError;
+      const {error} = await supabase.from('profile').insert({name: fullName, country: '', phone: phone});
+      if (error) throw error;
     } catch (e: any) {
       Toast.show({type: 'error', text1: e?.message});
     }
@@ -176,7 +174,7 @@ const Register = () => {
               <TouchableOpacity
                 className="mr-2 h-5 w-5 items-center justify-center rounded border-2 border-black"
                 onPress={() => setAgreeToTerms(!agreeToTerms)}>
-                <View className={`h-3 w-3 rounded ${agreeToTerms ? 'bg-[#E03C31]' : ''}`} />
+                <View className={`h-2.5 w-2.5 rounded-sm ${agreeToTerms ? 'bg-[#E03C31]' : ''}`} />
               </TouchableOpacity>
 
               <Text className="flex-1 text-sm text-gray-600">

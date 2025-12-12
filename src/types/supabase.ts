@@ -14,135 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      bookings: {
+      categories: {
         Row: {
-          booking_at: string | null
-          created_at: string | null
-          id: string
-          location_id: string
-          payment_id: string | null
-          price: number
-          service_id: string
-          slot_date: string
-          slot_id: string
-          status: string
-          updated_at: string | null
-          user_id: string
-          vendor_id: string
+          created_at: string
+          icon: string | null
+          id: number
+          name: string
+          status: boolean
         }
         Insert: {
-          booking_at?: string | null
-          created_at?: string | null
-          id?: string
-          location_id: string
-          payment_id?: string | null
-          price: number
-          service_id: string
-          slot_date: string
-          slot_id: string
-          status?: string
-          updated_at?: string | null
-          user_id: string
-          vendor_id: string
+          created_at?: string
+          icon?: string | null
+          id?: number
+          name: string
+          status?: boolean
         }
         Update: {
-          booking_at?: string | null
-          created_at?: string | null
-          id?: string
-          location_id?: string
-          payment_id?: string | null
-          price?: number
-          service_id?: string
-          slot_date?: string
-          slot_id?: string
-          status?: string
-          updated_at?: string | null
-          user_id?: string
-          vendor_id?: string
+          created_at?: string
+          icon?: string | null
+          id?: number
+          name?: string
+          status?: boolean
         }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_payment_id_fkey"
-            columns: ["payment_id"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_slot_id_fkey"
-            columns: ["slot_id"]
-            isOneToOne: false
-            referencedRelation: "service_slots"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "profile"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       event_booking: {
         Row: {
           created_at: string
-          currency: string
           event_id: string
           id: string
           payment_id: string | null
-          qr_code: string
           quantity: number
-          status: string
           ticket_type_id: string
           total_price: number
           unit_price: number
           updated_at: string
-          user_id: string
+          user: string
         }
         Insert: {
           created_at?: string
-          currency: string
           event_id: string
           id?: string
           payment_id?: string | null
-          qr_code: string
           quantity: number
-          status?: string
           ticket_type_id: string
           total_price: number
           unit_price: number
           updated_at?: string
-          user_id: string
+          user?: string
         }
         Update: {
           created_at?: string
-          currency?: string
           event_id?: string
           id?: string
           payment_id?: string | null
-          qr_code?: string
           quantity?: number
-          status?: string
           ticket_type_id?: string
           total_price?: number
           unit_price?: number
           updated_at?: string
-          user_id?: string
+          user?: string
         }
         Relationships: [
           {
@@ -166,17 +97,21 @@ export type Database = {
             referencedRelation: "event_ticket_types"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "event_booking_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
         ]
       }
       event_ticket_types: {
         Row: {
           capacity: number | null
           created_at: string
-          currency: string
-          description: string | null
           event_id: string
           id: string
-          is_active: boolean
           name: string
           price: number
           updated_at: string
@@ -184,11 +119,8 @@ export type Database = {
         Insert: {
           capacity?: number | null
           created_at?: string
-          currency?: string
-          description?: string | null
           event_id: string
           id?: string
-          is_active?: boolean
           name: string
           price: number
           updated_at?: string
@@ -196,11 +128,8 @@ export type Database = {
         Update: {
           capacity?: number | null
           created_at?: string
-          currency?: string
-          description?: string | null
           event_id?: string
           id?: string
-          is_active?: boolean
           name?: string
           price?: number
           updated_at?: string
@@ -217,71 +146,53 @@ export type Database = {
       }
       events: {
         Row: {
-          booking_deadline: string | null
-          capacity: number | null
-          category: Database["public"]["Enums"]["event_category"]
+          book_till: string | null
+          category: number
           created_at: string
-          currency: string
           description: string | null
           end_at: string
-          event_type: string
           id: string
           images: string[] | null
-          is_active: boolean
-          location_id: string
+          provider: string
           start_at: string
           status: string
-          ticket_type: string
           title: string
           updated_at: string
-          user_id: string
         }
         Insert: {
-          booking_deadline?: string | null
-          capacity?: number | null
-          category: Database["public"]["Enums"]["event_category"]
+          book_till?: string | null
+          category: number
           created_at?: string
-          currency?: string
           description?: string | null
           end_at: string
-          event_type: string
           id?: string
           images?: string[] | null
-          is_active?: boolean
-          location_id: string
+          provider: string
           start_at: string
           status?: string
-          ticket_type: string
           title: string
           updated_at?: string
-          user_id: string
         }
         Update: {
-          booking_deadline?: string | null
-          capacity?: number | null
-          category?: Database["public"]["Enums"]["event_category"]
+          book_till?: string | null
+          category?: number
           created_at?: string
-          currency?: string
           description?: string | null
           end_at?: string
-          event_type?: string
           id?: string
           images?: string[] | null
-          is_active?: boolean
-          location_id?: string
+          provider?: string
           start_at?: string
           status?: string
-          ticket_type?: string
           title?: string
           updated_at?: string
-          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "events_location_id_fkey"
-            columns: ["location_id"]
+            foreignKeyName: "events_category_fkey"
+            columns: ["category"]
             isOneToOne: false
-            referencedRelation: "locations"
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]
@@ -330,164 +241,209 @@ export type Database = {
           created_at: string | null
           currency: string
           id: string
-          payment_method: string
           status: string
-          user_id: string
+          user: string
         }
         Insert: {
           amount: number
           created_at?: string | null
           currency?: string
           id?: string
-          payment_method: string
           status?: string
-          user_id: string
+          user?: string
         }
         Update: {
           amount?: number
           created_at?: string | null
           currency?: string
           id?: string
-          payment_method?: string
           status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      profile: {
-        Row: {
-          created_at: string | null
-          id: string
-          image: string | null
-          name: string
-          role: Database["public"]["Enums"]["role"]
-          status: Database["public"]["Enums"]["user_status"]
-          stripe: string | null
-          timezone: string | null
-          tokens: string[] | null
-          updated_at: string | null
-          user: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          image?: string | null
-          name: string
-          role?: Database["public"]["Enums"]["role"]
-          status?: Database["public"]["Enums"]["user_status"]
-          stripe?: string | null
-          timezone?: string | null
-          tokens?: string[] | null
-          updated_at?: string | null
-          user: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          image?: string | null
-          name?: string
-          role?: Database["public"]["Enums"]["role"]
-          status?: Database["public"]["Enums"]["user_status"]
-          stripe?: string | null
-          timezone?: string | null
-          tokens?: string[] | null
-          updated_at?: string | null
           user?: string
-        }
-        Relationships: []
-      }
-      service_slots: {
-        Row: {
-          capacity: number
-          created_at: string | null
-          day_of_week: number
-          end_time: string
-          id: string
-          is_active: boolean | null
-          location_id: string
-          price: number
-          service_id: string
-          start_time: string
-          updated_at: string | null
-        }
-        Insert: {
-          capacity: number
-          created_at?: string | null
-          day_of_week: number
-          end_time: string
-          id?: string
-          is_active?: boolean | null
-          location_id: string
-          price: number
-          service_id: string
-          start_time: string
-          updated_at?: string | null
-        }
-        Update: {
-          capacity?: number
-          created_at?: string | null
-          day_of_week?: number
-          end_time?: string
-          id?: string
-          is_active?: boolean | null
-          location_id?: string
-          price?: number
-          service_id?: string
-          start_time?: string
-          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "service_slots_location_id_fkey"
-            columns: ["location_id"]
+            foreignKeyName: "payments_user_fkey"
+            columns: ["user"]
             isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "service_slots_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
+            referencedRelation: "profile"
             referencedColumns: ["id"]
           },
         ]
       }
-      services: {
+      profile: {
         Row: {
+          country: string | null
           created_at: string | null
-          description: string | null
           id: string
-          images: string[] | null
-          is_active: boolean | null
-          title: string
+          image: string | null
+          name: string
+          phone: string | null
+          role: Database["public"]["Enums"]["role"]
+          status: Database["public"]["Enums"]["user_status"]
+          tokens: string[] | null
           updated_at: string | null
-          vendor_id: string
         }
         Insert: {
+          country?: string | null
           created_at?: string | null
-          description?: string | null
           id?: string
-          images?: string[] | null
-          is_active?: boolean | null
-          title: string
+          image?: string | null
+          name: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["role"]
+          status?: Database["public"]["Enums"]["user_status"]
+          tokens?: string[] | null
           updated_at?: string | null
-          vendor_id: string
         }
         Update: {
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          image?: string | null
+          name?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["role"]
+          status?: Database["public"]["Enums"]["user_status"]
+          tokens?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      provider: {
+        Row: {
+          created_at: string
+          document: string | null
+          id: string
+          stripe: string
+          US: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          document?: string | null
+          id?: string
+          stripe: string
+          US?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          document?: string | null
+          id?: string
+          stripe?: string
+          US?: boolean | null
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          active: boolean
+          capacity: number | null
+          category: number
+          created_at: string | null
+          description: string | null
+          end_at: string
+          id: string
+          images: string[] | null
+          price: number | null
+          provider: string
+          start_at: string
+          title: string
+          updated_at: string | null
+          week_day: Database["public"]["Enums"]["week_day"][]
+        }
+        Insert: {
+          active?: boolean
+          capacity?: number | null
+          category: number
           created_at?: string | null
           description?: string | null
+          end_at: string
           id?: string
           images?: string[] | null
-          is_active?: boolean | null
+          price?: number | null
+          provider?: string
+          start_at: string
+          title: string
+          updated_at?: string | null
+          week_day: Database["public"]["Enums"]["week_day"][]
+        }
+        Update: {
+          active?: boolean
+          capacity?: number | null
+          category?: number
+          created_at?: string | null
+          description?: string | null
+          end_at?: string
+          id?: string
+          images?: string[] | null
+          price?: number | null
+          provider?: string
+          start_at?: string
           title?: string
           updated_at?: string | null
-          vendor_id?: string
+          week_day?: Database["public"]["Enums"]["week_day"][]
         }
         Relationships: [
           {
-            foreignKeyName: "services_vendor_id_fkey"
-            columns: ["vendor_id"]
+            foreignKeyName: "services_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services_booking: {
+        Row: {
+          appointed: string
+          created_at: string | null
+          id: string
+          payment_id: string | null
+          price: number
+          service: string
+          status: Database["public"]["Enums"]["booking_status"]
+          updated_at: string | null
+          user: string
+        }
+        Insert: {
+          appointed: string
+          created_at?: string | null
+          id?: string
+          payment_id?: string | null
+          price: number
+          service: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string | null
+          user?: string
+        }
+        Update: {
+          appointed?: string
+          created_at?: string | null
+          id?: string
+          payment_id?: string | null
+          price?: number
+          service?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string | null
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_service_fkey"
+            columns: ["service"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_booking_user_fkey"
+            columns: ["user"]
             isOneToOne: false
             referencedRelation: "profile"
             referencedColumns: ["id"]
@@ -505,7 +461,7 @@ export type Database = {
           created_at?: string
           id?: number
           message?: string | null
-          user: string
+          user?: string
         }
         Update: {
           created_at?: string
@@ -523,17 +479,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      event_category:
-        | "music"
-        | "tech"
-        | "business"
-        | "sports"
-        | "education"
-        | "art"
-        | "expo"
-        | "other"
-      role: "USER" | "PROVIDER" | "ADMIN"
-      user_status: "ACTIVE" | "PENDING" | "DELETE" | "REJECT"
+      booking_status: "booked" | "cancel" | "pending"
+      role: "user" | "provider" | "admin"
+      user_status: "active" | "pending" | "delete" | "reject"
+      week_day: "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -661,18 +610,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      event_category: [
-        "music",
-        "tech",
-        "business",
-        "sports",
-        "education",
-        "art",
-        "expo",
-        "other",
-      ],
-      role: ["USER", "PROVIDER", "ADMIN"],
-      user_status: ["ACTIVE", "PENDING", "DELETE", "REJECT"],
+      booking_status: ["booked", "cancel", "pending"],
+      role: ["user", "provider", "admin"],
+      user_status: ["active", "pending", "delete", "reject"],
+      week_day: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],
     },
   },
 } as const

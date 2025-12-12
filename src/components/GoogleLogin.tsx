@@ -12,7 +12,7 @@ export function GoogleSignInButton() {
 
   function extractParamsFromUrl(url: string) {
     const parsedUrl = new URL(url);
-    const hash = parsedUrl.hash.substring(1); // Remove the leading '#'
+    const hash = parsedUrl.hash.substring(1);
     const params = new URLSearchParams(hash);
 
     return {
@@ -38,10 +38,7 @@ export function GoogleSignInButton() {
 
       if (!googleOAuthUrl) return console.error('no oauth url found!');
 
-      const result = await WebBrowser.openAuthSessionAsync(googleOAuthUrl, `${expo.scheme}://google-auth`, {showInRecents: true}).catch((err) => {
-        console.error('onSignInButtonPress - openAuthSessionAsync - error', {err});
-        console.log(err);
-      });
+      const result = await WebBrowser.openAuthSessionAsync(googleOAuthUrl, `${expo.scheme}://google-auth`, {showInRecents: true});
 
       console.debug('onSignInButtonPress - openAuthSessionAsync - result', {result});
 
@@ -51,15 +48,10 @@ export function GoogleSignInButton() {
         console.debug('onSignInButtonPress - openAuthSessionAsync - success', {params});
 
         if (params.access_token && params.refresh_token) {
-          console.debug('onSignInButtonPress - setSession');
-          const {data, error} = await supabase.auth.setSession({access_token: params.access_token, refresh_token: params.refresh_token});
-          return console.debug('onSignInButtonPress - setSession - success', {data, error});
+          const {error} = await supabase.auth.setSession({access_token: params.access_token, refresh_token: params.refresh_token});
+          if (error) throw error;
         } else {
-          console.error('onSignInButtonPress - setSession - failed');
-          // sign in/up failed
         }
-      } else {
-        console.error('onSignInButtonPress - openAuthSessionAsync - failed');
       }
     } catch (error) {
       console.log('🚀 ~ handleGoogleAuth ~ error:', error);

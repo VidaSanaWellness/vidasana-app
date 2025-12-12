@@ -1,5 +1,7 @@
 import {Database} from '@/types';
 import {createClient} from '@supabase/supabase-js';
+import {DocumentPickerAsset} from 'expo-document-picker';
+import {ImagePickerAsset} from 'expo-image-picker';
 import {deleteItemAsync, getItemAsync, setItemAsync} from 'expo-secure-store';
 
 const ExpoSecureStoreAdapter = {
@@ -17,3 +19,16 @@ const ExpoSecureStoreAdapter = {
 export const supabase = createClient<Database>(process.env.EXPO_PUBLIC_SUPABASE_URL ?? '', process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '', {
   auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storage: ExpoSecureStoreAdapter as any},
 });
+
+type Buckets = 'provider_docs' | 'images';
+
+export async function uploadFile(file: DocumentPickerAsset | ImagePickerAsset, bucket: Buckets, path: string) {
+  try {
+    const formData = new FormData();
+    // @ts-ignore
+    formData.append('file', {uri: file.uri, name: file.name || file.fileName, type: file.mimeType} as any);
+    return await supabase.storage.from(bucket).upload(path, formData, {upsert: true, contentType: file.mimeType});
+  } catch (err) {
+    return {data: null, error: err};
+  }
+}

@@ -1,6 +1,5 @@
-import {Database} from './database';
-
-export * from './database';
+export * from './supabase';
+import {Database} from './supabase';
 
 type TList = keyof Database['public']['Tables'];
 type TFieldView = keyof Database['public']['Tables']['profile'];

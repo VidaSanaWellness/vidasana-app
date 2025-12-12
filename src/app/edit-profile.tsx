@@ -1,6 +1,7 @@
 import {useAppStore} from '@/store';
 import {useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
+import {useTranslation} from 'react-i18next';
 import {Controller, useForm} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
@@ -8,8 +9,8 @@ import {ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, Touc
 
 const Page = () => {
   const {back} = useRouter();
+  const {t} = useTranslation();
   const {user} = useAppStore((s) => s.session!);
-  user.phone;
   const {control, formState, handleSubmit} = useForm({defaultValues: {fullName: '', phone: user.phone}});
 
   const submit = () => {};
@@ -20,7 +21,7 @@ const Page = () => {
         <TouchableOpacity onPress={() => back()}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-[#1F1F1F]">Edit Profile</Text>
+        <Text className="text-xl font-bold text-[#1F1F1F]">{t('editProfile')}</Text>
         <View className="w-6" />
       </View>
 

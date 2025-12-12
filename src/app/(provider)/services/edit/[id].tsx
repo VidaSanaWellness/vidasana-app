@@ -1,0 +1,444 @@
+import React, {useState} from 'react';
+import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image, Modal, Alert} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {useLocalSearchParams, useRouter} from 'expo-router';
+import {useForm, Controller} from 'react-hook-form';
+import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
+import {AntDesign, Feather} from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import Toast from 'react-native-toast-message';
+import {supabase, uploadFile} from '@/utils/supabase';
+import {Loader} from '@/components';
+import {Enums} from '@/types';
+
+// Types
+
+type WeekDay = Enums<'week_day'>;
+
+// Unified Image Type to handle both existing (URL) and new (File) images
+type ImageItem = {
+  id: string;
+  type: 'existing' | 'new';
+  uri: string; // Display URL
+  path?: string; // Supabase storage path (only for existing)
+  file?: ImagePicker.ImagePickerAsset; // Asset file (only for new)
+};
+
+type FormValues = {
+  title: string;
+  description: string;
+  category: number | null;
+  price: string;
+  capacity: string;
+  start_at: Date | null;
+  end_at: Date | null;
+  week_day: WeekDay[];
+  images: ImageItem[];
+};
+
+const DAYS: {label: string; value: WeekDay}[] = [
+  {label: 'Mon', value: 'mon'},
+  {label: 'Tue', value: 'tue'},
+  {label: 'Wed', value: 'wed'},
+  {label: 'Thu', value: 'thu'},
+  {label: 'Fri', value: 'fri'},
+  {label: 'Sat', value: 'sat'},
+  {label: 'Sun', value: 'sun'},
+];
+
+export default function EditServiceScreen() {
+  const router = useRouter();
+  const {id} = useLocalSearchParams<{id: string}>();
+  const queryClient = useQueryClient();
+
+  const [isTimePickerVisible, setTimePickerVisible] = useState(false);
+  const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
+
+  // Track initial images to calculate deletions
+  const [initialImages, setInitialImages] = useState<ImageItem[]>([]);
+
+  const {watch, reset, control, setValue, handleSubmit} = useForm<FormValues>({
+    defaultValues: {title: '', description: '', category: null, price: '', capacity: '', start_at: null, end_at: null, week_day: [], images: []},
+  });
+
+  const selectedImages = watch('images');
+
+  // 1. Fetch Categories
+  const {data: categories} = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const {data, error} = await supabase.from('categories').select('*').eq('status', true);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // 2. Fetch Service Details & Pre-fill
+  const {isLoading: isLoadingService} = useQuery({
+    queryKey: ['service', id],
+    queryFn: async () => {
+      if (!id) throw new Error('No ID provided');
+      const {data, error} = await supabase.from('services').select(`*, categories(*)`).eq('id', id).single();
+
+      if (error) throw error;
+
+      // Transform Data for Form
+      const loadedImages: ImageItem[] = (data.images || []).map((path: string) => ({
+        id: path,
+        path: path,
+        type: 'existing',
+        uri: supabase.storage.from('images').getPublicUrl(path).data.publicUrl,
+      }));
+
+      setInitialImages(loadedImages);
+
+      // Helper to parse "HH:MM:SS" to Date
+      const parseTime = (timeStr: string | null) => {
+        if (!timeStr) return null;
+        const d = new Date();
+        const [h, m, s] = timeStr.split(':');
+        d.setHours(parseInt(h), parseInt(m), parseInt(s || '0'));
+        return d;
+      };
+
+      reset({
+        title: data.title,
+        description: data.description || '',
+        category: data.category,
+        price: data.price.toString(),
+        capacity: data.capacity.toString(),
+        start_at: parseTime(data.start_at),
+        end_at: parseTime(data.end_at),
+        week_day: (data.week_day as WeekDay[]) || [],
+        images: loadedImages,
+      });
+
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  // 3. Update Service Mutation
+  const {mutate, isPending} = useMutation({
+    mutationFn: async (data: FormValues) => {
+      const {
+        data: {user},
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Authenticated user required');
+
+      // A. Upload New Images
+      const finalImagePaths: string[] = [];
+
+      // First, keep existing images that are still in the form
+      for (const img of data.images) {
+        if (img.type === 'existing' && img.path) {
+          finalImagePaths.push(img.path);
+        } else if (img.type === 'new' && img.file) {
+          // Upload new
+          const fileExt = img.file.uri.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}_${String(Math.random()).slice(2, 7)}.${fileExt}`;
+          const {data: uploadData, error: uploadError} = await uploadFile(img.file, 'images', fileName);
+          if (uploadError) throw uploadError;
+          if (uploadData?.path) finalImagePaths.push(uploadData.path);
+        }
+      }
+
+      // B. Update Database Record
+      const {error: updateError} = await supabase
+        .from('services')
+        .update({
+          title: data.title,
+          description: data.description,
+          category: data.category!,
+          price: parseFloat(data.price),
+          capacity: parseInt(data.capacity),
+          start_at: data.start_at!.toLocaleTimeString('en-US', {hour12: false}),
+          end_at: data.end_at!.toLocaleTimeString('en-US', {hour12: false}),
+          week_day: data.week_day,
+          images: finalImagePaths,
+        })
+        .eq('id', id as string);
+
+      if (updateError) throw updateError;
+
+      // C. Delete Removed Images from Bucket (Cleanup)
+      // Find paths present in initialImages but NOT in finalImagePaths
+      const pathsToDelete = initialImages.filter((initImg) => initImg.path && !finalImagePaths.includes(initImg.path)).map((img) => img.path!);
+
+      if (pathsToDelete.length > 0) {
+        const {error: deleteError} = await supabase.storage.from('images').remove(pathsToDelete);
+        if (deleteError) console.error('Failed to cleanup images:', deleteError);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['service', id]});
+      queryClient.invalidateQueries({queryKey: ['services']});
+      Toast.show({type: 'success', text1: 'Service Updated'});
+      router.back();
+    },
+    onError: (err: any) => Toast.show({type: 'error', text1: 'Update Failed', text2: err.message}),
+  });
+
+  // --- Helpers ---
+
+  const pickImages = async (onChange: any) => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      const MAX_SIZE = 5 * 1024 * 1024;
+      const validNewImages: ImageItem[] = [];
+      let rejected = 0;
+      result.assets.forEach((asset) => {
+        if (asset.fileSize && asset.fileSize <= MAX_SIZE) {
+          validNewImages.push({id: asset.uri, type: 'new', uri: asset.uri, file: asset});
+        } else {
+          rejected++;
+        }
+      });
+      if (rejected > 0) Toast.show({type: 'error', text1: `${rejected} images skipped (>5MB)`});
+      onChange([...selectedImages, ...validNewImages]);
+    }
+  };
+
+  const handleConfirmTime = (date: Date) => {
+    if (activeTimeField) setValue(activeTimeField, date, {shouldValidate: true});
+    setTimePickerVisible(false);
+    setActiveTimeField(null);
+  };
+
+  const toggleWeekDay = (day: WeekDay) => {
+    const current = watch('week_day');
+    if (current.includes(day)) {
+      setValue(
+        'week_day',
+        current.filter((d) => d !== day),
+        {shouldValidate: true}
+      );
+    } else {
+      setValue('week_day', [...current, day], {shouldValidate: true});
+    }
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-white">
+      {/* Time Picker Modal */}
+      <DateTimePickerModal isVisible={isTimePickerVisible} mode="time" onConfirm={handleConfirmTime} onCancel={() => setTimePickerVisible(false)} />
+
+      {/* Header */}
+      <View className="flex-row items-center border-b border-gray-100 p-4">
+        <TouchableOpacity onPress={() => router.back()} className="mr-4">
+          <Feather name="arrow-left" size={24} color="#374151" />
+        </TouchableOpacity>
+        <Text className="text-xl font-bold text-gray-900">Update Service</Text>
+      </View>
+
+      <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
+        {/* Images */}
+        <View className="mb-4">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Images</Text>
+          <Controller
+            control={control}
+            name="images"
+            rules={{validate: (val) => val.length > 0 || 'Required'}}
+            render={({field: {onChange, value}, fieldState: {error}}) => (
+              <>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2 flex-row">
+                  {value?.map((img, index) => (
+                    <View key={img.id || index} className="relative mr-2">
+                      <Image source={{uri: img.uri}} className="h-24 w-24 rounded-lg bg-gray-100" />
+                      <TouchableOpacity
+                        onPress={() => onChange(value?.filter((_, i) => i !== index))}
+                        className="absolute right-1 top-1 rounded-full bg-red-500 p-1">
+                        <AntDesign name="close" size={12} color="white" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  <TouchableOpacity
+                    onPress={() => pickImages(onChange)}
+                    className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+                    <Feather name="camera" size={24} color="gray" />
+                    <Text className="mt-1 text-xs text-gray-500">Add Photos</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+                {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+              </>
+            )}
+          />
+        </View>
+
+        {/* Title */}
+        <View className="mb-4">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Title</Text>
+          <Controller
+            control={control}
+            rules={{required: 'Title is required'}}
+            name="title"
+            render={({field: {onChange, value}, fieldState: {error}}) => (
+              <>
+                <TextInput className="rounded-lg border border-gray-300 bg-white p-3" value={value} onChangeText={onChange} />
+                {error?.message && <Text className="mt-1 text-xs text-red-500 text-red-500">{error.message}</Text>}
+              </>
+            )}
+          />
+        </View>
+
+        {/* Description */}
+        <View className="mb-4">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
+          <Controller
+            control={control}
+            rules={{required: 'Description is required'}}
+            name="description"
+            render={({field: {onChange, value}, fieldState: {error}}) => (
+              <>
+                <TextInput
+                  multiline
+                  value={value}
+                  onChangeText={onChange}
+                  textAlignVertical="top"
+                  className="h-24 rounded-lg border border-gray-300 bg-white p-3"
+                />
+                {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+              </>
+            )}
+          />
+        </View>
+
+        {/* Category */}
+        <View className="mb-4">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Category</Text>
+          <Controller
+            control={control}
+            name="category"
+            rules={{required: 'Category is required'}}
+            render={({field: {onChange, value}, fieldState: {error}}) => (
+              <>
+                <View className="flex-row flex-wrap gap-2">
+                  {categories?.map((cat) => {
+                    const isSelected = value === cat.id;
+                    return (
+                      <TouchableOpacity
+                        key={cat.id}
+                        onPress={() => onChange(cat.id)}
+                        className={`rounded-full border px-4 py-2 ${isSelected ? 'border-green-700 bg-green-700' : 'border-gray-300 bg-white'}`}>
+                        <Text className={isSelected ? 'text-white' : 'text-gray-700'}>{cat.name}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+                {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+              </>
+            )}
+          />
+        </View>
+
+        {/* Price & Capacity */}
+        <View className="mb-4 flex-row justify-between gap-4">
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-medium text-gray-700">Price</Text>
+            <Controller
+              control={control}
+              rules={{required: 'Required'}}
+              name="price"
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <>
+                  <View className="flex-row items-center rounded-lg border border-gray-300 bg-white px-3">
+                    <Text className="mr-1 text-gray-500">$</Text>
+                    <TextInput className="flex-1 py-3" keyboardType="numeric" value={value} onChangeText={onChange} />
+                  </View>
+                  {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+                </>
+              )}
+            />
+          </View>
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-medium text-gray-700">Capacity</Text>
+            <Controller
+              control={control}
+              rules={{required: 'Required'}}
+              name="capacity"
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <>
+                  <TextInput
+                    value={value}
+                    keyboardType="numeric"
+                    onChangeText={onChange}
+                    className="rounded-lg border border-gray-300 bg-white p-3"
+                  />
+                  {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+                </>
+              )}
+            />
+          </View>
+        </View>
+
+        {/* Time */}
+        <View className="mb-4 flex-row justify-between gap-4">
+          {['start_at', 'end_at'].map((key) => (
+            <View key={key} className="flex-1">
+              <Text className="mb-1 text-sm font-medium text-gray-700">{key === 'start_at' ? 'Start Time' : 'End Time'}</Text>
+              <Controller
+                control={control}
+                name={key as any}
+                rules={{required: 'Required'}}
+                render={({field: {value}, fieldState: {error}}) => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setActiveTimeField(key as any);
+                      setTimePickerVisible(true);
+                    }}
+                    className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
+                    <Text className={value ? 'text-black' : 'text-gray-400'}>
+                      {value instanceof Date ? value.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : 'Select'}
+                    </Text>
+                    <Feather name="clock" size={18} color="gray" />
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          ))}
+        </View>
+
+        {/* Days */}
+        <View className="mb-6">
+          <Text className="mb-2 text-sm font-medium text-gray-700">Available Days</Text>
+          <Controller
+            name="week_day"
+            control={control}
+            rules={{validate: (val) => val.length > 0 || 'Required'}}
+            render={({field: {value}, fieldState: {error}}) => (
+              <>
+                <View className="flex-row flex-wrap justify-between">
+                  {DAYS.map((day) => {
+                    const isSelected = value?.includes(day.value);
+                    return (
+                      <TouchableOpacity
+                        key={day.value}
+                        onPress={() => toggleWeekDay(day.value)}
+                        className={`mb-2 h-10 w-10 items-center justify-center rounded-full ${isSelected ? 'bg-green-700' : 'bg-gray-100'}`}>
+                        <Text className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-600'}`}>{day.label}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+                {error?.message && <Text className="mt-1 text-xs text-red-500">{error?.message}</Text>}
+              </>
+            )}
+          />
+        </View>
+
+        <TouchableOpacity
+          disabled={isPending}
+          onPress={handleSubmit((data) => mutate(data))}
+          className="mb-10 items-center rounded-lg bg-green-700 p-4">
+          <Text className="text-lg font-bold text-white">Update Service</Text>
+        </TouchableOpacity>
+      </ScrollView>
+      <Loader visible={isLoadingService || isPending} />
+    </SafeAreaView>
+  );
+}
