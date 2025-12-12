@@ -6,10 +6,10 @@ import {useForm, Controller} from 'react-hook-form';
 import {useQuery, useMutation} from '@tanstack/react-query';
 import {useRouter} from 'expo-router';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image, Alert} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import React, {useState} from 'react';
 import Toast from 'react-native-toast-message';
+import {ImagePickerAsset, launchImageLibraryAsync, MediaTypeOptions} from 'expo-image-picker';
 
 // Types
 type Category = Tables<'categories'>;
@@ -27,12 +27,12 @@ type FormValues = {
   start_at: Date | null;
   end_at: Date | null;
   book_till: Date | null;
-  images: ImagePicker.ImagePickerAsset[];
+  images: ImagePickerAsset[];
   ticket_types: TicketType[];
 };
 
 export default function CreateEventScreen() {
-  const router = useRouter();
+  const {back} = useRouter();
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | 'book_till' | null>(null);
   const [datePickerMode, setDatePickerMode] = useState<'date' | 'time' | 'datetime'>('datetime');
@@ -70,7 +70,7 @@ export default function CreateEventScreen() {
   });
 
   // Create Event Mutation
-  const createEventMutation = useMutation({
+  const {mutate, isPending} = useMutation({
     mutationFn: async (data: FormValues) => {
       // 1. Get Current User
       const {
@@ -129,7 +129,7 @@ export default function CreateEventScreen() {
     },
     onSuccess: () => {
       Toast.show({type: 'success', text1: 'Success', text2: 'Event created successfully!'});
-      router.back();
+      back();
     },
     onError: (error: any) => {
       console.error(error);
@@ -137,20 +137,20 @@ export default function CreateEventScreen() {
     },
   });
 
-  const onSubmit = (data: FormValues) => createEventMutation.mutate(data);
+  const onSubmit = (data: FormValues) => mutate(data);
 
   // --- Helpers ---
 
-  const pickImages = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  const pickImages = async (value: any[], onChange: (images: ImagePickerAsset[]) => void) => {
+    const result = await launchImageLibraryAsync({
+      mediaTypes: MediaTypeOptions.Images,
       allowsMultipleSelection: true,
       quality: 0.8,
     });
 
     if (!result.canceled) {
       const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-      const validImages: ImagePicker.ImagePickerAsset[] = [];
+      const validImages: ImagePickerAsset[] = [];
       let rejectedCount = 0;
 
       result.assets.forEach((asset) => {
@@ -164,18 +164,9 @@ export default function CreateEventScreen() {
       if (rejectedCount > 0) Toast.show({type: 'error', text1: 'File too large', text2: `${rejectedCount} image(s) skipped (>5MB).`});
 
       if (validImages.length > 0) {
-        setValue('images', [...(selectedImages || []), ...validImages], {shouldValidate: true});
+        onChange([...(value || []), ...validImages]);
       }
     }
-  };
-
-  const removeImage = (index: number) => {
-    const current = watch('images');
-    setValue(
-      'images',
-      current.filter((_, i) => i !== index),
-      {shouldValidate: true}
-    );
   };
 
   const openDatePicker = (field: 'start_at' | 'end_at' | 'book_till') => {
@@ -212,23 +203,14 @@ export default function CreateEventScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <DateTimePickerModal
-        isVisible={!!isTimePickerVisible}
-        mode={datePickerMode}
-        onConfirm={handleConfirmDate}
-        onCancel={() => setTimePickerVisible(false)}
-      />
-
       <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View className="mb-6 flex-row items-center">
-          <TouchableOpacity onPress={() => router.back()} className="mr-4 rounded-full bg-gray-100 p-2">
+          <TouchableOpacity onPress={() => back()} className="mr-4 rounded-full bg-gray-100 p-2">
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-gray-900">Create New Event</Text>
         </View>
 
-        {/* Title */}
         <View className="mb-4">
           <Text className="mb-1 text-sm font-medium text-gray-700">Event Title</Text>
           <Controller
@@ -247,113 +229,147 @@ export default function CreateEventScreen() {
           {errors.title && <Text className="mt-1 text-xs text-red-500">{errors.title.message}</Text>}
         </View>
 
-        {/* Images */}
         <View className="mb-4">
           <Text className="mb-1 text-sm font-medium text-gray-700">Images</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2 flex-row">
-            {selectedImages?.map((img, index) => (
-              <View key={index} className="relative mr-2">
-                <Image source={{uri: img.uri}} className="h-24 w-24 rounded-lg" />
-                <TouchableOpacity onPress={() => removeImage(index)} className="absolute right-1 top-1 rounded-full bg-red-500 p-1">
-                  <AntDesign name="close" size={12} color="white" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            <TouchableOpacity
-              onPress={pickImages}
-              className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <Feather name="camera" size={24} color="gray" />
-              <Text className="mt-1 text-xs text-gray-500">Add Photos</Text>
-            </TouchableOpacity>
-          </ScrollView>
           <Controller
-            control={control}
             name="images"
+            control={control}
             rules={{validate: (val) => val?.length > 0 || 'At least one image is required'}}
-            render={() => <></>}
+            render={({field: {onChange, value}, fieldState: {error}}) => (
+              <>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2 flex-row">
+                  {value?.map((img, index) => (
+                    <View key={index} className="relative mr-2">
+                      <Image source={{uri: img.uri}} className="h-24 w-24 rounded-lg" />
+                      <TouchableOpacity
+                        onPress={() => onChange(value.filter((_, i) => i !== index))}
+                        className="absolute right-1 top-1 rounded-full bg-red-500 p-1">
+                        <AntDesign name="close" size={12} color="white" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  <TouchableOpacity
+                    onPress={() => pickImages(value, onChange)}
+                    className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+                    <Feather name="camera" size={24} color="gray" />
+                    <Text className="mt-1 text-xs text-gray-500">Add Photos</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+                {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+              </>
+            )}
           />
-          {errors.images && <Text className="mt-1 text-xs text-red-500">{errors.images.message}</Text>}
         </View>
 
-        {/* Description */}
         <View className="mb-4">
           <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
           <Controller
             control={control}
-            rules={{required: 'Description is required'}}
             name="description"
+            rules={{required: 'Description is required'}}
             render={({field: {onChange, value}}) => (
               <TextInput
-                className="h-24 rounded-lg border border-gray-300 bg-white p-3"
-                placeholder="About the event..."
                 multiline
-                textAlignVertical="top"
                 value={value}
+                textAlignVertical="top"
                 onChangeText={onChange}
+                placeholder="About the event..."
+                className="h-24 rounded-lg border border-gray-300 bg-white p-3"
               />
             )}
           />
           {errors.description && <Text className="mt-1 text-xs text-red-500">{errors.description.message}</Text>}
         </View>
 
-        {/* Category */}
         <View className="mb-4">
           <Text className="mb-1 text-sm font-medium text-gray-700">Category</Text>
-          {isLoadingCategories ? (
-            <ActivityIndicator size="small" />
-          ) : (
-            <View className="flex-row flex-wrap gap-2">
-              {categories?.map((cat) => {
-                const isSelected = watch('category') === cat.id;
-                return (
-                  <TouchableOpacity
-                    key={cat.id}
-                    onPress={() => setValue('category', cat.id, {shouldValidate: true})}
-                    className={`rounded-full border px-4 py-2 ${isSelected ? 'border-green-700 bg-green-700' : 'border-gray-300 bg-white'}`}>
-                    <Text className={isSelected ? 'text-white' : 'text-gray-700'}>{cat.name}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
-          <Controller control={control} name="category" rules={{required: 'Category is required'}} render={() => <></>} />
-          {errors.category && <Text className="mt-1 text-xs text-red-500">{errors.category.message}</Text>}
+          <Controller
+            name="category"
+            control={control}
+            rules={{required: 'Category is required'}}
+            render={({field: {onChange, value}, fieldState: {error}}) => (
+              <>
+                {isLoadingCategories ? (
+                  <ActivityIndicator size="small" />
+                ) : (
+                  <View className="flex-row flex-wrap gap-2">
+                    {categories?.map((cat) => {
+                      const isSelected = value === cat.id;
+                      return (
+                        <TouchableOpacity
+                          key={cat.id}
+                          onPress={() => onChange(cat.id)}
+                          className={`rounded-full border px-4 py-2 ${isSelected ? 'border-green-700 bg-green-700' : 'border-gray-300 bg-white'}`}>
+                          <Text className={isSelected ? 'text-white' : 'text-gray-700'}>{cat.name}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+                {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+              </>
+            )}
+          />
         </View>
 
-        {/* Date & Time */}
-        <View className="mb-4 flex-row gap-4">
-          <View className="flex-1">
+        <View className="mb-4 gap-4">
+          <View>
             <Text className="mb-1 text-sm font-medium text-gray-700">Start Time</Text>
-            <TouchableOpacity onPress={() => openDatePicker('start_at')} className="rounded-lg border border-gray-300 bg-white p-3">
-              <Text className={watch('start_at') ? 'text-gray-900' : 'text-gray-400'}>
-                {watch('start_at') ? watch('start_at')?.toLocaleString() : 'Select Start'}
-              </Text>
-            </TouchableOpacity>
-            <Controller control={control} name="start_at" rules={{required: 'Start time is required'}} render={() => <></>} />
-            {errors.start_at && <Text className="mt-1 text-xs text-red-500">{errors.start_at.message}</Text>}
+            <Controller
+              name="start_at"
+              control={control}
+              rules={{required: 'Start time is required'}}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <>
+                  <TouchableOpacity onPress={() => openDatePicker('start_at')} className="rounded-lg border border-gray-300 bg-white p-3">
+                    <Text className={value ? 'text-gray-900' : 'text-gray-400'}>
+                      {value
+                        ? `${value.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${value.getDate().toString().padStart(2, '0')}/${(value.getMonth() + 1).toString().padStart(2, '0')}/${value.getFullYear().toString().slice(-2)}`
+                        : 'Select Start'}
+                    </Text>
+                  </TouchableOpacity>
+                  {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+                </>
+              )}
+            />
           </View>
-          <View className="flex-1">
+          <View>
             <Text className="mb-1 text-sm font-medium text-gray-700">End Time</Text>
-            <TouchableOpacity onPress={() => openDatePicker('end_at')} className="rounded-lg border border-gray-300 bg-white p-3">
-              <Text className={watch('end_at') ? 'text-gray-900' : 'text-gray-400'}>
-                {watch('end_at') ? watch('end_at')?.toLocaleString() : 'Select End'}
-              </Text>
-            </TouchableOpacity>
-            <Controller control={control} name="end_at" rules={{required: 'End time is required'}} render={() => <></>} />
-            {errors.end_at && <Text className="mt-1 text-xs text-red-500">{errors.end_at.message}</Text>}
+            <Controller
+              name="end_at"
+              control={control}
+              rules={{required: 'End time is required'}}
+              render={({field: {onChange, value}, fieldState: {error}}) => (
+                <>
+                  <TouchableOpacity onPress={() => openDatePicker('end_at')} className="rounded-lg border border-gray-300 bg-white p-3">
+                    <Text className={value ? 'text-gray-900' : 'text-gray-400'}>
+                      {value
+                        ? `${value.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${value.getDate().toString().padStart(2, '0')}/${(value.getMonth() + 1).toString().padStart(2, '0')}/${value.getFullYear().toString().slice(-2)}`
+                        : 'Select End'}
+                    </Text>
+                  </TouchableOpacity>
+                  {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+                </>
+              )}
+            />
           </View>
         </View>
 
-        {/* Booking Deadline */}
         <View className="mb-4">
           <Text className="mb-1 text-sm font-medium text-gray-700">Booking Deadline (Book Till)</Text>
-          <TouchableOpacity onPress={() => openDatePicker('book_till')} className="rounded-lg border border-gray-300 bg-white p-3">
-            <Text className={watch('book_till') ? 'text-gray-900' : 'text-gray-400'}>
-              {watch('book_till') ? watch('book_till')?.toLocaleDateString() : 'Select Booking Deadline'}
-            </Text>
-          </TouchableOpacity>
-          <Controller control={control} name="book_till" rules={{required: 'Booking deadline is required'}} render={() => <></>} />
-          {errors.book_till && <Text className="mt-1 text-xs text-red-500">{errors.book_till.message}</Text>}
+          <Controller
+            name="book_till"
+            control={control}
+            rules={{required: 'Booking deadline is required'}}
+            render={({field: {onChange, value}, fieldState: {error}}) => (
+              <>
+                <TouchableOpacity onPress={() => openDatePicker('book_till')} className="rounded-lg border border-gray-300 bg-white p-3">
+                  <Text className={value ? 'text-gray-900' : 'text-gray-400'}>{value ? value?.toLocaleDateString() : 'Select Booking Deadline'}</Text>
+                </TouchableOpacity>
+                {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+              </>
+            )}
+          />
         </View>
 
         {/* Ticket Types */}
@@ -378,17 +394,18 @@ export default function CreateEventScreen() {
                   control={control}
                   name={`ticket_types.${index}.name`}
                   rules={{required: 'Ticket name is required'}}
-                  render={({field: {onChange, value}}) => (
-                    <TextInput
-                      className="rounded-lg border border-gray-300 bg-white p-3"
-                      placeholder="Ticket Name (e.g. VIP)"
-                      value={value}
-                      onChangeText={onChange}
-                    />
+                  render={({field: {onChange, value}, fieldState: {error}}) => (
+                    <>
+                      <TextInput
+                        value={value}
+                        onChangeText={onChange}
+                        placeholder="Ticket Name (e.g. VIP)"
+                        className="rounded-lg border border-gray-300 bg-white p-3"
+                      />
+                      {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+                    </>
                   )}
                 />
-                {/* @ts-ignore - Dynamic error access */}
-                {errors.ticket_types?.[index]?.name && <Text className="mt-1 text-xs text-red-500">Name is required</Text>}
               </View>
 
               <View className="flex-row gap-3">
@@ -396,31 +413,35 @@ export default function CreateEventScreen() {
                   <Controller
                     control={control}
                     name={`ticket_types.${index}.price`}
-                    render={({field: {onChange, value}}) => (
-                      <View className="flex-row items-center rounded-lg border border-gray-300 bg-white px-3">
-                        <Text className="mr-1 text-gray-500">$</Text>
-                        <TextInput className="flex-1 py-3" placeholder="Price" keyboardType="numeric" value={value} onChangeText={onChange} />
-                      </View>
+                    render={({field: {onChange, value}, fieldState: {error}}) => (
+                      <>
+                        <View className="flex-row items-center rounded-lg border border-gray-300 bg-white px-3">
+                          <Text className="mr-1 text-gray-500">$</Text>
+                          <TextInput className="flex-1 py-3" placeholder="Price" keyboardType="numeric" value={value} onChangeText={onChange} />
+                        </View>
+                        {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+                      </>
                     )}
                   />
                 </View>
                 <View className="flex-1">
                   <Controller
                     control={control}
-                    name={`ticket_types.${index}.capacity`}
                     rules={{required: 'Required', min: 1}}
-                    render={({field: {onChange, value}}) => (
-                      <TextInput
-                        className="rounded-lg border border-gray-300 bg-white p-3"
-                        placeholder="Capacity"
-                        keyboardType="numeric"
-                        value={value}
-                        onChangeText={onChange}
-                      />
+                    name={`ticket_types.${index}.capacity`}
+                    render={({field: {onChange, value}, fieldState: {error}}) => (
+                      <>
+                        <TextInput
+                          value={value}
+                          placeholder="Capacity"
+                          keyboardType="numeric"
+                          onChangeText={onChange}
+                          className="rounded-lg border border-gray-300 bg-white p-3"
+                        />
+                        {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+                      </>
                     )}
                   />
-                  {/* @ts-ignore */}
-                  {errors.ticket_types?.[index]?.capacity && <Text className="mt-1 text-xs text-red-500">Required</Text>}
                 </View>
               </View>
             </View>
@@ -434,14 +455,21 @@ export default function CreateEventScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Submit Button */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          disabled={createEventMutation.isPending || isSubmitting}
-          className={`mb-10 items-center rounded-lg p-4 ${createEventMutation.isPending ? 'bg-gray-400' : 'bg-green-700'}`}>
-          {createEventMutation.isPending ? <ActivityIndicator color="white" /> : <Text className="text-lg font-bold text-white">Create Event</Text>}
+          disabled={isPending || isSubmitting}
+          className={`mb-10 items-center rounded-lg p-4 ${isPending ? 'bg-gray-400' : 'bg-green-700'}`}>
+          {isPending ? <ActivityIndicator color="white" /> : <Text className="text-lg font-bold text-white">Create Event</Text>}
         </TouchableOpacity>
       </ScrollView>
+      <DateTimePickerModal
+        mode={datePickerMode}
+        onConfirm={handleConfirmDate}
+        isVisible={!!isTimePickerVisible}
+        onCancel={() => setTimePickerVisible(false)}
+        textColor="black"
+        buttonTextColorIOS="black"
+      />
     </SafeAreaView>
   );
 }
