@@ -225,9 +225,6 @@ export default function EditServiceScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {/* Time Picker Modal */}
-      <DateTimePickerModal isVisible={isTimePickerVisible} mode="time" onConfirm={handleConfirmTime} onCancel={() => setTimePickerVisible(false)} />
-
       {/* Header */}
       <View className="flex-row items-center border-b border-gray-100 p-4">
         <TouchableOpacity onPress={() => router.back()} className="mr-4">
@@ -438,6 +435,7 @@ export default function EditServiceScreen() {
           <Text className="text-lg font-bold text-white">Update Service</Text>
         </TouchableOpacity>
       </ScrollView>
+      <DateTimePickerModal mode="time" isVisible={isTimePickerVisible} onConfirm={handleConfirmTime} onCancel={() => setTimePickerVisible(false)} />
       <Loader visible={isLoadingService || isPending} />
     </SafeAreaView>
   );

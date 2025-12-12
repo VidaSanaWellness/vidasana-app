@@ -3,7 +3,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {supabase, uploadFile} from '@/utils/supabase';
 import {Tables} from '@/types';
 import {useForm, Controller} from 'react-hook-form';
-import {useQuery, useMutation} from '@tanstack/react-query';
+import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useRouter} from 'expo-router';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image, Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -39,6 +39,7 @@ const DAYS: {label: string; value: WeekDay}[] = [
 
 export default function CreateServiceScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
 
@@ -91,27 +92,28 @@ export default function CreateServiceScreen() {
         const {data: uploadData, error: uploadError} = await uploadFile(image, 'images', fileName);
 
         if (uploadError) throw uploadError;
-        if (uploadData?.path) {
-          uploadedImagePaths.push(uploadData.path);
-        }
+        if (uploadData?.path) uploadedImagePaths.push(uploadData.path);
       }
 
-      // 3. Insert Service
-      const {error: insertError} = await supabase.from('services').insert({
+      const createPayload: any = {
         capacity: parseInt(data.capacity),
         category: data.category!,
         description: data.description,
-        end_at: data.end_at!.toLocaleTimeString('en-US', {hour12: false}), // Save as HH:MM:SS
-        images: uploadedImagePaths,
+        end_at: data.end_at!.toLocaleTimeString('en-US', {hour12: false}),
         price: parseFloat(data.price),
-        start_at: data.start_at!.toLocaleTimeString('en-US', {hour12: false}), // Save as HH:MM:SS
+        start_at: data.start_at!.toLocaleTimeString('en-US', {hour12: false}),
         title: data.title,
         week_day: data.week_day,
-      });
+      };
+
+      if (uploadedImagePaths.length > 0) createPayload.images = uploadedImagePaths;
+
+      const {error: insertError} = await supabase.from('services').insert(createPayload);
 
       if (insertError) throw insertError;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['services']});
       Toast.show({type: 'success', text1: 'Success', text2: 'Service created successfully!'});
       router.back();
     },
@@ -187,15 +189,7 @@ export default function CreateServiceScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <DateTimePickerModal
-        style={{height: 600}}
-        mode="time"
-        collapsable={false}
-        display="inline"
-        isVisible={!!isTimePickerVisible}
-        onConfirm={handleConfirmTime}
-        onCancel={() => setTimePickerVisible(false)}
-      />
+      <DateTimePickerModal mode="time" onConfirm={handleConfirmTime} isVisible={!!isTimePickerVisible} onCancel={() => setTimePickerVisible(false)} />
 
       <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
         <View className="mb-6 flex-row items-center">
@@ -297,7 +291,96 @@ export default function CreateServiceScreen() {
           {errors.category && <Text className="mt-1 text-xs text-red-500">{errors.category.message}</Text>}
         </View>
 
-        {/* ... (skipped lines) ... */}
+        {/* Price & Capacity Row */}
+        <View className="mb-4 flex-row justify-between gap-4">
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-medium text-gray-700">Price</Text>
+            <Controller
+              control={control}
+              rules={{required: 'Price is required'}}
+              name="price"
+              render={({field: {onChange, value}}) => (
+                <View className="flex-row items-center rounded-lg border border-gray-300 bg-white px-3">
+                  <Text className="mr-1 text-gray-500">$</Text>
+                  <TextInput className="flex-1 py-3" placeholder="0.00" keyboardType="numeric" value={value} onChangeText={onChange} />
+                </View>
+              )}
+            />
+            {errors.price && <Text className="mt-1 text-xs text-red-500">{errors.price.message}</Text>}
+          </View>
+
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-medium text-gray-700">Capacity</Text>
+            <Controller
+              control={control}
+              rules={{required: 'Capacity is required'}}
+              name="capacity"
+              render={({field: {onChange, value}}) => (
+                <TextInput
+                  className="rounded-lg border border-gray-300 bg-white p-3"
+                  placeholder="e.g. 10"
+                  keyboardType="numeric"
+                  value={value}
+                  onChangeText={onChange}
+                />
+              )}
+            />
+            {errors.capacity && <Text className="mt-1 text-xs text-red-500">{errors.capacity.message}</Text>}
+          </View>
+        </View>
+
+        {/* Time Row */}
+        <View className="mb-4 flex-row justify-between gap-4">
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-medium text-gray-700">Start Time</Text>
+            <Controller
+              control={control}
+              name="start_at"
+              rules={{required: 'Start time required'}}
+              render={({field: {value}, fieldState: {error}}) => (
+                <View className="flex-1">
+                  <TouchableOpacity
+                    onPress={() => {
+                      setActiveTimeField('start_at');
+                      setTimePickerVisible(true);
+                    }}
+                    className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
+                    <Text className={value ? 'text-black' : 'text-gray-400'}>
+                      {value?.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) || 'Select'}
+                    </Text>
+                    <Feather name="clock" size={18} color="gray" />
+                  </TouchableOpacity>
+                  {error?.message && <Text className="mt-1 text-xs text-red-500">{error?.message}</Text>}
+                </View>
+              )}
+            />
+          </View>
+
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-medium text-gray-700">End Time</Text>
+            <Controller
+              control={control}
+              name="end_at"
+              rules={{required: 'End time required'}}
+              render={({field: {value}, fieldState: {error}}) => (
+                <View className="flex-1">
+                  <TouchableOpacity
+                    onPress={() => {
+                      setActiveTimeField('end_at');
+                      setTimePickerVisible(true);
+                    }}
+                    className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
+                    <Text className={value ? 'text-black' : 'text-gray-400'}>
+                      {value?.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) || 'Select'}
+                    </Text>
+                    <Feather name="clock" size={18} color="gray" />
+                  </TouchableOpacity>
+                  {error?.message && <Text className="mt-1 text-xs text-red-500">{error?.message}</Text>}
+                </View>
+              )}
+            />
+          </View>
+        </View>
 
         {/* Week Days */}
         <View className="mb-6">

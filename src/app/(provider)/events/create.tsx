@@ -57,7 +57,6 @@ export default function CreateEventScreen() {
     },
   });
 
-  const selectedImages = watch('images');
   const ticketTypes = watch('ticket_types');
 
   // Fetch Categories

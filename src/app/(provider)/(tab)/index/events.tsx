@@ -3,10 +3,15 @@ import {Link} from 'expo-router';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useQuery} from '@tanstack/react-query';
-import {ActivityIndicator, FlatList, Image, Pressable, Text, View} from 'react-native';
+import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
 
 export default function EventsScreen() {
-  const {data: events, isLoading} = useQuery({
+  const {
+    data: events,
+    isLoading,
+    isRefetching,
+    refetch,
+  } = useQuery({
     queryKey: ['events'],
     queryFn: async () => {
       const {
@@ -101,6 +106,7 @@ export default function EventsScreen() {
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{paddingBottom: 100}}
+            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             ListEmptyComponent={() => (
               <View className="mt-20 items-center justify-center">
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-50">
