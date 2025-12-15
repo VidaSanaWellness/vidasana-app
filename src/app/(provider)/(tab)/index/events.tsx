@@ -4,8 +4,10 @@ import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useQuery} from '@tanstack/react-query';
 import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 export default function EventsScreen() {
+  const {t} = useTranslation();
   const {
     data: events,
     isLoading,
@@ -68,7 +70,7 @@ export default function EventsScreen() {
                   <View className="mb-1 flex-row items-center">
                     <Feather name="clock" size={12} color="#6B7280" />
                     <Text className="ml-1 text-xs text-gray-600">
-                      Start:{' '}
+                      {t('events.startTime')}:{' '}
                       {item.start_at
                         ? `${new Date(item.start_at).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${new Date(item.start_at).getDate().toString().padStart(2, '0')}/${(new Date(item.start_at).getMonth() + 1).toString().padStart(2, '0')}/${new Date(item.start_at).getFullYear().toString().slice(-2)}`
                         : ''}
@@ -78,7 +80,7 @@ export default function EventsScreen() {
                   <View className="flex-row items-center">
                     <Feather name="clock" size={12} color="#6B7280" />
                     <Text className="ml-1 text-xs text-gray-600">
-                      End:{' '}
+                      {t('events.endTime')}:{' '}
                       {item.end_at
                         ? `${new Date(item.end_at).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${new Date(item.end_at).getDate().toString().padStart(2, '0')}/${(new Date(item.end_at).getMonth() + 1).toString().padStart(2, '0')}/${new Date(item.end_at).getFullYear().toString().slice(-2)}`
                         : ''}
@@ -112,8 +114,8 @@ export default function EventsScreen() {
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-50">
                   <Feather name="calendar" size={40} color="#D1D5DB" />
                 </View>
-                <Text className="mb-2 text-lg font-bold text-gray-900">No Events Yet</Text>
-                <Text className="mb-6 text-center text-gray-500">Create your first event to get started.</Text>
+                <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.noEvents')}</Text>
+                <Text className="mb-6 text-center text-gray-500">{t('events.noEventsSubtitle')}</Text>
               </View>
             )}
           />

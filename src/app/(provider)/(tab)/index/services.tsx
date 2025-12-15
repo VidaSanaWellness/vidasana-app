@@ -4,8 +4,10 @@ import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useQuery} from '@tanstack/react-query';
 import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 export default function ServicesScreen() {
+  const {t} = useTranslation();
   const {
     data: services,
     isLoading,
@@ -106,8 +108,8 @@ export default function ServicesScreen() {
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-50">
                   <Feather name="briefcase" size={40} color="#D1D5DB" />
                 </View>
-                <Text className="mb-2 text-lg font-bold text-gray-900">No Services Yet</Text>
-                <Text className="mb-6 text-center text-gray-500">You haven't created any services.{'\n'}Start by adding your first service.</Text>
+                <Text className="mb-2 text-lg font-bold text-gray-900">{t('services.noServices')}</Text>
+                <Text className="mb-6 text-center text-gray-500">{t('services.noServicesSubtitle')}</Text>
               </View>
             )}
           />

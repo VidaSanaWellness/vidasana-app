@@ -1,8 +1,155 @@
 {
-  "button": {
-    "french": "Changer la langue en français",
-    "english": "Changer la langue en anglais"
+  "common": {
+    "loading": "Chargement...",
+    "done": "Terminé",
+    "submit": "Soumettre",
+    "cancel": "Annuler",
+    "and": "et",
+    "continue": "Continuer"
   },
-  "getStarted": "Ouvrez le code de cet écran :",
-  "changeCode": "Modifiez n'importe quel texte, enregistrez le fichier et votre application sera automatiquement mise à jour."
+  "auth": {
+    "login": {
+      "welcomeBack": "Bon retour",
+      "signInSubtitle": "Connectez-vous pour accéder à votre compte",
+      "emailPlaceholder": "Entrez votre email",
+      "passwordPlaceholder": "Mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "rememberMe": "Se souvenir de moi",
+      "noAccount": "Vous n'avez pas de compte ?",
+      "signUp": "S'inscrire",
+      "loginBoxTitle": "Connexion"
+    },
+    "register": {
+      "title": "Commencer",
+      "subtitle": "en créant un compte gratuit.",
+      "fullNamePlaceholder": "Nom complet",
+      "emailPlaceholder": "Email",
+      "phonePlaceholder": "Numéro de téléphone",
+      "passwordPlaceholder": "Mot de passe fort",
+      "termsRequiredTitle": "Conditions requises",
+      "termsRequiredMessage": "Veuillez accepter les termes et conditions",
+      "agreeTo": "J'accepte les",
+      "terms": "Termes",
+      "conditions": "Conditions",
+      "signUpButton": "S'inscrire",
+      "alreadyMember": "Déjà membre ?",
+      "loginLink": "Connexion"
+    },
+    "forgotPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "subtitle": "Entrez votre email pour recevoir les instructions",
+      "sendLink": "Envoyer le lien de réinitialisation",
+      "rememberPassword": "Vous vous souvenez de votre mot de passe ?",
+      "loginLink": "Connexion"
+    },
+    "orLoginWith": "ou connectez-vous avec"
+  },
+  "settings": {
+    "language": "Langue",
+    "selectLanguage": "Choisir la langue",
+    "accountSettings": "Paramètres du compte",
+    "preferences": "Préférences",
+    "support": "Support",
+    "changePassword": "Changer le mot de passe",
+    "notifications": "Notifications",
+    "darkMode": "Mode sombre",
+    "helpCenter": "Centre d'aide",
+    "termsAndConditions": "Termes et conditions",
+    "privacyPolicy": "Politique de confidentialité",
+    "logOut": "Se déconnecter"
+  },
+  "languages": {
+    "en": "Anglais",
+    "fr": "Français",
+    "es": "Espagnol"
+  },
+  "events": {
+    "createTitle": "Créer un nouvel événement",
+    "eventTitle": "Titre de l'événement",
+    "eventTitlePlaceholder": "ex : Festival de musique d'été",
+    "images": "Images",
+    "addPhotos": "Ajouter des photos",
+    "description": "Description",
+    "descriptionPlaceholder": "À propos de l'événement...",
+    "category": "Catégorie",
+    "startTime": "Heure de début",
+    "endTime": "Heure de fin",
+    "bookingDeadline": "Date limite de réservation",
+    "selectStart": "Choisir le début",
+    "selectEnd": "Choisir la fin",
+    "selectDeadline": "Choisir la date limite",
+    "ticketTypes": "Types de billets",
+    "ticketNamePlaceholder": "Nom du billet (ex : VIP)",
+    "price": "Prix",
+    "capacity": "Capacité",
+    "addTicketType": "Ajouter un autre type de billet",
+    "createButton": "Créer l'événement",
+    "noEvents": "Aucun événement pour le moment",
+    "noEventsSubtitle": "Créez votre premier événement pour commencer."
+  },
+  "services": {
+    "createTitle": "Créer un nouveau service",
+    "updateTitle": "Mettre à jour le service",
+    "serviceTitle": "Titre du service",
+    "serviceTitlePlaceholder": "ex : Cours de yoga",
+    "descriptionPlaceholder": "Décrivez votre service...",
+    "availableDays": "Jours disponibles",
+    "createButton": "Créer le service",
+    "updateButton": "Mettre à jour le service",
+    "noServices": "Aucun service pour le moment",
+    "noServicesSubtitle": "Vous n'avez créé aucun service.\nCommencez par ajouter votre premier service.",
+    "aboutService": "À propos du service",
+    "schedule": "Calendrier",
+    "duration": "Durée",
+    "active": "Actif",
+    "disabled": "Désactivé",
+    "enableService": "Activer le service",
+    "disableService": "Désactiver le service",
+    "enableConfirm": "Êtes-vous sûr de vouloir activer ce service ?",
+    "disableConfirm": "Êtes-vous sûr de vouloir désactiver ce service ? Les clients ne pourront plus le réserver."
+  },
+  "validation": {
+    "required": "Requis",
+    "fullNameRequired": "Le nom complet est requis",
+    "fullNameAlphabets": "Le nom complet ne doit contenir que des lettres",
+    "fullNameTwoWords": "Veuillez entrer au moins 2 mots",
+    "emailRequired": "Veuillez entrer un email",
+    "emailInvalid": "Veuillez entrer une adresse email valide",
+    "phoneRequired": "Le numéro de téléphone est requis",
+    "phoneInvalid": "Veuillez entrer un numéro de téléphone valide",
+    "passwordRequired": "Le mot de passe est requis",
+    "passwordMinLength": "Le mot de passe doit contenir au moins {{count}} caractères",
+    "passwordUppercase": "Le mot de passe doit contenir au moins une majuscule",
+    "passwordLowercase": "Le mot de passe doit contenir au moins une minuscule",
+    "passwordNumber": "Le mot de passe doit contenir au moins un chiffre",
+    "passwordSpecial": "Le mot de passe doit contenir au moins un caractère spécial"
+  },
+  "role": {
+    "howWillYouUse": "Comment allez-vous utiliser VidaSana ?",
+    "chooseRole": "Choisissez votre rôle pour continuer",
+    "joinEvents": "Rejoindre des événements",
+    "joinEventsSubtitle": "Découvrez et participez à des expériences",
+    "hostEvents": "Organiser des événements",
+    "hostEventsSubtitle": "Créez et gérez vos événements",
+    "providerDetails": "Détails du fournisseur",
+    "uploadFileNote": "Note : Téléchargement de fichier pour formulaires IRS : W-9 (U.S.) ou W-8BEN/W-8BEN-E (hors U.S.)",
+    "checkUS": "Cochez si vous êtes résident américain",
+    "stripeAccountId": "ID de compte Stripe :",
+    "stripePlaceholder": "ID de compte Stripe",
+    "errorDoc": "Erreur lors de la récupération du document."
+  },
+  "profile": {
+    "editTitle": "Modifier le profil",
+    "save": "Enregistrer les modifications",
+    "updateDetails": "Mettez à jour vos informations personnelles pour rester en contact.",
+    "nameMinLength": "Le nom doit comporter au moins 3 lettres",
+    "nameInvalid": "Veuillez entrer un nom valide"
+  },
+  "passwordStrength": {
+    "label": "Force du mot de passe :",
+    "weak": "Faible",
+    "fair": "Moyen",
+    "good": "Bon",
+    "strong": "Fort"
+  }
 }

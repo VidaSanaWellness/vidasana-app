@@ -8,8 +8,10 @@ import {useForm, Controller} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Image} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 const Page = () => {
+  const {t} = useTranslation();
   const {back} = useRouter();
   const {control, formState, handleSubmit} = useForm<{email: string}>({defaultValues: {email: ''}});
 
@@ -42,8 +44,8 @@ const Page = () => {
           </View>
 
           <Animated.View entering={FadeInDown.delay(200)} className="mb-8 mt-9 items-center">
-            <Text className="mb-2 text-3xl font-bold text-black">Reset Password</Text>
-            <Text className="px-10 text-center text-base text-gray-500">Enter your email to receive reset instructions</Text>
+            <Text className="mb-2 text-3xl font-bold text-black">{t('auth.forgotPassword.title')}</Text>
+            <Text className="px-10 text-center text-base text-gray-500">{t('auth.forgotPassword.subtitle')}</Text>
           </Animated.View>
 
           {/* Form Section */}
@@ -51,7 +53,7 @@ const Page = () => {
             <Controller
               name="email"
               control={control}
-              rules={{required: 'Email is required', pattern: {value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email address'}}}
+              rules={{required: t('validation.emailRequired'), pattern: {value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('validation.emailInvalid')}}}
               render={({field, fieldState}) => (
                 <>
                   <View className={`mb-4 rounded-xl border bg-gray-100 ${fieldState.error ? 'border-red-300 bg-red-100' : 'border-transparent'}`}>
@@ -61,7 +63,7 @@ const Page = () => {
                       placeholderTextColor="#999"
                       keyboardType="email-address"
                       onChangeText={field.onChange}
-                      placeholder="Enter your email"
+                      placeholder={t('auth.forgotPassword.emailPlaceholder', 'Enter your email')}
                       className="m-0 h-14 px-4 leading-5 text-black"
                     />
                   </View>
@@ -78,15 +80,15 @@ const Page = () => {
               {formState.isSubmitting ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text className="text-lg font-semibold text-white">Send Reset Link</Text>
+                <Text className="text-lg font-semibold text-white">{t('auth.forgotPassword.sendLink')}</Text>
               )}
             </TouchableOpacity>
 
             {/* Back to Login Link */}
             <View className="mt-5 flex-row items-center justify-center">
-              <Text className="text-sm text-gray-600">Remember your password? </Text>
+              <Text className="text-sm text-gray-600">{t('auth.forgotPassword.rememberPassword')} </Text>
               <TouchableOpacity onPress={() => back()}>
-                <Text className="text-sm font-semibold text-[#E03C31]">Login</Text>
+                <Text className="text-sm font-semibold text-[#E03C31]">{t('auth.forgotPassword.loginLink')}</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>

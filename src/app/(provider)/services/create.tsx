@@ -11,6 +11,8 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import React, {useState} from 'react';
 import Toast from 'react-native-toast-message';
 
+import {useTranslation} from 'react-i18next';
+
 // Types
 type Category = Tables<'categories'>;
 type WeekDay = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
@@ -39,6 +41,7 @@ const DAYS: {label: string; value: WeekDay}[] = [
 
 export default function CreateServiceScreen() {
   const router = useRouter();
+  const {t} = useTranslation();
   const queryClient = useQueryClient();
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
@@ -196,20 +199,20 @@ export default function CreateServiceScreen() {
           <TouchableOpacity onPress={() => router.back()} className="mr-4 rounded-full bg-gray-100 p-2">
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          <Text className="text-2xl font-bold text-gray-900">Create New Service</Text>
+          <Text className="text-2xl font-bold text-gray-900">{t('services.createTitle')}</Text>
         </View>
 
         {/* Title */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Service Title</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('services.serviceTitle')}</Text>
           <Controller
             control={control}
-            rules={{required: 'Title is required'}}
+            rules={{required: t('validation.required')}}
             name="title"
             render={({field: {onChange, value}}) => (
               <TextInput
                 className="rounded-lg border border-gray-300 bg-white p-3"
-                placeholder="e.g. Yoga Class"
+                placeholder={t('services.serviceTitlePlaceholder')}
                 value={value}
                 onChangeText={onChange}
               />
@@ -220,7 +223,7 @@ export default function CreateServiceScreen() {
 
         {/* Images */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Images</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.images')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2 flex-row">
             {selectedImages.map((img, index) => (
               <View key={index} className="relative mr-2">
@@ -234,7 +237,7 @@ export default function CreateServiceScreen() {
               onPress={pickImages}
               className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
               <Feather name="camera" size={24} color="gray" />
-              <Text className="mt-1 text-xs text-gray-500">Add Photos</Text>
+              <Text className="mt-1 text-xs text-gray-500">{t('events.addPhotos')}</Text>
             </TouchableOpacity>
           </ScrollView>
           <Controller
@@ -248,15 +251,15 @@ export default function CreateServiceScreen() {
 
         {/* Description */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.description')}</Text>
           <Controller
             control={control}
-            rules={{required: 'Description is required'}}
+            rules={{required: t('validation.required')}}
             name="description"
             render={({field: {onChange, value}}) => (
               <TextInput
                 className="h-24 rounded-lg border border-gray-300 bg-white p-3"
-                placeholder="Describe your service..."
+                placeholder={t('services.descriptionPlaceholder')}
                 multiline
                 textAlignVertical="top"
                 value={value}
@@ -269,7 +272,7 @@ export default function CreateServiceScreen() {
 
         {/* Category */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Category</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.category')}</Text>
           {isLoadingCategories ? (
             <ActivityIndicator size="small" />
           ) : (
@@ -294,10 +297,10 @@ export default function CreateServiceScreen() {
         {/* Price & Capacity Row */}
         <View className="mb-4 flex-row justify-between gap-4">
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">Price</Text>
+            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.price')}</Text>
             <Controller
               control={control}
-              rules={{required: 'Price is required'}}
+              rules={{required: t('validation.required')}}
               name="price"
               render={({field: {onChange, value}}) => (
                 <View className="flex-row items-center rounded-lg border border-gray-300 bg-white px-3">
@@ -310,10 +313,10 @@ export default function CreateServiceScreen() {
           </View>
 
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">Capacity</Text>
+            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.capacity')}</Text>
             <Controller
               control={control}
-              rules={{required: 'Capacity is required'}}
+              rules={{required: t('validation.required')}}
               name="capacity"
               render={({field: {onChange, value}}) => (
                 <TextInput
@@ -332,7 +335,7 @@ export default function CreateServiceScreen() {
         {/* Time Row */}
         <View className="mb-4 flex-row justify-between gap-4">
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">Start Time</Text>
+            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.startTime')}</Text>
             <Controller
               control={control}
               name="start_at"
@@ -346,7 +349,7 @@ export default function CreateServiceScreen() {
                     }}
                     className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
                     <Text className={value ? 'text-black' : 'text-gray-400'}>
-                      {value?.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) || 'Select'}
+                      {value?.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) || t('events.selectStart')}
                     </Text>
                     <Feather name="clock" size={18} color="gray" />
                   </TouchableOpacity>
@@ -357,7 +360,7 @@ export default function CreateServiceScreen() {
           </View>
 
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">End Time</Text>
+            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.endTime')}</Text>
             <Controller
               control={control}
               name="end_at"
@@ -371,7 +374,7 @@ export default function CreateServiceScreen() {
                     }}
                     className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
                     <Text className={value ? 'text-black' : 'text-gray-400'}>
-                      {value?.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) || 'Select'}
+                      {value?.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) || t('events.selectEnd')}
                     </Text>
                     <Feather name="clock" size={18} color="gray" />
                   </TouchableOpacity>
@@ -384,7 +387,7 @@ export default function CreateServiceScreen() {
 
         {/* Week Days */}
         <View className="mb-6">
-          <Text className="mb-2 text-sm font-medium text-gray-700">Available Days</Text>
+          <Text className="mb-2 text-sm font-medium text-gray-700">{t('services.availableDays')}</Text>
 
           <Controller
             name="week_day"
@@ -419,7 +422,7 @@ export default function CreateServiceScreen() {
           {createServiceMutation.isPending ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-lg font-bold text-white">Create Service</Text>
+            <Text className="text-lg font-bold text-white">{t('services.createButton')}</Text>
           )}
         </TouchableOpacity>
 

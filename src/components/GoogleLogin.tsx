@@ -3,11 +3,13 @@ import {expo} from '@/../app.json';
 import {useEffect, useState} from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import {Text} from '@react-navigation/elements';
+import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export function GoogleSignInButton() {
+  const {t} = useTranslation();
   const [loading, setLoading] = useState(false);
 
   function extractParamsFromUrl(url: string) {
@@ -71,7 +73,7 @@ export function GoogleSignInButton() {
     <>
       <View style={styles.orContainer}>
         <View style={styles.orLine} />
-        <Text style={styles.orText}>or {'login'} with</Text>
+        <Text style={styles.orText}>{t('auth.orLoginWith')}</Text>
         <View style={styles.orLine} />
       </View>
       <TouchableOpacity onPress={handleGoogleAuth} disabled={loading}>

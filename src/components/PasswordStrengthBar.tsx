@@ -1,9 +1,11 @@
 import React, {useMemo} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 type PasswordStrengthBarProps = {password: string; visible: boolean};
 
 const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProps) => {
+  const {t} = useTranslation();
   if (!visible) return null;
 
   // Calculate password strength score (0-100)
@@ -31,10 +33,10 @@ const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProps) => {
   };
 
   const getStrengthLabel = () => {
-    if (strengthScore < 33) return 'Weak';
-    if (strengthScore < 66) return 'Fair';
-    if (strengthScore < 100) return 'Good';
-    return 'Strong';
+    if (strengthScore < 33) return t('passwordStrength.weak');
+    if (strengthScore < 66) return t('passwordStrength.fair');
+    if (strengthScore < 100) return t('passwordStrength.good');
+    return t('passwordStrength.strong');
   };
 
   const strengthLabel = getStrengthLabel();
@@ -43,7 +45,7 @@ const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.labelContainer}>
-        <Text style={styles.label}>Password Strength:</Text>
+        <Text style={styles.label}>{t('passwordStrength.label')}</Text>
         <Text style={[styles.strengthLabel, {color: strengthColor}]}>{strengthLabel}</Text>
       </View>
       <View style={styles.barBackground}>
@@ -81,7 +83,6 @@ const styles = StyleSheet.create({
   strengthBar: {
     height: '100%',
     borderRadius: 3,
-    transition: 'width 0.3s ease-out',
   },
 });
 

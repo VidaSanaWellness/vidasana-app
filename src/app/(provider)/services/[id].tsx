@@ -6,8 +6,10 @@ import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {Feather} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import Toast from 'react-native-toast-message';
+import {useTranslation} from 'react-i18next';
 
 export default function ServiceDetailsScreen() {
+  const {t} = useTranslation();
   const {id} = useLocalSearchParams<{id: string}>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -41,7 +43,7 @@ export default function ServiceDetailsScreen() {
     onSuccess: (_, newStatus) => {
       queryClient.invalidateQueries({queryKey: ['services']});
       queryClient.invalidateQueries({queryKey: ['service', id]});
-      Toast.show({type: 'success', text1: newStatus ? 'Service enabled' : 'Service disabled'});
+      Toast.show({type: 'success', text1: newStatus ? t('services.active') : t('services.disabled')});
       setMenuVisible(false);
     },
     onError: (err: any) => {
@@ -53,10 +55,8 @@ export default function ServiceDetailsScreen() {
     setMenuVisible(false);
     const isActive = service?.active;
     Alert.alert(
-      isActive ? 'Disable Service' : 'Enable Service',
-      isActive
-        ? 'Are you sure you want to disable this service? Clients will no longer be able to book it.'
-        : 'Are you sure you want to enable this service?',
+      isActive ? t('services.disableService') : t('services.enableService'),
+      isActive ? t('services.disableConfirm') : t('services.enableConfirm'),
       [
         {text: 'Cancel', style: 'cancel'},
         {
@@ -118,7 +118,9 @@ export default function ServiceDetailsScreen() {
 
               <Pressable onPress={handleToggleStatus} className="flex-row items-center px-4 py-3 active:bg-gray-50">
                 <Feather name={service.active ? 'slash' : 'check-circle'} size={16} color={service.active ? '#EF4444' : '#10B981'} />
-                <Text className={`ml-3 ${service.active ? 'text-red-600' : 'text-green-600'}`}>{service.active ? 'Disable' : 'Enable'}</Text>
+                <Text className={`ml-3 ${service.active ? 'text-red-600' : 'text-green-600'}`}>
+                  {service.active ? t('services.disableService') : t('services.enableService')}
+                </Text>
               </Pressable>
             </View>
           </Pressable>
@@ -146,7 +148,7 @@ export default function ServiceDetailsScreen() {
             <View className={`flex-row items-center rounded-full px-2 py-1 ${service.active ? 'bg-green-100' : 'bg-red-100'}`}>
               <View className={`mr-1.5 h-2 w-2 rounded-full ${service.active ? 'bg-green-500' : 'bg-red-500'}`} />
               <Text className={`text-xs font-medium ${service.active ? 'text-green-700' : 'text-red-700'}`}>
-                {service.active ? 'Active' : 'Disabled'}
+                {service.active ? t('services.active') : t('services.disabled')}
               </Text>
             </View>
           </View>
@@ -161,27 +163,27 @@ export default function ServiceDetailsScreen() {
           <View className="mb-6 flex-row justify-between rounded-xl bg-gray-50 p-4">
             <View className="flex-1 items-center border-r border-gray-200">
               <Feather name="clock" size={20} color="#4B5563" className="mb-1" />
-              <Text className="mb-1 text-xs text-gray-500">Duration</Text>
+              <Text className="mb-1 text-xs text-gray-500">{t('services.duration')}</Text>
               <Text className="font-semibold text-gray-900">
                 {service.start_at?.slice(0, 5)} - {service.end_at?.slice(0, 5)}
               </Text>
             </View>
             <View className="flex-1 items-center">
               <Feather name="users" size={20} color="#4B5563" className="mb-1" />
-              <Text className="mb-1 text-xs text-gray-500">Capacity</Text>
+              <Text className="mb-1 text-xs text-gray-500">{t('events.capacity')}</Text>
               <Text className="font-semibold text-gray-900">{service.capacity} People</Text>
             </View>
           </View>
 
           {/* Description */}
-          <Text className="mb-2 text-lg font-bold text-gray-900">About Service</Text>
+          <Text className="mb-2 text-lg font-bold text-gray-900">{t('services.aboutService')}</Text>
           <Text className="mb-6 leading-6 text-gray-600">{service.description || 'No description provided.'}</Text>
 
           {/* Schedule */}
-          <Text className="mb-3 text-lg font-bold text-gray-900">Schedule</Text>
+          <Text className="mb-3 text-lg font-bold text-gray-900">{t('services.schedule')}</Text>
           <View className="flex-row flex-wrap gap-2">
             {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => {
-              const isActive = service.week_day?.includes(day);
+              const isActive = service.week_day?.includes(day as any);
               return (
                 <View key={day} className={`h-10 w-10 items-center justify-center rounded-full ${isActive ? 'bg-green-700' : 'bg-gray-100'}`}>
                   <Text className={`text-xs font-bold uppercase ${isActive ? 'text-white' : 'text-gray-400'}`}>{day.slice(0, 3)}</Text>

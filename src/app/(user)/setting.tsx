@@ -7,6 +7,8 @@ import * as ImagePicker from 'expo-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {FadeIn, FadeOut, SlideInDown, SlideOutDown} from 'react-native-reanimated';
 import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {LanguagePicker} from '@/components/LanguagePicker';
+import {useTranslation} from 'react-i18next';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -26,6 +28,8 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isFetchingProfile, setIsFetchingProfile] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isLanguagePickerVisible, setIsLanguagePickerVisible] = useState(false);
+  const {t, i18n} = useTranslation();
 
   const {user: currentUser, loading: isLoadingProfile, refresh} = useCurrentUser();
   const insets = useSafeAreaInsets();
@@ -243,33 +247,33 @@ const Profile = () => {
 
         {/* Account Settings */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 text-lg font-semibold text-black">Account Settings</Text>
+          <Text className="mb-4 text-lg font-semibold text-black">{t('settings.accountSettings')}</Text>
 
           <TouchableOpacity
             className={`mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3 ${isBusy || isEditing ? 'opacity-60' : ''}`}
             disabled={isBusy || isEditing}
             onPress={handleEditPress}>
             <Ionicons name="person-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">Edit Profile</Text>
+            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('profile.editTitle')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={handlePasswordChange}>
             <Ionicons name="key-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">Change Password</Text>
+            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.changePassword')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
         </View>
 
         {/* Preferences */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 text-lg font-semibold text-black">Preferences</Text>
+          <Text className="mb-4 text-lg font-semibold text-black">{t('settings.preferences')}</Text>
 
           <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
             onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
             <Ionicons name="notifications-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">Notifications</Text>
+            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.notifications')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
 
@@ -277,40 +281,42 @@ const Profile = () => {
             className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
             onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
             <Ionicons name="moon-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">Dark Mode</Text>
+            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.darkMode')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
-            onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
+          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => setIsLanguagePickerVisible(true)}>
             <Ionicons name="globe-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">Language</Text>
+            <Text className="ml-3 flex-1 text-base text-[#3E6065]">
+              {t('settings.language')} ({t(`languages.${i18n.language}`)})
+            </Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
         </View>
 
+        <LanguagePicker visible={isLanguagePickerVisible} onClose={() => setIsLanguagePickerVisible(false)} />
+
         {/* Support */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 text-lg font-semibold text-black">Support</Text>
+          <Text className="mb-4 text-lg font-semibold text-black">{t('settings.support')}</Text>
 
           <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
             onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
             <Ionicons name="help-circle-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">Help Center</Text>
+            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.helpCenter')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => navigate('TermsAndConditions')}>
             <Ionicons name="document-text-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">Terms and Conditions</Text>
+            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.termsAndConditions')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => navigate('PrivacyPolicy')}>
             <Ionicons name="shield-checkmark-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">Privacy Policy</Text>
+            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.privacyPolicy')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
         </View>
@@ -322,7 +328,7 @@ const Profile = () => {
           onPress={handleLogout}
           className="mx-5 mb-8 mt-10 flex-row items-center justify-center rounded-xl bg-[#FFE8E8] py-4">
           <Ionicons name="log-out-outline" size={24} color="#E03C31" />
-          <Text className="ml-2 text-base font-semibold text-[#E03C31]">Log Out</Text>
+          <Text className="ml-2 text-base font-semibold text-[#E03C31]">{t('settings.logOut')}</Text>
         </AnimatedTouchableOpacity>
       </ScrollView>
 

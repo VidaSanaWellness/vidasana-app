@@ -11,6 +11,7 @@ import Toast from 'react-native-toast-message';
 import {supabase, uploadFile} from '@/utils/supabase';
 import {Loader} from '@/components';
 import {Enums} from '@/types';
+import {useTranslation} from 'react-i18next';
 
 // Types
 
@@ -49,6 +50,7 @@ const DAYS: {label: string; value: WeekDay}[] = [
 
 export default function EditServiceScreen() {
   const router = useRouter();
+  const {t} = useTranslation();
   const {id} = useLocalSearchParams<{id: string}>();
   const queryClient = useQueryClient();
 
@@ -106,8 +108,8 @@ export default function EditServiceScreen() {
         title: data.title,
         description: data.description || '',
         category: data.category,
-        price: data.price.toString(),
-        capacity: data.capacity.toString(),
+        price: data.price?.toString() ?? '',
+        capacity: data.capacity?.toString() ?? '',
         start_at: parseTime(data.start_at),
         end_at: parseTime(data.end_at),
         week_day: (data.week_day as WeekDay[]) || [],
@@ -230,13 +232,13 @@ export default function EditServiceScreen() {
         <TouchableOpacity onPress={() => router.back()} className="mr-4">
           <Feather name="arrow-left" size={24} color="#374151" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-gray-900">Update Service</Text>
+        <Text className="text-xl font-bold text-gray-900">{t('services.updateTitle')}</Text>
       </View>
 
       <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
         {/* Images */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Images</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.images')}</Text>
           <Controller
             control={control}
             name="images"
@@ -258,7 +260,7 @@ export default function EditServiceScreen() {
                     onPress={() => pickImages(onChange)}
                     className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
                     <Feather name="camera" size={24} color="gray" />
-                    <Text className="mt-1 text-xs text-gray-500">Add Photos</Text>
+                    <Text className="mt-1 text-xs text-gray-500">{t('events.addPhotos')}</Text>
                   </TouchableOpacity>
                 </ScrollView>
                 {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
@@ -269,10 +271,10 @@ export default function EditServiceScreen() {
 
         {/* Title */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Title</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('services.serviceTitle')}</Text>
           <Controller
             control={control}
-            rules={{required: 'Title is required'}}
+            rules={{required: t('validation.titleRequired') || t('validation.required')}}
             name="title"
             render={({field: {onChange, value}, fieldState: {error}}) => (
               <>
@@ -285,10 +287,10 @@ export default function EditServiceScreen() {
 
         {/* Description */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.description')}</Text>
           <Controller
             control={control}
-            rules={{required: 'Description is required'}}
+            rules={{required: t('validation.descriptionRequired') || t('validation.required')}}
             name="description"
             render={({field: {onChange, value}, fieldState: {error}}) => (
               <>
@@ -307,7 +309,7 @@ export default function EditServiceScreen() {
 
         {/* Category */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Category</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.category')}</Text>
           <Controller
             control={control}
             name="category"
@@ -336,10 +338,10 @@ export default function EditServiceScreen() {
         {/* Price & Capacity */}
         <View className="mb-4 flex-row justify-between gap-4">
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">Price</Text>
+            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.price')}</Text>
             <Controller
               control={control}
-              rules={{required: 'Required'}}
+              rules={{required: t('validation.required')}}
               name="price"
               render={({field: {onChange, value}, fieldState: {error}}) => (
                 <>
@@ -353,10 +355,10 @@ export default function EditServiceScreen() {
             />
           </View>
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">Capacity</Text>
+            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.capacity')}</Text>
             <Controller
               control={control}
-              rules={{required: 'Required'}}
+              rules={{required: t('validation.required')}}
               name="capacity"
               render={({field: {onChange, value}, fieldState: {error}}) => (
                 <>
@@ -377,7 +379,7 @@ export default function EditServiceScreen() {
         <View className="mb-4 flex-row justify-between gap-4">
           {['start_at', 'end_at'].map((key) => (
             <View key={key} className="flex-1">
-              <Text className="mb-1 text-sm font-medium text-gray-700">{key === 'start_at' ? 'Start Time' : 'End Time'}</Text>
+              <Text className="mb-1 text-sm font-medium text-gray-700">{key === 'start_at' ? t('events.startTime') : t('events.endTime')}</Text>
               <Controller
                 control={control}
                 name={key as any}
@@ -390,7 +392,11 @@ export default function EditServiceScreen() {
                     }}
                     className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
                     <Text className={value ? 'text-black' : 'text-gray-400'}>
-                      {value instanceof Date ? value.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : 'Select'}
+                      {value instanceof Date
+                        ? value.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+                        : key === 'start_at'
+                          ? t('events.selectStart')
+                          : t('events.selectEnd')}
                     </Text>
                     <Feather name="clock" size={18} color="gray" />
                   </TouchableOpacity>
@@ -402,7 +408,7 @@ export default function EditServiceScreen() {
 
         {/* Days */}
         <View className="mb-6">
-          <Text className="mb-2 text-sm font-medium text-gray-700">Available Days</Text>
+          <Text className="mb-2 text-sm font-medium text-gray-700">{t('services.availableDays')}</Text>
           <Controller
             name="week_day"
             control={control}
@@ -432,7 +438,7 @@ export default function EditServiceScreen() {
           disabled={isPending}
           onPress={handleSubmit((data) => mutate(data))}
           className="mb-10 items-center rounded-lg bg-green-700 p-4">
-          <Text className="text-lg font-bold text-white">Update Service</Text>
+          <Text className="text-lg font-bold text-white">{t('services.updateButton')}</Text>
         </TouchableOpacity>
       </ScrollView>
       <DateTimePickerModal mode="time" isVisible={isTimePickerVisible} onConfirm={handleConfirmTime} onCancel={() => setTimePickerVisible(false)} />

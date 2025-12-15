@@ -2,6 +2,7 @@ import {useAppStore} from '@/store';
 import {Loader} from '@/components';
 import {Ionicons} from '@expo/vector-icons';
 import {supabase, uploadFile} from '@/utils';
+import {useTranslation} from 'react-i18next';
 import Toast from 'react-native-toast-message';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -13,6 +14,7 @@ import {TouchableOpacity, Text, View, Pressable, BackHandler, Image, TextInput} 
 type Role = 'user' | 'provider';
 
 const SelectRoleScreen = () => {
+  const {t} = useTranslation();
   const query = useQueryClient();
   const user = useAppStore((s) => s.session?.user!);
 
@@ -41,8 +43,8 @@ const SelectRoleScreen = () => {
       const result = await getDocumentAsync({copyToCacheDirectory: false, type: 'application/pdf', multiple: false});
       if (result.canceled) return;
       setDocument(result.assets[0]);
-    } catch (error) {
-      Toast.show({type: 'error', text2: error?.message || 'Error while getting doc file.'});
+    } catch (error: any) {
+      Toast.show({type: 'error', text2: error?.message || t('role.errorDoc')});
     }
   };
 
@@ -75,23 +77,23 @@ const SelectRoleScreen = () => {
       {!page ? (
         <Animated.View entering={FadeInDown.delay(500)}>
           <View className="mb-5 mt-16 items-center">
-            <Text className="mb-2 text-center text-2xl font-bold text-black">How will you use VidaSana?</Text>
-            <Text className="text-center text-base text-gray-500">Choose your role to continue</Text>
+            <Text className="mb-2 text-center text-2xl font-bold text-black">{t('role.howWillYouUse')}</Text>
+            <Text className="text-center text-base text-gray-500">{t('role.chooseRole')}</Text>
           </View>
 
           <View className="mt-5 gap-4">
             <TouchableOpacity
               onPress={() => setRole('user')}
               className={`rounded-xl border p-5 ${role === 'user' ? 'border-[#3E6065] bg-[#3E6065]' : 'border-gray-300 bg-gray-100'}`}>
-              <Text className={`text-lg font-bold ${role === 'user' ? 'text-white' : 'text-[#3E6065]'}`}>Join Events</Text>
-              <Text className={`mt-1 text-sm ${role === 'user' ? 'text-[#EAF4F2]' : 'text-gray-600'}`}>Discover and attend experiences</Text>
+              <Text className={`text-lg font-bold ${role === 'user' ? 'text-white' : 'text-[#3E6065]'}`}>{t('role.joinEvents')}</Text>
+              <Text className={`mt-1 text-sm ${role === 'user' ? 'text-[#EAF4F2]' : 'text-gray-600'}`}>{t('role.joinEventsSubtitle')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => setRole('provider')}
               className={`rounded-xl border p-5 ${role === 'provider' ? 'border-[#3E6065] bg-[#3E6065]' : 'border-gray-300 bg-gray-100'}`}>
-              <Text className={`text-lg font-bold ${role === 'provider' ? 'text-white' : 'text-[#3E6065]'}`}>Host Events</Text>
-              <Text className={`mt-1 text-sm ${role === 'provider' ? 'text-[#EAF4F2]' : 'text-gray-600'}`}>Create and manage your events</Text>
+              <Text className={`text-lg font-bold ${role === 'provider' ? 'text-white' : 'text-[#3E6065]'}`}>{t('role.hostEvents')}</Text>
+              <Text className={`mt-1 text-sm ${role === 'provider' ? 'text-[#EAF4F2]' : 'text-gray-600'}`}>{t('role.hostEventsSubtitle')}</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -101,7 +103,7 @@ const SelectRoleScreen = () => {
             <Pressable onPress={reset}>
               <Ionicons name="arrow-back" size={24} color="#000" />
             </Pressable>
-            <Text className="text-center text-2xl font-bold text-black">Provider Details</Text>
+            <Text className="text-center text-2xl font-bold text-black">{t('role.providerDetails')}</Text>
             <View className="w-6" />
           </View>
 
@@ -113,24 +115,24 @@ const SelectRoleScreen = () => {
             </Pressable>
             <View className="flex-row items-center gap-3">
               <View className="flex-1 gap-3">
-                <Text className="text-sm text-red-500">Note: File upload for IRS forms: W-9 (U.S.) or W-8BEN/W-8BEN-E (non-U.S.)</Text>
+                <Text className="text-sm text-red-500">{t('role.uploadFileNote')}</Text>
                 <Pressable onPress={() => setUs((e) => !e)} className="my-4 flex-row items-center">
                   <View className="mr-2 h-5 w-5 items-center justify-center rounded border-2 border-black">
                     <View className={`h-2.5 w-2.5 rounded-sm ${US ? 'bg-[#E03C31]' : ''}`} />
                   </View>
-                  <Text>Check if you are US resident</Text>
+                  <Text>{t('role.checkUS')}</Text>
                 </Pressable>
               </View>
             </View>
 
-            <Text className="mt-4 w-full">Stripe Account ID:</Text>
+            <Text className="mt-4 w-full">{t('role.stripeAccountId')}</Text>
             <View className={`mt-2 w-full rounded-xl border bg-gray-100 ${false ? 'border-red-300 bg-red-100' : 'border-transparent'}`}>
               <TextInput
                 value={stripe}
                 keyboardType="phone-pad"
                 onChangeText={setStripe}
                 placeholderTextColor="#999"
-                placeholder="Stripe Account ID"
+                placeholder={t('role.stripePlaceholder')}
                 className="m-0 h-14 px-4 text-base leading-5 text-black"
               />
             </View>
@@ -142,7 +144,7 @@ const SelectRoleScreen = () => {
         disabled={!enable}
         onPress={() => mutate(role as Role)}
         className={'mt-auto h-14 items-center justify-center rounded-2xl bg-[#3E6065] shadow ' + (enable ? 'opacity-100' : 'opacity-50')}>
-        <Text className="text-lg font-semibold text-white">Continue</Text>
+        <Text className="text-lg font-semibold text-white">{t('common.continue')}</Text>
       </Pressable>
       <Loader visible={isPending} />
     </SafeAreaView>

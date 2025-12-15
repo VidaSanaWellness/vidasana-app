@@ -2,6 +2,7 @@ import {IMAGES} from '@/assets';
 import {Link} from 'expo-router';
 import {supabase} from '@/utils';
 import React, {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Ionicons} from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import {GoogleSignInButton} from '@/components';
@@ -14,6 +15,7 @@ import {View, Text, Alert, Image, Platform, TextInput, ScrollView, TouchableOpac
 type FormData = {email: string; phone: string; fullName: string; password: string};
 
 const Register = () => {
+  const {t} = useTranslation();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
@@ -22,7 +24,7 @@ const Register = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      if (!agreeToTerms) return Alert.alert('Terms Required', 'Please agree to the terms and conditions');
+      if (!agreeToTerms) return Alert.alert(t('auth.register.termsRequiredTitle'), t('auth.register.termsRequiredMessage'));
       const {email, phone, password, fullName} = data;
       const {data: authData, error: signUpError} = await supabase.auth.signUp({email, password, options: {data: {full_name: fullName}}});
       if (signUpError) throw signUpError;
@@ -44,8 +46,8 @@ const Register = () => {
           </View>
 
           <Animated.View entering={FadeInDown.delay(200)} className="mb-8 items-center">
-            <Text className="mb-2 text-3xl font-bold text-black">Get Started</Text>
-            <Text className="text-base text-gray-500">by creating a free account.</Text>
+            <Text className="mb-2 text-3xl font-bold text-black">{t('auth.register.title')}</Text>
+            <Text className="text-base text-gray-500">{t('auth.register.subtitle')}</Text>
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(400)} className="px-6">
@@ -54,11 +56,11 @@ const Register = () => {
               name="fullName"
               control={control}
               rules={{
-                required: 'Full Name is required',
+                required: t('validation.fullNameRequired'),
                 validate: (val) => {
-                  if (!/^[A-Za-z\s]+$/.test(val)) return 'Full name must contain alphabets only';
+                  if (!/^[A-Za-z\s]+$/.test(val)) return t('validation.fullNameAlphabets');
                   const parts = val.trim().split(' ');
-                  if (parts.length < 2) return 'Please enter at least 2 words';
+                  if (parts.length < 2) return t('validation.fullNameTwoWords');
                   return true;
                 },
               }}
@@ -68,7 +70,7 @@ const Register = () => {
                     <TextInput
                       {...field}
                       autoCapitalize="words"
-                      placeholder="Full Name"
+                      placeholder={t('auth.register.fullNamePlaceholder')}
                       placeholderTextColor="#999"
                       onChangeText={field.onChange}
                       className="m-0 h-14 px-4 text-base leading-5 text-black"
@@ -83,13 +85,13 @@ const Register = () => {
             <Controller
               name="email"
               control={control}
-              rules={{required: 'Email is required', pattern: {value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email address'}}}
+              rules={{required: t('validation.emailRequired'), pattern: {value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('validation.emailInvalid')}}}
               render={({field, fieldState}) => (
                 <View className="mb-4">
                   <View className={`rounded-xl border bg-gray-100 ${fieldState.error ? 'border-red-300 bg-red-100' : 'border-transparent'}`}>
                     <TextInput
                       {...field}
-                      placeholder="Email"
+                      placeholder={t('auth.register.emailPlaceholder')}
                       autoCapitalize="none"
                       placeholderTextColor="#999"
                       keyboardType="email-address"
@@ -107,8 +109,8 @@ const Register = () => {
               name="phone"
               control={control}
               rules={{
-                required: 'Phone number is required',
-                pattern: {value: /^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, message: 'Please enter a valid phone number'},
+                required: t('validation.phoneRequired'),
+                pattern: {value: /^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, message: t('validation.phoneInvalid')},
               }}
               render={({field, fieldState}) => (
                 <View className="mb-4">
@@ -116,7 +118,7 @@ const Register = () => {
                     <TextInput
                       {...field}
                       keyboardType="phone-pad"
-                      placeholder="Phone number"
+                      placeholder={t('auth.register.phonePlaceholder')}
                       placeholderTextColor="#999"
                       onChangeText={field.onChange}
                       className="m-0 h-14 px-4 text-base leading-5 text-black"
@@ -132,13 +134,13 @@ const Register = () => {
               name="password"
               control={control}
               rules={{
-                required: 'Password is required',
-                minLength: {value: 8, message: 'Password must be at least 8 characters long'},
+                required: t('validation.passwordRequired'),
+                minLength: {value: 8, message: t('validation.passwordMinLength', {count: 8})},
                 validate: (val) => {
-                  if (!/[A-Z]/.test(val)) return 'Password must contain at least one uppercase letter';
-                  if (!/[a-z]/.test(val)) return 'Password must contain at least one lowercase letter';
-                  if (!/[0-9]/.test(val)) return 'Password must contain at least one number';
-                  if (!/[!@#$%^&*(),.?":{}|<>]/.test(val)) return 'Password must contain at least one special character';
+                  if (!/[A-Z]/.test(val)) return t('validation.passwordUppercase');
+                  if (!/[a-z]/.test(val)) return t('validation.passwordLowercase');
+                  if (!/[0-9]/.test(val)) return t('validation.passwordNumber');
+                  if (!/[!@#$%^&*(),.?":{}|<>]/.test(val)) return t('validation.passwordSpecial');
                   return true;
                 },
               }}
@@ -148,7 +150,7 @@ const Register = () => {
                     <View className="flex-row items-center">
                       <TextInput
                         {...field}
-                        placeholder="Strong password"
+                        placeholder={t('auth.register.passwordPlaceholder')}
                         onChangeText={field.onChange}
                         secureTextEntry={!showPassword}
                         onFocus={() => setIsPasswordFocused(true)}
@@ -179,8 +181,8 @@ const Register = () => {
               </TouchableOpacity>
 
               <Text className="flex-1 text-sm text-gray-600">
-                I agree to the <Text className="font-semibold text-[#E03C31]">Terms</Text> and{' '}
-                <Text className="font-semibold text-[#E03C31]">Conditions</Text>
+                {t('auth.register.agreeTo')} <Text className="font-semibold text-[#E03C31]">{t('auth.register.terms')}</Text> {t('common.and')}{' '}
+                <Text className="font-semibold text-[#E03C31]">{t('auth.register.conditions')}</Text>
               </Text>
             </View>
 
@@ -189,16 +191,20 @@ const Register = () => {
               onPress={handleSubmit(onSubmit)}
               disabled={formState.isSubmitting}
               className="mt-4 h-14 items-center justify-center rounded-full bg-[#3E6065] shadow">
-              {formState?.isSubmitting ? <ActivityIndicator color="#FFF" /> : <Text className="text-lg font-semibold text-white">Sign Up</Text>}
+              {formState?.isSubmitting ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text className="text-lg font-semibold text-white">{t('auth.register.signUpButton')}</Text>
+              )}
             </TouchableOpacity>
 
             <GoogleSignInButton />
 
             {/* LOGIN LINK */}
             <View className="my-5 flex-row items-center justify-center">
-              <Text className="text-sm text-gray-600">Already a member? </Text>
+              <Text className="text-sm text-gray-600">{t('auth.register.alreadyMember')} </Text>
               <Link replace href="/auth">
-                <Text className="text-sm font-semibold text-[#E03C31]">Login</Text>
+                <Text className="text-sm font-semibold text-[#E03C31]">{t('auth.register.loginLink')}</Text>
               </Link>
             </View>
           </Animated.View>

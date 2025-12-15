@@ -21,7 +21,7 @@ const Page = () => {
         <TouchableOpacity onPress={() => back()}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-[#1F1F1F]">{t('editProfile')}</Text>
+        <Text className="text-xl font-bold text-[#1F1F1F]">{t('profile.editTitle')}</Text>
         <View className="w-6" />
       </View>
 
@@ -32,9 +32,9 @@ const Page = () => {
             name="fullName"
             control={control}
             rules={{
-              required: {value: true, message: 'Full Name is required'},
-              minLength: {value: 3, message: 'Name at least have 3 latters'},
-              pattern: {value: /^[A-Za-z\s]+$/, message: 'Please enter a valid name'},
+              required: {value: true, message: t('validation.fullNameRequired')},
+              minLength: {value: 3, message: t('profile.nameMinLength')},
+              pattern: {value: /^[A-Za-z\s]+$/, message: t('profile.nameInvalid')},
             }}
             render={({field, fieldState}) => (
               <View className="mb-4">
@@ -42,7 +42,7 @@ const Page = () => {
                   <TextInput
                     {...field}
                     autoCapitalize="words"
-                    placeholder="Full Name"
+                    placeholder={t('auth.register.fullNamePlaceholder')}
                     placeholderTextColor="#999"
                     onChangeText={field.onChange}
                     className="m-0 h-14 px-4 text-base leading-5 text-black"
@@ -57,8 +57,8 @@ const Page = () => {
             name="phone"
             control={control}
             rules={{
-              required: 'Phone number is required',
-              pattern: {value: /^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, message: 'Please enter a valid phone number'},
+              required: t('validation.phoneRequired'),
+              pattern: {value: /^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, message: t('validation.phoneInvalid')},
             }}
             render={({field, fieldState}) => (
               <View className="mb-4">
@@ -66,7 +66,7 @@ const Page = () => {
                   <TextInput
                     {...field}
                     keyboardType="phone-pad"
-                    placeholder="Phone number"
+                    placeholder={t('auth.register.phonePlaceholder')}
                     placeholderTextColor="#999"
                     onChangeText={field.onChange}
                     className="m-0 h-14 px-4 text-base leading-5 text-black"
@@ -77,7 +77,7 @@ const Page = () => {
             )}
           />
 
-          <Text className="mb-5 px-2 text-sm text-[#6B6B6B]">Update your personal details so providers and companions can stay in touch.</Text>
+          <Text className="mb-5 px-2 text-sm text-[#6B6B6B]">{t('profile.updateDetails')}</Text>
 
           <TouchableOpacity
             onPress={handleSubmit(submit)}
@@ -86,7 +86,7 @@ const Page = () => {
             {formState.isSubmitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
-              <Text className="text-base font-semibold text-white">Save Changes</Text>
+              <Text className="text-base font-semibold text-white">{t('profile.save')}</Text>
             )}
           </TouchableOpacity>
         </Animated.View>

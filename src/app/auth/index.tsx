@@ -3,6 +3,7 @@ import {Link} from 'expo-router';
 import {supabase} from '@/utils';
 import React, {useState} from 'react';
 import {Ionicons} from '@expo/vector-icons';
+import {useTranslation} from 'react-i18next';
 import Toast from 'react-native-toast-message';
 import {GoogleSignInButton} from '@/components';
 import {useForm, Controller} from 'react-hook-form';
@@ -13,6 +14,7 @@ import {View, Text, Image, Platform, TextInput, ScrollView, TouchableOpacity, Ac
 type LoginFormData = {email: string; password: string};
 
 const Page = () => {
+  const {t} = useTranslation();
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -38,8 +40,8 @@ const Page = () => {
           </View>
 
           <Animated.View entering={FadeInDown.delay(200)} className="mb-8 items-center">
-            <Text className="mb-2 text-3xl font-bold text-black">Welcome Back</Text>
-            <Text className="text-base text-gray-500">sign in to access your account</Text>
+            <Text className="mb-2 text-3xl font-bold text-black">{t('auth.login.welcomeBack')}</Text>
+            <Text className="text-base text-gray-500">{t('auth.login.signInSubtitle')}</Text>
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(400)} className="px-6">
@@ -48,8 +50,8 @@ const Page = () => {
                 name="email"
                 control={control}
                 rules={{
-                  required: {value: true, message: 'Please Enter Email'},
-                  pattern: {value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email address'},
+                  required: {value: true, message: t('validation.emailRequired')},
+                  pattern: {value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('validation.emailInvalid')},
                 }}
                 render={({field, fieldState}) => (
                   <>
@@ -58,7 +60,7 @@ const Page = () => {
                       placeholderTextColor="#999"
                       keyboardType="email-address"
                       onChangeText={field.onChange}
-                      placeholder="Enter your email"
+                      placeholder={t('auth.login.emailPlaceholder')}
                       className={`m-0 h-14 rounded-xl border bg-gray-100 px-4 text-base leading-5 text-black ${fieldState.error ? 'border-red-300 bg-red-100' : 'border-transparent'}`}
                     />
                     {fieldState.error && <Text className="ml-2 mt-1 text-sm text-red-500">{fieldState.error.message}</Text>}
@@ -70,8 +72,8 @@ const Page = () => {
                 name="password"
                 control={control}
                 rules={{
-                  required: {value: true, message: 'Password is required'},
-                  minLength: {value: 6, message: 'Password must be at least 6 characters long'},
+                  required: {value: true, message: t('validation.passwordRequired')},
+                  minLength: {value: 6, message: t('validation.passwordMinLength', {count: 6})},
                 }}
                 render={({field, fieldState}) => (
                   <>
@@ -79,7 +81,7 @@ const Page = () => {
                       className={`flex-row items-center rounded-xl border bg-gray-100 ${formState?.errors.password ? 'border-red-300 bg-red-100' : 'border-transparent'}`}>
                       <TextInput
                         {...field}
-                        placeholder="Password"
+                        placeholder={t('auth.login.passwordPlaceholder')}
                         placeholderTextColor="#999"
                         onChangeText={field.onChange}
                         secureTextEntry={!showPassword}
@@ -100,10 +102,10 @@ const Page = () => {
                 <View className={`mr-2 h-5 w-5 items-center justify-center rounded border-2 border-black  ${rememberMe ? 'bg-white' : ''}`}>
                   <View className={`h-3 w-3 rounded ${rememberMe ? 'bg-[#E03C31]' : ''}`} />
                 </View>
-                <Text className="text-sm text-gray-600">Remember me</Text>
+                <Text className="text-sm text-gray-600">{t('auth.login.rememberMe')}</Text>
               </TouchableOpacity>
               <Link href="/auth/forget-password">
-                <Text className="text-sm font-semibold text-[#E03C31]">Forget password?</Text>
+                <Text className="text-sm font-semibold text-[#E03C31]">{t('auth.login.forgotPassword')}</Text>
               </Link>
             </View>
 
@@ -113,16 +115,20 @@ const Page = () => {
               onPress={handleSubmit(onSubmit)}
               disabled={formState?.isSubmitting}
               className="h-14 items-center justify-center rounded-full bg-[#3E6065] shadow">
-              {formState.isSubmitting ? <ActivityIndicator color="#FFF" /> : <Text className="text-lg font-semibold text-white">Done</Text>}
+              {formState.isSubmitting ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text className="text-lg font-semibold text-white">{t('common.done')}</Text>
+              )}
             </TouchableOpacity>
 
             <GoogleSignInButton />
 
             {/* SIGN UP LINK */}
             <View className="mt-5 flex-row items-center justify-center">
-              <Text className="text-sm text-gray-600">Don't have an account? </Text>
+              <Text className="text-sm text-gray-600">{t('auth.login.noAccount')} </Text>
               <Link replace href="/auth/register">
-                <Text className="text-sm font-semibold text-[#E03C31]">Sign up</Text>
+                <Text className="text-sm font-semibold text-[#E03C31]">{t('auth.login.signUp')}</Text>
               </Link>
             </View>
           </Animated.View>

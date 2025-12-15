@@ -1,8 +1,155 @@
 {
-  "button": {
-    "french": "Switch language to French",
-    "english": "Switch language to English"
+  "common": {
+    "loading": "Loading...",
+    "done": "Done",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "and": "and",
+    "continue": "Continue"
   },
-  "getStarted": "Open up the code for this screen:",
-  "changeCode": "Change any of the text, save the file, and your app will automatically update."
+  "auth": {
+    "login": {
+      "welcomeBack": "Welcome Back",
+      "signInSubtitle": "Sign in to access your account",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Password",
+      "forgotPassword": "Forget password?",
+      "rememberMe": "Remember me",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "loginBoxTitle": "Login"
+    },
+    "register": {
+      "title": "Get Started",
+      "subtitle": "by creating a free account.",
+      "fullNamePlaceholder": "Full Name",
+      "emailPlaceholder": "Email",
+      "phonePlaceholder": "Phone number",
+      "passwordPlaceholder": "Strong password",
+      "termsRequiredTitle": "Terms Required",
+      "termsRequiredMessage": "Please agree to the terms and conditions",
+      "agreeTo": "I agree to the",
+      "terms": "Terms",
+      "conditions": "Conditions",
+      "signUpButton": "Sign Up",
+      "alreadyMember": "Already a member?",
+      "loginLink": "Login"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to receive reset instructions",
+      "sendLink": "Send Reset Link",
+      "rememberPassword": "Remember your password?",
+      "loginLink": "Login"
+    },
+    "orLoginWith": "or login with"
+  },
+  "settings": {
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "accountSettings": "Account Settings",
+    "preferences": "Preferences",
+    "support": "Support",
+    "changePassword": "Change Password",
+    "notifications": "Notifications",
+    "darkMode": "Dark Mode",
+    "helpCenter": "Help Center",
+    "termsAndConditions": "Terms and Conditions",
+    "privacyPolicy": "Privacy Policy",
+    "logOut": "Log Out"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "French",
+    "es": "Spanish"
+  },
+  "events": {
+    "createTitle": "Create New Event",
+    "eventTitle": "Event Title",
+    "eventTitlePlaceholder": "e.g. Summer Music Festival",
+    "images": "Images",
+    "addPhotos": "Add Photos",
+    "description": "Description",
+    "descriptionPlaceholder": "About the event...",
+    "category": "Category",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "bookingDeadline": "Booking Deadline (Book Till)",
+    "selectStart": "Select Start",
+    "selectEnd": "Select End",
+    "selectDeadline": "Select Booking Deadline",
+    "ticketTypes": "Ticket Types",
+    "ticketNamePlaceholder": "Ticket Name (e.g. VIP)",
+    "price": "Price",
+    "capacity": "Capacity",
+    "addTicketType": "Add Another Ticket Type",
+    "createButton": "Create Event",
+    "noEvents": "No Events Yet",
+    "noEventsSubtitle": "Create your first event to get started."
+  },
+  "services": {
+    "createTitle": "Create New Service",
+    "updateTitle": "Update Service",
+    "serviceTitle": "Service Title",
+    "serviceTitlePlaceholder": "e.g. Yoga Class",
+    "descriptionPlaceholder": "Describe your service...",
+    "availableDays": "Available Days",
+    "createButton": "Create Service",
+    "updateButton": "Update Service",
+    "noServices": "No Services Yet",
+    "noServicesSubtitle": "You haven't created any services.\nStart by adding your first service.",
+    "aboutService": "About Service",
+    "schedule": "Schedule",
+    "duration": "Duration",
+    "active": "Active",
+    "disabled": "Disabled",
+    "enableService": "Enable Service",
+    "disableService": "Disable Service",
+    "enableConfirm": "Are you sure you want to enable this service?",
+    "disableConfirm": "Are you sure you want to disable this service? Clients will no longer be able to book it."
+  },
+  "validation": {
+    "required": "Required",
+    "fullNameRequired": "Full Name is required",
+    "fullNameAlphabets": "Full name must contain alphabets only",
+    "fullNameTwoWords": "Please enter at least 2 words",
+    "emailRequired": "Please Enter Email",
+    "emailInvalid": "Please enter a valid email address",
+    "phoneRequired": "Phone number is required",
+    "phoneInvalid": "Please enter a valid phone number",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least {{count}} characters long",
+    "passwordUppercase": "Password must contain at least one uppercase letter",
+    "passwordLowercase": "Password must contain at least one lowercase letter",
+    "passwordNumber": "Password must contain at least one number",
+    "passwordSpecial": "Password must contain at least one special character"
+  },
+  "role": {
+    "howWillYouUse": "How will you use VidaSana?",
+    "chooseRole": "Choose your role to continue",
+    "joinEvents": "Join Events",
+    "joinEventsSubtitle": "Discover and attend experiences",
+    "hostEvents": "Host Events",
+    "hostEventsSubtitle": "Create and manage your events",
+    "providerDetails": "Provider Details",
+    "uploadFileNote": "Note: File upload for IRS forms: W-9 (U.S.) or W-8BEN/W-8BEN-E (non-U.S.)",
+    "checkUS": "Check if you are US resident",
+    "stripeAccountId": "Stripe Account ID:",
+    "stripePlaceholder": "Stripe Account ID",
+    "errorDoc": "Error while getting doc file."
+  },
+  "profile": {
+    "editTitle": "Edit Profile",
+    "save": "Save Changes",
+    "updateDetails": "Update your personal details so providers and companions can stay in touch.",
+    "nameMinLength": "Name at least have 3 latters",
+    "nameInvalid": "Please enter a valid name"
+  },
+  "passwordStrength": {
+    "label": "Password Strength:",
+    "weak": "Weak",
+    "fair": "Fair",
+    "good": "Good",
+    "strong": "Strong"
+  }
 }

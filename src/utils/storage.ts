@@ -1,6 +1,6 @@
 import store from 'expo-sqlite/kv-store';
 
-type StorageKey = '';
+type StorageKey = 'LANGUAGE' | 'STORE';
 
 export const storage = {
   removeItem: (key: StorageKey) => store.removeItemSync(key),

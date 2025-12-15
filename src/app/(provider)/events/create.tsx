@@ -10,6 +10,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import React, {useState} from 'react';
 import Toast from 'react-native-toast-message';
 import {ImagePickerAsset, launchImageLibraryAsync, MediaTypeOptions} from 'expo-image-picker';
+import {useTranslation} from 'react-i18next';
 
 // Types
 type Category = Tables<'categories'>;
@@ -33,6 +34,7 @@ type FormValues = {
 
 export default function CreateEventScreen() {
   const {back} = useRouter();
+  const {t} = useTranslation();
   const queryClient = useQueryClient();
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | 'book_till' | null>(null);
@@ -209,11 +211,11 @@ export default function CreateEventScreen() {
           <TouchableOpacity onPress={() => back()} className="mr-4 rounded-full bg-gray-100 p-2">
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          <Text className="text-2xl font-bold text-gray-900">Create New Event</Text>
+          <Text className="text-2xl font-bold text-gray-900">{t('events.createTitle')}</Text>
         </View>
 
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Event Title</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.eventTitle')}</Text>
           <Controller
             control={control}
             rules={{required: 'Title is required'}}
@@ -221,7 +223,7 @@ export default function CreateEventScreen() {
             render={({field: {onChange, value}}) => (
               <TextInput
                 className="rounded-lg border border-gray-300 bg-white p-3"
-                placeholder="e.g. Summer Music Festival"
+                placeholder={t('events.eventTitlePlaceholder')}
                 value={value}
                 onChangeText={onChange}
               />
@@ -231,7 +233,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Images</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.images')}</Text>
           <Controller
             name="images"
             control={control}
@@ -253,7 +255,7 @@ export default function CreateEventScreen() {
                     onPress={() => pickImages(value, onChange)}
                     className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
                     <Feather name="camera" size={24} color="gray" />
-                    <Text className="mt-1 text-xs text-gray-500">Add Photos</Text>
+                    <Text className="mt-1 text-xs text-gray-500">{t('events.addPhotos')}</Text>
                   </TouchableOpacity>
                 </ScrollView>
                 {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
@@ -263,7 +265,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.description')}</Text>
           <Controller
             control={control}
             name="description"
@@ -274,7 +276,7 @@ export default function CreateEventScreen() {
                 value={value}
                 textAlignVertical="top"
                 onChangeText={onChange}
-                placeholder="About the event..."
+                placeholder={t('events.descriptionPlaceholder')}
                 className="h-24 rounded-lg border border-gray-300 bg-white p-3"
               />
             )}
@@ -283,7 +285,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Category</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.category')}</Text>
           <Controller
             name="category"
             control={control}
@@ -315,7 +317,7 @@ export default function CreateEventScreen() {
 
         <View className="mb-4 gap-4">
           <View>
-            <Text className="mb-1 text-sm font-medium text-gray-700">Start Time</Text>
+            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.startTime')}</Text>
             <Controller
               name="start_at"
               control={control}
@@ -326,7 +328,7 @@ export default function CreateEventScreen() {
                     <Text className={value ? 'text-gray-900' : 'text-gray-400'}>
                       {value
                         ? `${value.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${value.getDate().toString().padStart(2, '0')}/${(value.getMonth() + 1).toString().padStart(2, '0')}/${value.getFullYear().toString().slice(-2)}`
-                        : 'Select Start'}
+                        : t('events.selectStart')}
                     </Text>
                   </TouchableOpacity>
                   {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
@@ -335,7 +337,7 @@ export default function CreateEventScreen() {
             />
           </View>
           <View>
-            <Text className="mb-1 text-sm font-medium text-gray-700">End Time</Text>
+            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.endTime')}</Text>
             <Controller
               name="end_at"
               control={control}
@@ -346,7 +348,7 @@ export default function CreateEventScreen() {
                     <Text className={value ? 'text-gray-900' : 'text-gray-400'}>
                       {value
                         ? `${value.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${value.getDate().toString().padStart(2, '0')}/${(value.getMonth() + 1).toString().padStart(2, '0')}/${value.getFullYear().toString().slice(-2)}`
-                        : 'Select End'}
+                        : t('events.selectEnd')}
                     </Text>
                   </TouchableOpacity>
                   {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
@@ -357,7 +359,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Booking Deadline (Book Till)</Text>
+          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.bookingDeadline')}</Text>
           <Controller
             name="book_till"
             control={control}
@@ -365,7 +367,9 @@ export default function CreateEventScreen() {
             render={({field: {onChange, value}, fieldState: {error}}) => (
               <>
                 <TouchableOpacity onPress={() => openDatePicker('book_till')} className="rounded-lg border border-gray-300 bg-white p-3">
-                  <Text className={value ? 'text-gray-900' : 'text-gray-400'}>{value ? value?.toLocaleDateString() : 'Select Booking Deadline'}</Text>
+                  <Text className={value ? 'text-gray-900' : 'text-gray-400'}>
+                    {value ? value?.toLocaleDateString() : t('events.selectDeadline')}
+                  </Text>
                 </TouchableOpacity>
                 {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
               </>
@@ -376,13 +380,15 @@ export default function CreateEventScreen() {
         {/* Ticket Types */}
         <View className="mb-6">
           <View className="mb-2 flex-row items-center justify-between">
-            <Text className="text-sm font-medium text-gray-700">Ticket Types</Text>
+            <Text className="text-sm font-medium text-gray-700">{t('events.ticketTypes')}</Text>
           </View>
 
           {ticketTypes.map((ticket, index) => (
             <View key={index} className="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
               <View className="mb-2 flex-row items-center justify-between">
-                <Text className="text-xs font-bold uppercase text-gray-500">Ticket #{index + 1}</Text>
+                <Text className="text-xs font-bold uppercase text-gray-500">
+                  {t('events.ticketTypes')} #{index + 1}
+                </Text>
                 {ticketTypes.length > 1 && (
                   <TouchableOpacity onPress={() => removeTicketType(index)}>
                     <Feather name="trash-2" size={16} color="#ef4444" />
@@ -400,7 +406,7 @@ export default function CreateEventScreen() {
                       <TextInput
                         value={value}
                         onChangeText={onChange}
-                        placeholder="Ticket Name (e.g. VIP)"
+                        placeholder={t('events.ticketNamePlaceholder')}
                         className="rounded-lg border border-gray-300 bg-white p-3"
                       />
                       {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
@@ -418,7 +424,13 @@ export default function CreateEventScreen() {
                       <>
                         <View className="flex-row items-center rounded-lg border border-gray-300 bg-white px-3">
                           <Text className="mr-1 text-gray-500">$</Text>
-                          <TextInput className="flex-1 py-3" placeholder="Price" keyboardType="numeric" value={value} onChangeText={onChange} />
+                          <TextInput
+                            className="flex-1 py-3"
+                            placeholder={t('events.price')}
+                            keyboardType="numeric"
+                            value={value}
+                            onChangeText={onChange}
+                          />
                         </View>
                         {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
                       </>
@@ -434,7 +446,7 @@ export default function CreateEventScreen() {
                       <>
                         <TextInput
                           value={value}
-                          placeholder="Capacity"
+                          placeholder={t('events.capacity')}
                           keyboardType="numeric"
                           onChangeText={onChange}
                           className="rounded-lg border border-gray-300 bg-white p-3"
@@ -452,7 +464,7 @@ export default function CreateEventScreen() {
             onPress={addTicketType}
             className="mt-2 flex-row items-center justify-center rounded-lg border border-dashed border-green-700 bg-green-50 p-3">
             <Feather name="plus" size={18} color="#15803d" />
-            <Text className="ml-2 font-medium text-green-700">Add Another Ticket Type</Text>
+            <Text className="ml-2 font-medium text-green-700">{t('events.addTicketType')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -460,7 +472,7 @@ export default function CreateEventScreen() {
           onPress={handleSubmit(onSubmit)}
           disabled={isPending || isSubmitting}
           className={`mb-10 items-center rounded-lg p-4 ${isPending ? 'bg-gray-400' : 'bg-green-700'}`}>
-          {isPending ? <ActivityIndicator color="white" /> : <Text className="text-lg font-bold text-white">Create Event</Text>}
+          {isPending ? <ActivityIndicator color="white" /> : <Text className="text-lg font-bold text-white">{t('events.createButton')}</Text>}
         </TouchableOpacity>
       </ScrollView>
       <DateTimePickerModal
