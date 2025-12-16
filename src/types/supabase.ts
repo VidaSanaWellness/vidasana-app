@@ -144,47 +144,79 @@ export type Database = {
           },
         ]
       }
+      event_translations: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          lang_code: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          lang_code: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          lang_code?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_translations_event_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
+          active: boolean
           book_till: string | null
           category: number
           created_at: string
-          description: string | null
           end_at: string
           id: string
           images: string[] | null
           provider: string
           start_at: string
-          status: string
-          title: string
           updated_at: string
         }
         Insert: {
+          active?: boolean
           book_till?: string | null
           category: number
           created_at?: string
-          description?: string | null
           end_at: string
           id?: string
           images?: string[] | null
           provider: string
           start_at: string
-          status?: string
-          title: string
           updated_at?: string
         }
         Update: {
+          active?: boolean
           book_till?: string | null
           category?: number
           created_at?: string
-          description?: string | null
           end_at?: string
           id?: string
           images?: string[] | null
           provider?: string
           start_at?: string
-          status?: string
-          title?: string
           updated_at?: string
         }
         Relationships: [
@@ -333,20 +365,56 @@ export type Database = {
         }
         Relationships: []
       }
+      service_translations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          lang_code: string
+          service_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          lang_code: string
+          service_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          lang_code?: string
+          service_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_translations_service_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           active: boolean
           capacity: number | null
           category: number
           created_at: string | null
-          description: string | null
           end_at: string
           id: string
           images: string[] | null
           price: number | null
           provider: string
           start_at: string
-          title: string
           updated_at: string | null
           week_day: Database["public"]["Enums"]["week_day"][]
         }
@@ -355,14 +423,12 @@ export type Database = {
           capacity?: number | null
           category: number
           created_at?: string | null
-          description?: string | null
           end_at: string
           id?: string
           images?: string[] | null
           price?: number | null
           provider?: string
           start_at: string
-          title: string
           updated_at?: string | null
           week_day: Database["public"]["Enums"]["week_day"][]
         }
@@ -371,14 +437,12 @@ export type Database = {
           capacity?: number | null
           category?: number
           created_at?: string | null
-          description?: string | null
           end_at?: string
           id?: string
           images?: string[] | null
           price?: number | null
           provider?: string
           start_at?: string
-          title?: string
           updated_at?: string | null
           week_day?: Database["public"]["Enums"]["week_day"][]
         }

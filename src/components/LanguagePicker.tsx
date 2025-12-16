@@ -1,8 +1,8 @@
 import React from 'react';
-import {Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback} from 'react-native';
 
 interface LanguagePickerProps {
   visible: boolean;

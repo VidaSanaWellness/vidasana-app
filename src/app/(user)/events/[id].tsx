@@ -6,7 +6,7 @@ import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View} from
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 
-export default function EventDetailsScreen() {
+export default function UserEventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
   const {back} = useRouter();
@@ -73,13 +73,6 @@ export default function EventDetailsScreen() {
           <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
-
-          {/* Edit Button */}
-          <Link href={`/(provider)/events/edit/${id}`} asChild>
-            <TouchableOpacity className="absolute right-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
-              <Feather name="edit-2" size={20} color="white" />
-            </TouchableOpacity>
-          </Link>
         </View>
 
         {/* Content */}
@@ -158,6 +151,13 @@ export default function EventDetailsScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Book Button (Placeholder until flow is implemented) */}
+      <View className="border-t border-gray-100 p-4">
+        <TouchableOpacity className="items-center rounded-xl bg-green-700 py-4 shadow-sm active:bg-green-800">
+          <Text className="text-lg font-bold text-white">{t('events.bookNow', 'Book Tickets')}</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }

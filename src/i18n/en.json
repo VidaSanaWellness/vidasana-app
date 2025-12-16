@@ -63,6 +63,15 @@
     "fr": "French",
     "es": "Spanish"
   },
+  "days": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  },
   "events": {
     "createTitle": "Create New Event",
     "eventTitle": "Event Title",
@@ -103,8 +112,6 @@
     "duration": "Duration",
     "active": "Active",
     "disabled": "Disabled",
-    "enableService": "Enable Service",
-    "disableService": "Disable Service",
     "enableConfirm": "Are you sure you want to enable this service?",
     "disableConfirm": "Are you sure you want to disable this service? Clients will no longer be able to book it."
   },

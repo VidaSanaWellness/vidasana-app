@@ -2,7 +2,7 @@ import {AntDesign, Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {supabase, uploadFile} from '@/utils/supabase';
 import {Tables} from '@/types';
-import {useForm, Controller} from 'react-hook-form';
+import {useForm, Controller, type FieldErrors} from 'react-hook-form';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useRouter} from 'expo-router';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image, Alert} from 'react-native';
@@ -10,34 +10,9 @@ import * as ImagePicker from 'expo-image-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import React, {useState} from 'react';
 import Toast from 'react-native-toast-message';
-
+import {ServiceFormValues, LanguageCode, UnifiedImage, WeekDay} from '@/types/service';
+import {LANGUAGES, getDays} from '@/constants/service';
 import {useTranslation} from 'react-i18next';
-
-// Types
-type Category = Tables<'categories'>;
-type WeekDay = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
-
-type FormValues = {
-  title: string;
-  description: string;
-  category: number | null;
-  price: string;
-  capacity: string;
-  start_at: Date | null;
-  end_at: Date | null;
-  week_day: WeekDay[];
-  images: ImagePicker.ImagePickerAsset[];
-};
-
-const DAYS: {label: string; value: WeekDay}[] = [
-  {label: 'Mon', value: 'mon'},
-  {label: 'Tue', value: 'tue'},
-  {label: 'Wed', value: 'wed'},
-  {label: 'Thu', value: 'thu'},
-  {label: 'Fri', value: 'fri'},
-  {label: 'Sat', value: 'sat'},
-  {label: 'Sun', value: 'sun'},
-];
 
 export default function CreateServiceScreen() {
   const router = useRouter();
@@ -45,6 +20,7 @@ export default function CreateServiceScreen() {
   const queryClient = useQueryClient();
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
+  const [activeLanguage, setActiveLanguage] = useState<LanguageCode>('en');
 
   const {
     watch,
@@ -52,10 +28,13 @@ export default function CreateServiceScreen() {
     setValue,
     handleSubmit,
     formState: {errors, isSubmitting},
-  } = useForm<FormValues>({
+  } = useForm<ServiceFormValues>({
     defaultValues: {
-      title: '',
-      description: '',
+      translations: {
+        en: {title: '', description: ''},
+        es: {title: '', description: ''},
+        fr: {title: '', description: ''},
+      },
       category: null,
       price: '',
       capacity: '',
@@ -80,7 +59,7 @@ export default function CreateServiceScreen() {
 
   // Create Service Mutation
   const createServiceMutation = useMutation({
-    mutationFn: async (data: FormValues) => {
+    mutationFn: async (data: ServiceFormValues) => {
       // 1. Get Current User
       const {
         data: {user},
@@ -90,30 +69,49 @@ export default function CreateServiceScreen() {
       // 2. Upload Images
       const uploadedImagePaths: string[] = [];
       for (const image of data.images) {
-        const fileExt = image.uri.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}_${String(Math.random()).slice(2, 7)}.${fileExt}`;
-        const {data: uploadData, error: uploadError} = await uploadFile(image, 'images', fileName);
+        if (image.type === 'new' && image.file) {
+          const fileExt = image.uri.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}_${String(Math.random()).slice(2, 7)}.${fileExt}`;
+          const {data: uploadData, error: uploadError} = await uploadFile(image.file, 'images', fileName);
 
-        if (uploadError) throw uploadError;
-        if (uploadData?.path) uploadedImagePaths.push(uploadData.path);
+          if (uploadError) throw uploadError;
+          if (uploadData?.path) uploadedImagePaths.push(uploadData.path);
+        }
       }
 
+      // 3. Insert Service (Base Data)
       const createPayload: any = {
         capacity: parseInt(data.capacity),
         category: data.category!,
-        description: data.description,
+        // title and description removed from here
         end_at: data.end_at!.toLocaleTimeString('en-US', {hour12: false}),
         price: parseFloat(data.price),
         start_at: data.start_at!.toLocaleTimeString('en-US', {hour12: false}),
-        title: data.title,
         week_day: data.week_day,
       };
 
       if (uploadedImagePaths.length > 0) createPayload.images = uploadedImagePaths;
 
-      const {error: insertError} = await supabase.from('services').insert(createPayload);
+      const {data: serviceData, error: insertError} = await supabase.from('services').insert(createPayload).select().single();
 
       if (insertError) throw insertError;
+      if (!serviceData) throw new Error('Failed to create service');
+
+      // 4. Insert Translations
+      const translationInserts = LANGUAGES.map((lang) => ({
+        service_id: serviceData.id,
+        lang_code: lang.code,
+        title: data.translations[lang.code].title,
+        description: data.translations[lang.code].description,
+      }));
+
+      const {error: translationError} = await supabase.from('service_translations').insert(translationInserts);
+
+      if (translationError) {
+        // Optional: rollback service creation if translation fails?
+        // For now, just throw error
+        throw translationError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['services']});
@@ -126,7 +124,17 @@ export default function CreateServiceScreen() {
     },
   });
 
-  const onSubmit = (data: FormValues) => createServiceMutation.mutate(data);
+  const onInvalid = (errors: FieldErrors<ServiceFormValues>) => {
+    if (errors.translations) {
+      for (const lang of LANGUAGES) {
+        if (errors.translations[lang.code]?.title || errors.translations[lang.code]?.description) {
+          return setActiveLanguage(lang.code);
+        }
+      }
+    }
+  };
+
+  const onSubmit = (data: ServiceFormValues) => createServiceMutation.mutate(data);
 
   // Image Picker Logic
   const pickImages = async () => {
@@ -154,7 +162,13 @@ export default function CreateServiceScreen() {
 
       if (validImages.length > 0) {
         const currentImages = watch('images');
-        setValue('images', [...currentImages, ...validImages], {shouldValidate: true});
+        const newImages: UnifiedImage[] = validImages.map((asset) => ({
+          id: asset.uri,
+          type: 'new',
+          uri: asset.uri,
+          file: asset,
+        }));
+        setValue('images', [...currentImages, ...newImages], {shouldValidate: true});
       }
     }
   };
@@ -169,9 +183,7 @@ export default function CreateServiceScreen() {
 
   // Time Picker Logic
   const handleConfirmTime = (date: Date) => {
-    if (activeTimeField) {
-      setValue(activeTimeField, date, {shouldValidate: true});
-    }
+    if (activeTimeField) setValue(activeTimeField, date, {shouldValidate: true});
     setTimePickerVisible(false);
     setActiveTimeField(null);
   };
@@ -202,25 +214,73 @@ export default function CreateServiceScreen() {
           <Text className="text-2xl font-bold text-gray-900">{t('services.createTitle')}</Text>
         </View>
 
-        {/* Title */}
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">{t('services.serviceTitle')}</Text>
-          <Controller
-            control={control}
-            rules={{required: t('validation.required')}}
-            name="title"
-            render={({field: {onChange, value}}) => (
-              <TextInput
-                className="rounded-lg border border-gray-300 bg-white p-3"
-                placeholder={t('services.serviceTitlePlaceholder')}
-                value={value}
-                onChangeText={onChange}
-              />
-            )}
-          />
-          {errors.title && <Text className="mt-1 text-xs text-red-500">{errors.title.message}</Text>}
+        {/* Language Tabs */}
+        <View className="mb-6 flex-row rounded-lg bg-gray-100 p-1">
+          {LANGUAGES.map((lang, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => setActiveLanguage(lang.code)}
+              className={`flex-1 items-center rounded-md py-2 ${activeLanguage === lang.code ? 'bg-white shadow-sm' : 'shadow-none'}`}>
+              <Text className={`font-medium ${activeLanguage === lang.code ? 'text-green-700' : 'text-gray-500'}`}>{lang.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
+        {LANGUAGES.map((lang) => (
+          <View key={lang.code} style={{display: activeLanguage === lang.code ? 'flex' : 'none'}}>
+            {/* Title (Multi-lang) */}
+            <View className="mb-4">
+              <Text className="mb-1 text-sm font-medium text-gray-700">
+                {t('services.serviceTitle')} ({lang.label})
+              </Text>
+              <Controller
+                control={control}
+                rules={{required: t('validation.required')}}
+                name={`translations.${lang.code}.title`}
+                render={({field: {onChange, value}}) => (
+                  <View>
+                    <TextInput
+                      className="rounded-lg border border-gray-300 px-4 py-3"
+                      placeholder={t('services.serviceTitlePlaceholder')}
+                      value={value}
+                      onChangeText={onChange}
+                    />
+                    {errors.translations?.[lang.code]?.title && (
+                      <Text className="mt-1 text-xs text-red-500">{errors.translations[lang.code]?.title?.message}</Text>
+                    )}
+                  </View>
+                )}
+              />
+            </View>
+
+            {/* Description (Multi-lang) */}
+            <View className="mb-4">
+              <Text className="mb-1 text-sm font-medium text-gray-700">
+                {t('events.description')} ({lang.label})
+              </Text>
+              <Controller
+                control={control}
+                rules={{required: t('validation.required')}}
+                name={`translations.${lang.code}.description`}
+                render={({field: {onChange, value}}) => (
+                  <View>
+                    <TextInput
+                      className="min-h-[100px] rounded-lg border border-gray-300 px-4 py-3 pb-4"
+                      placeholder={t('events.descriptionPlaceholder')}
+                      value={value}
+                      multiline
+                      textAlignVertical="top"
+                      onChangeText={onChange}
+                    />
+                    {errors.translations?.[lang.code]?.description && (
+                      <Text className="mt-1 text-xs text-red-500">{errors.translations[lang.code]?.description?.message}</Text>
+                    )}
+                  </View>
+                )}
+              />
+            </View>
+          </View>
+        ))}
         {/* Images */}
         <View className="mb-4">
           <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.images')}</Text>
@@ -247,27 +307,6 @@ export default function CreateServiceScreen() {
             render={() => <></>}
           />
           {errors.images && <Text className="mt-1 text-xs text-red-500">{errors.images.message}</Text>}
-        </View>
-
-        {/* Description */}
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.description')}</Text>
-          <Controller
-            control={control}
-            rules={{required: t('validation.required')}}
-            name="description"
-            render={({field: {onChange, value}}) => (
-              <TextInput
-                className="h-24 rounded-lg border border-gray-300 bg-white p-3"
-                placeholder={t('services.descriptionPlaceholder')}
-                multiline
-                textAlignVertical="top"
-                value={value}
-                onChangeText={onChange}
-              />
-            )}
-          />
-          {errors.description && <Text className="mt-1 text-xs text-red-500">{errors.description.message}</Text>}
         </View>
 
         {/* Category */}
@@ -396,7 +435,7 @@ export default function CreateServiceScreen() {
             render={({field: {value}, fieldState: {error}}) => (
               <>
                 <View className="flex-row flex-wrap justify-between">
-                  {DAYS.map((day) => {
+                  {getDays(t).map((day) => {
                     const isSelected = value?.includes(day.value);
                     return (
                       <TouchableOpacity
@@ -416,7 +455,7 @@ export default function CreateServiceScreen() {
 
         {/* Submit Button */}
         <TouchableOpacity
-          onPress={handleSubmit(onSubmit)}
+          onPress={handleSubmit(onSubmit, onInvalid)}
           disabled={createServiceMutation.isPending || isSubmitting}
           className={`mb-10 items-center rounded-lg p-4 ${createServiceMutation.isPending ? 'bg-gray-400' : 'bg-green-700'}`}>
           {createServiceMutation.isPending ? (

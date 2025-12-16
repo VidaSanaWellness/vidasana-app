@@ -119,7 +119,7 @@ export default function ServiceDetailsScreen() {
               <Pressable onPress={handleToggleStatus} className="flex-row items-center px-4 py-3 active:bg-gray-50">
                 <Feather name={service.active ? 'slash' : 'check-circle'} size={16} color={service.active ? '#EF4444' : '#10B981'} />
                 <Text className={`ml-3 ${service.active ? 'text-red-600' : 'text-green-600'}`}>
-                  {service.active ? t('services.disableService') : t('services.enableService')}
+                  {service.active ? t('services.disabled') : t('services.active')}
                 </Text>
               </Pressable>
             </View>

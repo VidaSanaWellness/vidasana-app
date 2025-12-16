@@ -1,7 +1,6 @@
 import {Tabs} from 'expo-router';
 import {useColorScheme} from 'nativewind';
-import {AntDesign, Feather} from '@expo/vector-icons';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Feather} from '@expo/vector-icons';
 
 const ACTIVE_LIGHT = '#2d5016';
 const ACTIVE_DARK = '#7dd87d';
@@ -14,7 +13,7 @@ export default function TabLayout() {
   const {colorScheme} = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const {bottom} = useSafeAreaInsets();
+  console.log('THIS IS CALL ');
 
   return (
     <Tabs
@@ -26,7 +25,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: isDark ? INACTIVE_DARK : INACTIVE_LIGHT,
         tabBarStyle: {paddingTop: 12, alignItems: 'center', height: BASE_TAB_BAR_HEIGHT, backgroundColor: colorScheme === 'dark' ? '#000' : '#fff'},
       }}>
-      <Tabs.Screen name="index" options={{tabBarIcon: ({color}) => <Feather name="home" size={24} color={color} />}} />
+      <Tabs.Screen name="(tab)" options={{tabBarIcon: ({color}) => <Feather name="home" size={24} color={color} />}} />
       <Tabs.Screen name="booking" options={{tabBarIcon: ({color}) => <Feather name="inbox" size={24} color={color} />}} />
       <Tabs.Screen name="setting" options={{tabBarIcon: ({color}) => <Feather name="settings" size={24} color={color} />}} />
     </Tabs>

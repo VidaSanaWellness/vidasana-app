@@ -5,26 +5,40 @@ import {Feather} from '@expo/vector-icons';
 import {useQuery} from '@tanstack/react-query';
 import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {useAppStore} from '@/store';
 
 export default function ServicesScreen() {
-  const {t} = useTranslation();
+  const {t, i18n} = useTranslation();
+  const {user} = useAppStore((s) => s.session!);
+
   const {
     data: services,
     isLoading,
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['services'],
+    queryKey: ['services', i18n.language],
     queryFn: async () => {
-      const {
-        data: {user},
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const {data, error} = await supabase.from('services').select('*').eq('provider', user.id).order('created_at', {ascending: false});
+      const {data, error} = await supabase
+        .from('services')
+        .select('*, service_translations(*)')
+        .eq('provider', user.id)
+        .order('created_at', {ascending: false});
 
       if (error) throw error;
-      return data;
+
+      return data.map((service) => {
+        const translation =
+          service.service_translations.find((t: any) => t.lang_code === i18n.language) ||
+          service.service_translations.find((t: any) => t.lang_code === 'en') ||
+          service.service_translations[0];
+
+        return {
+          ...service,
+          title: translation?.title || 'Untitled Service',
+          description: translation?.description || 'No description available',
+        };
+      });
     },
   });
 

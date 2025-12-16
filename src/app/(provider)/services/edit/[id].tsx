@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image, Modal, Alert} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import {useForm, Controller} from 'react-hook-form';
+import {useForm, Controller, type FieldErrors} from 'react-hook-form';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {AntDesign, Feather} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -12,41 +12,12 @@ import {supabase, uploadFile} from '@/utils/supabase';
 import {Loader} from '@/components';
 import {Enums} from '@/types';
 import {useTranslation} from 'react-i18next';
+import {ServiceFormValues, LanguageCode, UnifiedImage} from '@/types/service';
+import {LANGUAGES, getDays} from '@/constants/service';
 
 // Types
 
 type WeekDay = Enums<'week_day'>;
-
-// Unified Image Type to handle both existing (URL) and new (File) images
-type ImageItem = {
-  id: string;
-  type: 'existing' | 'new';
-  uri: string; // Display URL
-  path?: string; // Supabase storage path (only for existing)
-  file?: ImagePicker.ImagePickerAsset; // Asset file (only for new)
-};
-
-type FormValues = {
-  title: string;
-  description: string;
-  category: number | null;
-  price: string;
-  capacity: string;
-  start_at: Date | null;
-  end_at: Date | null;
-  week_day: WeekDay[];
-  images: ImageItem[];
-};
-
-const DAYS: {label: string; value: WeekDay}[] = [
-  {label: 'Mon', value: 'mon'},
-  {label: 'Tue', value: 'tue'},
-  {label: 'Wed', value: 'wed'},
-  {label: 'Thu', value: 'thu'},
-  {label: 'Fri', value: 'fri'},
-  {label: 'Sat', value: 'sat'},
-  {label: 'Sun', value: 'sun'},
-];
 
 export default function EditServiceScreen() {
   const router = useRouter();
@@ -56,12 +27,33 @@ export default function EditServiceScreen() {
 
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
+  const [activeLanguage, setActiveLanguage] = useState<LanguageCode>('en');
 
   // Track initial images to calculate deletions
-  const [initialImages, setInitialImages] = useState<ImageItem[]>([]);
+  const [initialImages, setInitialImages] = useState<UnifiedImage[]>([]);
 
-  const {watch, reset, control, setValue, handleSubmit} = useForm<FormValues>({
-    defaultValues: {title: '', description: '', category: null, price: '', capacity: '', start_at: null, end_at: null, week_day: [], images: []},
+  const {
+    watch,
+    reset,
+    control,
+    setValue,
+    handleSubmit,
+    formState: {errors},
+  } = useForm<ServiceFormValues>({
+    defaultValues: {
+      translations: {
+        en: {title: '', description: ''},
+        es: {title: '', description: ''},
+        fr: {title: '', description: ''},
+      },
+      category: null,
+      price: '',
+      capacity: '',
+      start_at: null,
+      end_at: null,
+      week_day: [],
+      images: [],
+    },
   });
 
   const selectedImages = watch('images');
@@ -81,12 +73,12 @@ export default function EditServiceScreen() {
     queryKey: ['service', id],
     queryFn: async () => {
       if (!id) throw new Error('No ID provided');
-      const {data, error} = await supabase.from('services').select(`*, categories(*)`).eq('id', id).single();
+      const {data, error} = await supabase.from('services').select(`*, categories(*), service_translations(*)`).eq('id', id).single();
 
       if (error) throw error;
 
       // Transform Data for Form
-      const loadedImages: ImageItem[] = (data.images || []).map((path: string) => ({
+      const loadedImages: UnifiedImage[] = (data.images || []).map((path: string) => ({
         id: path,
         path: path,
         type: 'existing',
@@ -104,9 +96,26 @@ export default function EditServiceScreen() {
         return d;
       };
 
+      // Map translations
+      const translationsMap: any = {
+        en: {title: '', description: ''},
+        es: {title: '', description: ''},
+        fr: {title: '', description: ''},
+      };
+
+      if (data.service_translations && Array.isArray(data.service_translations)) {
+        data.service_translations.forEach((t: any) => {
+          if (translationsMap[t.lang_code]) {
+            translationsMap[t.lang_code] = {
+              title: t.title || '',
+              description: t.description || '',
+            };
+          }
+        });
+      }
+
       reset({
-        title: data.title,
-        description: data.description || '',
+        translations: translationsMap,
         category: data.category,
         price: data.price?.toString() ?? '',
         capacity: data.capacity?.toString() ?? '',
@@ -123,7 +132,7 @@ export default function EditServiceScreen() {
 
   // 3. Update Service Mutation
   const {mutate, isPending} = useMutation({
-    mutationFn: async (data: FormValues) => {
+    mutationFn: async (data: ServiceFormValues) => {
       const {
         data: {user},
       } = await supabase.auth.getUser();
@@ -150,8 +159,7 @@ export default function EditServiceScreen() {
       const {error: updateError} = await supabase
         .from('services')
         .update({
-          title: data.title,
-          description: data.description,
+          // title/description removed
           category: data.category!,
           price: parseFloat(data.price),
           capacity: parseInt(data.capacity),
@@ -164,7 +172,19 @@ export default function EditServiceScreen() {
 
       if (updateError) throw updateError;
 
-      // C. Delete Removed Images from Bucket (Cleanup)
+      // C. Upsert Translations
+      const translationUpserts = LANGUAGES.map((lang) => ({
+        service_id: id as string,
+        lang_code: lang.code,
+        title: data.translations[lang.code].title,
+        description: data.translations[lang.code].description,
+      }));
+
+      const {error: transError} = await supabase.from('service_translations').upsert(translationUpserts, {onConflict: 'service_id,lang_code'});
+
+      if (transError) throw transError;
+
+      // D. Delete Removed Images from Bucket (Cleanup)
       // Find paths present in initialImages but NOT in finalImagePaths
       const pathsToDelete = initialImages.filter((initImg) => initImg.path && !finalImagePaths.includes(initImg.path)).map((img) => img.path!);
 
@@ -182,7 +202,13 @@ export default function EditServiceScreen() {
     onError: (err: any) => Toast.show({type: 'error', text1: 'Update Failed', text2: err.message}),
   });
 
-  // --- Helpers ---
+  const onInvalid = (errors: FieldErrors<ServiceFormValues>) => {
+    if (errors.translations) {
+      for (const lang of LANGUAGES) {
+        if (errors.translations[lang.code]?.title || errors.translations[lang.code]?.description) return setActiveLanguage(lang.code);
+      }
+    }
+  };
 
   const pickImages = async (onChange: any) => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -192,7 +218,7 @@ export default function EditServiceScreen() {
     });
     if (!result.canceled) {
       const MAX_SIZE = 5 * 1024 * 1024;
-      const validNewImages: ImageItem[] = [];
+      const validNewImages: UnifiedImage[] = [];
       let rejected = 0;
       result.assets.forEach((asset) => {
         if (asset.fileSize && asset.fileSize <= MAX_SIZE) {
@@ -269,43 +295,77 @@ export default function EditServiceScreen() {
           />
         </View>
 
-        {/* Title */}
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">{t('services.serviceTitle')}</Text>
-          <Controller
-            control={control}
-            rules={{required: t('validation.titleRequired') || t('validation.required')}}
-            name="title"
-            render={({field: {onChange, value}, fieldState: {error}}) => (
-              <>
-                <TextInput className="rounded-lg border border-gray-300 bg-white p-3" value={value} onChangeText={onChange} />
-                {error?.message && <Text className="mt-1 text-xs text-red-500 text-red-500">{error.message}</Text>}
-              </>
-            )}
-          />
+        {/* Language Tabs */}
+        <View className="mb-6 flex-row rounded-lg bg-gray-100 p-1">
+          {LANGUAGES.map((lang, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => setActiveLanguage(lang.code)}
+              className={`flex-1 items-center rounded-md py-2 ${activeLanguage === lang.code ? 'bg-white shadow-sm' : 'shadow-none'}`}>
+              <Text className={`font-medium ${activeLanguage === lang.code ? 'text-green-700' : 'text-gray-500'}`}>{lang.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        {/* Description */}
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.description')}</Text>
-          <Controller
-            control={control}
-            rules={{required: t('validation.descriptionRequired') || t('validation.required')}}
-            name="description"
-            render={({field: {onChange, value}, fieldState: {error}}) => (
-              <>
-                <TextInput
-                  multiline
-                  value={value}
-                  onChangeText={onChange}
-                  textAlignVertical="top"
-                  className="h-24 rounded-lg border border-gray-300 bg-white p-3"
-                />
-                {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
-              </>
-            )}
-          />
-        </View>
+        {LANGUAGES.map((lang) => (
+          <View key={lang.code} style={{display: activeLanguage === lang.code ? 'flex' : 'none'}}>
+            {/* Title (Multi-lang) */}
+            <View className="mb-4">
+              <Text className="mb-1 text-sm font-medium text-gray-700">
+                {t('services.serviceTitle')} ({lang.label})
+              </Text>
+              <Controller
+                control={control}
+                rules={{required: t('validation.required')}}
+                name={`translations.${lang.code}.title`}
+                render={({field: {onChange, value}}) => (
+                  <View>
+                    <TextInput
+                      className="rounded-lg border border-gray-300 px-4 py-3"
+                      placeholder={t('services.serviceTitlePlaceholder')}
+                      value={value}
+                      onChangeText={onChange}
+                    />
+                    {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+                    {/* @ts-ignore */}
+                    {errors.translations?.[lang.code]?.title && (
+                      <Text className="mt-1 text-xs text-red-500">{errors.translations[lang.code]?.title?.message}</Text>
+                    )}
+                  </View>
+                )}
+              />
+            </View>
+
+            {/* Description (Multi-lang) */}
+            <View className="mb-4">
+              <Text className="mb-1 text-sm font-medium text-gray-700">
+                {t('events.description')} ({lang.label})
+              </Text>
+              <Controller
+                control={control}
+                rules={{required: t('validation.required')}}
+                name={`translations.${lang.code}.description`}
+                render={({field: {onChange, value}}) => (
+                  <View>
+                    <TextInput
+                      className="min-h-[100px] rounded-lg border border-gray-300 px-4 py-3 pb-4"
+                      placeholder={t('events.descriptionPlaceholder')}
+                      value={value}
+                      multiline
+                      textAlignVertical="top"
+                      onChangeText={onChange}
+                    />
+                    {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+                    {/* @ts-ignore */}
+                    {errors.translations?.[lang.code]?.description && (
+                      <Text className="mt-1 text-xs text-red-500">{errors.translations[lang.code]?.description?.message}</Text>
+                    )}
+                  </View>
+                )}
+              />
+            </View>
+          </View>
+        ))}
 
         {/* Category */}
         <View className="mb-4">
@@ -416,7 +476,7 @@ export default function EditServiceScreen() {
             render={({field: {value}, fieldState: {error}}) => (
               <>
                 <View className="flex-row flex-wrap justify-between">
-                  {DAYS.map((day) => {
+                  {getDays(t).map((day) => {
                     const isSelected = value?.includes(day.value);
                     return (
                       <TouchableOpacity
@@ -436,7 +496,7 @@ export default function EditServiceScreen() {
 
         <TouchableOpacity
           disabled={isPending}
-          onPress={handleSubmit((data) => mutate(data))}
+          onPress={handleSubmit((data) => mutate(data), onInvalid)}
           className="mb-10 items-center rounded-lg bg-green-700 p-4">
           <Text className="text-lg font-bold text-white">{t('services.updateButton')}</Text>
         </TouchableOpacity>

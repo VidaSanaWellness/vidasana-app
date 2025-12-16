@@ -63,6 +63,15 @@
     "fr": "Français",
     "es": "Espagnol"
   },
+  "days": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mer",
+    "thu": "Jeu",
+    "fri": "Ven",
+    "sat": "Sam",
+    "sun": "Dim"
+  },
   "events": {
     "createTitle": "Créer un nouvel événement",
     "eventTitle": "Titre de l'événement",
@@ -103,8 +112,6 @@
     "duration": "Durée",
     "active": "Actif",
     "disabled": "Désactivé",
-    "enableService": "Activer le service",
-    "disableService": "Désactiver le service",
     "enableConfirm": "Êtes-vous sûr de vouloir activer ce service ?",
     "disableConfirm": "Êtes-vous sûr de vouloir désactiver ce service ? Les clients ne pourront plus le réserver."
   },

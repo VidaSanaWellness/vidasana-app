@@ -63,6 +63,15 @@
     "fr": "Francés",
     "es": "Español"
   },
+  "days": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mié",
+    "thu": "Jue",
+    "fri": "Vie",
+    "sat": "Sáb",
+    "sun": "Dom"
+  },
   "events": {
     "createTitle": "Crear nuevo evento",
     "eventTitle": "Título del evento",
@@ -103,8 +112,6 @@
     "duration": "Duración",
     "active": "Activo",
     "disabled": "Deshabilitado",
-    "enableService": "Habilitar servicio",
-    "disableService": "Deshabilitar servicio",
     "enableConfirm": "¿Estás seguro de que quieres habilitar este servicio?",
     "disableConfirm": "¿Estás seguro de que quieres deshabilitar este servicio? Los clientes ya no podrán reservarlo."
   },

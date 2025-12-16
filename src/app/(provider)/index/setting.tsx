@@ -1,12 +1,12 @@
 import type React from 'react';
 import {useState} from 'react';
 import {supabase} from '@/utils';
-import {Link, useNavigation} from 'expo-router';
+import {Link, useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Animated, {FadeIn, FadeOut, SlideInDown, SlideOutDown} from 'react-native-reanimated';
-import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
+import {ActivityIndicator, Alert, Image, Platform, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {LanguagePicker} from '@/components/LanguagePicker';
 import {useTranslation} from 'react-i18next';
 
@@ -15,7 +15,7 @@ const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpaci
 const useCurrentUser = () => ({});
 
 const Profile = () => {
-  const {navigate} = useNavigation();
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<{fullName: string; email: string; phone: string; role: string}>({
@@ -307,13 +307,15 @@ const Profile = () => {
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => navigate('TermsAndConditions')}>
+          <TouchableOpacity
+            className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
+            onPress={() => router.push('/TermsAndConditions')}>
             <Ionicons name="document-text-outline" size={24} color="#3E6065" />
             <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.termsAndConditions')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => navigate('PrivacyPolicy')}>
+          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => router.push('/PrivacyPolicy')}>
             <Ionicons name="shield-checkmark-outline" size={24} color="#3E6065" />
             <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.privacyPolicy')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />

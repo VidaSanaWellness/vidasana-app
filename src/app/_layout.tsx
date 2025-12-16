@@ -14,8 +14,7 @@ export const unstable_settings = {initialRouteName: 'index'};
 export default function RootLayout() {
   const session = useAppStore((e) => e.session!);
   const user = session?.user;
-
-  console.log('🚀 ~ RootLayout ~ user:', user?.user_metadata);
+  console.log('🚀 ~ RootLayout ~ user:', user?.user_metadata?.role === 'provider');
 
   // useFonts({
   //   TwemojiMozilla: require('../../node_modules/react-native-country-select/lib/assets/fonts/TwemojiMozilla.woff2'),

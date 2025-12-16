@@ -12,25 +12,11 @@ import Toast from 'react-native-toast-message';
 import {ImagePickerAsset, launchImageLibraryAsync, MediaTypeOptions} from 'expo-image-picker';
 import {useTranslation} from 'react-i18next';
 
+import {EventFormValues, EventUnifiedImage, LanguageCode} from '@/types/events';
+import {LANGUAGES} from '@/constants/events';
+
 // Types
 type Category = Tables<'categories'>;
-
-type TicketType = {
-  name: string;
-  price: string;
-  capacity: string;
-};
-
-type FormValues = {
-  title: string;
-  description: string;
-  category: number | null;
-  start_at: Date | null;
-  end_at: Date | null;
-  book_till: Date | null;
-  images: ImagePickerAsset[];
-  ticket_types: TicketType[];
-};
 
 export default function CreateEventScreen() {
   const {back} = useRouter();
@@ -39,6 +25,7 @@ export default function CreateEventScreen() {
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | 'book_till' | null>(null);
   const [datePickerMode, setDatePickerMode] = useState<'date' | 'time' | 'datetime'>('datetime');
+  const [activeLanguage, setActiveLanguage] = useState<LanguageCode>('en');
 
   const {
     watch,
@@ -46,10 +33,13 @@ export default function CreateEventScreen() {
     setValue,
     handleSubmit,
     formState: {errors, isSubmitting},
-  } = useForm<FormValues>({
+  } = useForm<EventFormValues>({
     defaultValues: {
-      title: '',
-      description: '',
+      translations: {
+        en: {title: '', description: ''},
+        es: {title: '', description: ''},
+        fr: {title: '', description: ''},
+      },
       category: null,
       start_at: null,
       end_at: null,
@@ -73,7 +63,7 @@ export default function CreateEventScreen() {
 
   // Create Event Mutation
   const {mutate, isPending} = useMutation({
-    mutationFn: async (data: FormValues) => {
+    mutationFn: async (data: EventFormValues) => {
       // 1. Get Current User
       const {
         data: {user},
@@ -83,22 +73,23 @@ export default function CreateEventScreen() {
       // 2. Upload Images
       const uploadedImagePaths: string[] = [];
       for (const image of data.images) {
-        const fileExt = image.uri.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}_${String(Math.random()).slice(2, 7)}.${fileExt}`;
-        const {data: uploadData, error: uploadError} = await uploadFile(image, 'images', fileName);
+        if (image.type === 'new' && image.file) {
+          const fileExt = image.uri.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}_${String(Math.random()).slice(2, 7)}.${fileExt}`;
+          const {data: uploadData, error: uploadError} = await uploadFile(image.file, 'images', fileName);
 
-        if (uploadError) throw uploadError;
-        if (uploadData?.path) {
-          uploadedImagePaths.push(uploadData.path);
+          if (uploadError) throw uploadError;
+          if (uploadData?.path) {
+            uploadedImagePaths.push(uploadData.path);
+          }
         }
       }
 
-      // 3. Insert Event
+      // 3. Insert Event (Base Data)
       const {data: eventData, error: insertError} = await supabase
         .from('events')
         .insert({
-          title: data.title,
-          description: data.description,
+          // title and description removed
           category: data.category!,
           start_at: data.start_at!.toISOString(),
           end_at: data.end_at!.toISOString(),
@@ -113,7 +104,18 @@ export default function CreateEventScreen() {
       if (insertError) throw insertError;
       if (!eventData) throw new Error('Failed to create event record');
 
-      // 4. Insert Ticket Types
+      // 4. Insert Translations
+      const translationInserts = LANGUAGES.map((lang) => ({
+        event_id: eventData.id,
+        lang_code: lang.code,
+        title: data.translations[lang.code].title,
+        description: data.translations[lang.code].description,
+      }));
+
+      const {error: translationError} = await supabase.from('event_translations').insert(translationInserts);
+      if (translationError) throw translationError;
+
+      // 5. Insert Ticket Types
       if (data.ticket_types.length > 0) {
         const ticketsToInsert = data.ticket_types.map((ticket) => ({
           event_id: eventData.id,
@@ -140,11 +142,28 @@ export default function CreateEventScreen() {
     },
   });
 
-  const onSubmit = (data: FormValues) => mutate(data);
+  const onInvalid = (errors: any) => {
+    if (errors.translations) {
+      for (const lang of LANGUAGES) {
+        if (errors.translations[lang.code]?.title || errors.translations[lang.code]?.description) {
+          setActiveLanguage(lang.code);
+          Toast.show({
+            type: 'error',
+            text1: 'Missing Information',
+            text2: `Please fill in the ${lang.label} details.`,
+          });
+          return;
+        }
+      }
+    }
+    Toast.show({type: 'error', text1: 'Validation Error', text2: 'Please check the form for errors.'});
+  };
+
+  const onSubmit = (data: EventFormValues) => mutate(data);
 
   // --- Helpers ---
 
-  const pickImages = async (value: any[], onChange: (images: ImagePickerAsset[]) => void) => {
+  const pickImages = async (value: EventUnifiedImage[], onChange: (images: EventUnifiedImage[]) => void) => {
     const result = await launchImageLibraryAsync({
       mediaTypes: MediaTypeOptions.Images,
       allowsMultipleSelection: true,
@@ -167,7 +186,13 @@ export default function CreateEventScreen() {
       if (rejectedCount > 0) Toast.show({type: 'error', text1: 'File too large', text2: `${rejectedCount} image(s) skipped (>5MB).`});
 
       if (validImages.length > 0) {
-        onChange([...(value || []), ...validImages]);
+        const newImages: EventUnifiedImage[] = validImages.map((asset) => ({
+          id: asset.uri,
+          type: 'new',
+          uri: asset.uri,
+          file: asset,
+        }));
+        onChange([...(value || []), ...newImages]);
       }
     }
   };
@@ -214,23 +239,67 @@ export default function CreateEventScreen() {
           <Text className="text-2xl font-bold text-gray-900">{t('events.createTitle')}</Text>
         </View>
 
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.eventTitle')}</Text>
-          <Controller
-            control={control}
-            rules={{required: 'Title is required'}}
-            name="title"
-            render={({field: {onChange, value}}) => (
-              <TextInput
-                className="rounded-lg border border-gray-300 bg-white p-3"
-                placeholder={t('events.eventTitlePlaceholder')}
-                value={value}
-                onChangeText={onChange}
-              />
-            )}
-          />
-          {errors.title && <Text className="mt-1 text-xs text-red-500">{errors.title.message}</Text>}
+        {/* Language Tabs */}
+        <View className="mb-6 flex-row rounded-lg bg-gray-100 p-1">
+          {LANGUAGES.map((lang, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => setActiveLanguage(lang.code)}
+              className={`flex-1 items-center rounded-md py-2 ${activeLanguage === lang.code ? 'bg-white shadow-sm' : 'shadow-none'}`}>
+              <Text className={`font-medium ${activeLanguage === lang.code ? 'text-green-700' : 'text-gray-500'}`}>{lang.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
+
+        {LANGUAGES.map((lang) => (
+          <View key={lang.code} style={{display: activeLanguage === lang.code ? 'flex' : 'none'}}>
+            <View className="mb-4">
+              <Text className="mb-1 text-sm font-medium text-gray-700">
+                {t('events.eventTitle')} ({lang.label})
+              </Text>
+              <Controller
+                control={control}
+                rules={{required: 'Title is required'}}
+                name={`translations.${lang.code}.title`}
+                render={({field: {onChange, value}}) => (
+                  <TextInput
+                    className="rounded-lg border border-gray-300 bg-white p-3"
+                    placeholder={t('events.eventTitlePlaceholder')}
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                )}
+              />
+              {errors.translations?.[lang.code]?.title && (
+                <Text className="mt-1 text-xs text-red-500">{errors.translations[lang.code]?.title?.message}</Text>
+              )}
+            </View>
+
+            <View className="mb-4">
+              <Text className="mb-1 text-sm font-medium text-gray-700">
+                {t('events.description')} ({lang.label})
+              </Text>
+              <Controller
+                control={control}
+                name={`translations.${lang.code}.description`}
+                rules={{required: 'Description is required'}}
+                render={({field: {onChange, value}}) => (
+                  <TextInput
+                    multiline
+                    value={value}
+                    textAlignVertical="top"
+                    onChangeText={onChange}
+                    placeholder={t('events.descriptionPlaceholder')}
+                    className="h-24 rounded-lg border border-gray-300 bg-white p-3"
+                  />
+                )}
+              />
+              {errors.translations?.[lang.code]?.description && (
+                <Text className="mt-1 text-xs text-red-500">{errors.translations[lang.code]?.description?.message}</Text>
+              )}
+            </View>
+          </View>
+        ))}
 
         <View className="mb-4">
           <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.images')}</Text>
@@ -262,26 +331,6 @@ export default function CreateEventScreen() {
               </>
             )}
           />
-        </View>
-
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.description')}</Text>
-          <Controller
-            control={control}
-            name="description"
-            rules={{required: 'Description is required'}}
-            render={({field: {onChange, value}}) => (
-              <TextInput
-                multiline
-                value={value}
-                textAlignVertical="top"
-                onChangeText={onChange}
-                placeholder={t('events.descriptionPlaceholder')}
-                className="h-24 rounded-lg border border-gray-300 bg-white p-3"
-              />
-            )}
-          />
-          {errors.description && <Text className="mt-1 text-xs text-red-500">{errors.description.message}</Text>}
         </View>
 
         <View className="mb-4">
@@ -469,7 +518,7 @@ export default function CreateEventScreen() {
         </View>
 
         <TouchableOpacity
-          onPress={handleSubmit(onSubmit)}
+          onPress={handleSubmit(onSubmit, onInvalid)}
           disabled={isPending || isSubmitting}
           className={`mb-10 items-center rounded-lg p-4 ${isPending ? 'bg-gray-400' : 'bg-green-700'}`}>
           {isPending ? <ActivityIndicator color="white" /> : <Text className="text-lg font-bold text-white">{t('events.createButton')}</Text>}
