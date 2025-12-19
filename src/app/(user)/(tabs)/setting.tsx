@@ -137,24 +137,8 @@ const Profile = () => {
     }
   };
 
-  const resetPassword = async () => {
-    try {
-      const {error} = await supabase.auth.resetPasswordForEmail(userInfo.email, {
-        redirectTo: 'yourapp://reset-password',
-      });
-      if (error) throw error;
-      Alert.alert('Success', 'Check your email for password reset instructions.');
-    } catch (error) {
-      console.error('Error sending password reset email:', error);
-      Alert.alert('Error', 'Failed to send reset email. Please try again.');
-    }
-  };
-
   const handlePasswordChange = () => {
-    Alert.alert('Change Password', "We'll send you an email with instructions to change your password.", [
-      {text: 'Cancel', style: 'cancel'},
-      {text: 'Send Email', onPress: resetPassword},
-    ]);
+    router.push('/(settings)/change-password');
   };
 
   const handleEditPress = () => {

@@ -165,7 +165,9 @@ const Register = () => {
                         <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
                       </TouchableOpacity>
                     </View>
-                    <PasswordStrengthBar password={field?.value || ''} visible={isPasswordFocused || (field?.value?.length || 0) > 0} />
+                    {(isPasswordFocused || (field?.value?.length || 0) > 0) && (
+                      <PasswordStrengthBar password={field?.value || ''} visible />
+                    )}
                   </View>
                   {fieldState.error && <Text className="ml-2 mt-1 text-sm text-red-500">{fieldState.error.message}</Text>}
                 </View>
