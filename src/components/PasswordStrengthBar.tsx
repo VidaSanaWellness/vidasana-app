@@ -1,89 +1,51 @@
-import React, {useMemo} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import React from 'react';
+import {View, Text} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
 type PasswordStrengthBarProps = {password: string; visible: boolean};
 
 const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProps) => {
   const {t} = useTranslation();
-  if (!visible) return null;
 
-  // Calculate password strength score (0-100)
-  const strengthScore = useMemo(() => {
+  const score = (() => {
     let score = 0;
-
-    score += Math.min(30, (password.length / 12) * 30);
-
-    if (/[A-Z]/.test(password)) score += 15; // Uppercase
-    if (/[a-z]/.test(password)) score += 15; // Lowercase
-    if (/[0-9]/.test(password)) score += 15; // Numbers
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 15; // Special chars
-    if (/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).*$/.test(password)) {
-      score += 10; // All character types bonus
-    }
-
+    score += Math.min(30, (password.length / 10) * 30);
+    if (/[A-Z]/.test(password)) score += 15;
+    if (/[a-z]/.test(password)) score += 15;
+    if (/[0-9]/.test(password)) score += 15;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 15;
+    if (/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).*$/.test(password)) score += 10;
     return Math.min(100, score);
-  }, [password]);
+  })();
 
   const getStrengthColor = () => {
-    if (strengthScore < 33) return '#FF4B4B'; // Red
-    if (strengthScore < 66) return '#FFB74B'; // Orange
-    if (strengthScore < 100) return '#FFD700'; // Yellow
-    return '#4CAF50'; // Green
+    if (score < 33) return '#FF4B4B';
+    if (score < 66) return '#FFB74B';
+    if (score < 100) return '#FFD700';
+    return '#4CAF50';
   };
 
   const getStrengthLabel = () => {
-    if (strengthScore < 33) return t('passwordStrength.weak');
-    if (strengthScore < 66) return t('passwordStrength.fair');
-    if (strengthScore < 100) return t('passwordStrength.good');
+    if (score < 33) return t('passwordStrength.weak');
+    if (score < 66) return t('passwordStrength.fair');
+    if (score < 100) return t('passwordStrength.good');
     return t('passwordStrength.strong');
   };
 
-  const strengthLabel = getStrengthLabel();
-  const strengthColor = getStrengthColor();
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.labelContainer}>
-        <Text style={styles.label}>{t('passwordStrength.label')}</Text>
-        <Text style={[styles.strengthLabel, {color: strengthColor}]}>{strengthLabel}</Text>
+  return !visible ? null : (
+    <View className="mb-2 px-2">
+      <View className="mb-1 flex-row items-center justify-between">
+        <Text className="text-[14px] text-[#666]">{t('passwordStrength.label')}</Text>
+        <Text className="text-[14px] font-semibold" style={{color: getStrengthColor()}}>
+          {getStrengthLabel()}
+        </Text>
       </View>
-      <View style={styles.barBackground}>
-        <View style={[styles.strengthBar, {width: `${strengthScore}%`, backgroundColor: strengthColor}]} />
+
+      <View className="h-[6px] overflow-hidden rounded-[3px] bg-[#E5E5E5]">
+        <View className="h-full rounded-[3px]" style={{width: `${score}%`, backgroundColor: getStrengthColor()}} />
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 8,
-    paddingHorizontal: 4,
-  },
-  labelContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 14,
-    color: '#666',
-  },
-  strengthLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  barBackground: {
-    height: 6,
-    backgroundColor: '#E5E5E5',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  strengthBar: {
-    height: '100%',
-    borderRadius: 3,
-  },
-});
 
 export default PasswordStrengthBar;

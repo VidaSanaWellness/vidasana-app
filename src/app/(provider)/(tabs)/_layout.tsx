@@ -13,8 +13,6 @@ export default function TabLayout() {
   const {colorScheme} = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  console.log('THIS IS CALL ');
-
   return (
     <Tabs
       screenOptions={{

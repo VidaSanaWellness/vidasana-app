@@ -14,6 +14,9 @@ import {Enums} from '@/types';
 import {useTranslation} from 'react-i18next';
 import {ServiceFormValues, LanguageCode, UnifiedImage} from '@/types/service';
 import {LANGUAGES, getDays} from '@/constants/service';
+import LocationPickerModal from '@/components/modals/LocationPickerModal';
+import {AppleMaps, GoogleMaps} from 'expo-maps';
+import {Platform} from 'react-native';
 
 // Types
 
@@ -28,6 +31,8 @@ export default function EditServiceScreen() {
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<LanguageCode>('en');
+  const [isLocationPickerVisible, setLocationPickerVisible] = useState(false);
+  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   // Track initial images to calculate deletions
   const [initialImages, setInitialImages] = useState<UnifiedImage[]>([]);
@@ -53,6 +58,8 @@ export default function EditServiceScreen() {
       end_at: null,
       week_day: [],
       images: [],
+      lat: null,
+      lng: null,
     },
   });
 
@@ -123,6 +130,8 @@ export default function EditServiceScreen() {
         end_at: parseTime(data.end_at),
         week_day: (data.week_day as WeekDay[]) || [],
         images: loadedImages,
+        lat: (data.location as any)?.coordinates ? (data.location as any).coordinates[1] : null,
+        lng: (data.location as any)?.coordinates ? (data.location as any).coordinates[0] : null,
       });
 
       return data;
@@ -167,6 +176,7 @@ export default function EditServiceScreen() {
           end_at: data.end_at!.toLocaleTimeString('en-US', {hour12: false}),
           week_day: data.week_day,
           images: finalImagePaths,
+          location: data.lat && data.lng ? `POINT(${data.lng} ${data.lat})` : null,
         })
         .eq('id', id as string);
 
@@ -494,6 +504,54 @@ export default function EditServiceScreen() {
           />
         </View>
 
+        {/* Location Section */}
+        <View className="mb-6">
+          <Text className="mb-2 text-sm font-medium text-gray-700">{t('events.location')}</Text>
+          <Controller
+            control={control}
+            name="lat"
+            render={({field: {value: lat}}) => {
+              const lng = watch('lng');
+              return (
+                <View>
+                  {lat && lng ? (
+                    <View className="mb-3 h-40 overflow-hidden rounded-xl bg-gray-100">
+                      <MapComponent
+                        style={{flex: 1}}
+                        cameraPosition={{
+                          coordinates: {latitude: lat, longitude: lng},
+                          zoom: 15,
+                        }}
+                        uiSettings={{
+                          scrollGesturesEnabled: false,
+                          zoomGesturesEnabled: false,
+                        }}
+                      />
+                      {/* Overlay to catch taps */}
+                      <TouchableOpacity
+                        className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center bg-black/10"
+                        onPress={() => setLocationPickerVisible(true)}>
+                        <View className="items-center justify-center rounded-full bg-white/90 p-2 shadow-sm">
+                          <Feather name="edit-2" size={20} color="#15803d" />
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+
+                  <TouchableOpacity
+                    onPress={() => setLocationPickerVisible(true)}
+                    className={`flex-row items-center justify-center rounded-xl border border-dashed p-4 ${lat ? 'border-green-300 bg-green-50' : 'border-gray-300 bg-gray-50'}`}>
+                    <Feather name="map-pin" size={20} color={lat ? '#15803d' : '#9CA3AF'} />
+                    <Text className={`ml-2 font-medium ${lat ? 'text-green-700' : 'text-gray-500'}`}>
+                      {lat ? 'Change Location' : 'Select Location on Map'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }}
+          />
+        </View>
+
         <TouchableOpacity
           disabled={isPending}
           onPress={handleSubmit((data) => mutate(data), onInvalid)}
@@ -503,6 +561,16 @@ export default function EditServiceScreen() {
       </ScrollView>
       <DateTimePickerModal mode="time" isVisible={isTimePickerVisible} onConfirm={handleConfirmTime} onCancel={() => setTimePickerVisible(false)} />
       <Loader visible={isLoadingService || isPending} />
+
+      <LocationPickerModal
+        visible={isLocationPickerVisible}
+        onClose={() => setLocationPickerVisible(false)}
+        initialLocation={watch('lat') && watch('lng') ? {lat: watch('lat')!, lng: watch('lng')!} : null}
+        onConfirm={(loc) => {
+          setValue('lat', loc.lat, {shouldValidate: true});
+          setValue('lng', loc.lng, {shouldValidate: true});
+        }}
+      />
     </SafeAreaView>
   );
 }

@@ -1,12 +1,12 @@
 {
   "expo": {
     "version": "1.0.0",
+    "name": "vidasana",
+    "slug": "vidasana",
+    "scheme": "vidasana",
     "orientation": "portrait",
-    "name": "vidasana-wellness",
-    "slug": "vidasana-wellness",
-    "scheme": "vidasana-wellness",
-    "platforms": ["ios", "android"],
     "icon": "./src/assets/icon.png",
+    "platforms": ["ios", "android"],
     "assetBundlePatterns": ["**/*"],
     "userInterfaceStyle": "automatic",
     "experiments": {
@@ -20,16 +20,17 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vidasanawellness"
+      "bundleIdentifier": "com.vidasana"
     },
     "android": {
-      "package": "com.vidasanawellness",
+      "package": "com.vidasana",
       "adaptiveIcon": {
-        "backgroundColor": "#fff",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./src/assets/adaptive-icon.png"
       }
     },
     "plugins": [
+      "expo-font",
       "expo-router",
       "expo-sqlite",
       "expo-secure-store",
@@ -48,7 +49,19 @@
           "image": "./src/assets/logo.png"
         }
       ],
-      "expo-font"
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow $(PRODUCT_NAME) to use your location to search events near you."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to search events near you."
+        }
+      ]
     ]
   }
 }

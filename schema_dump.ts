@@ -14,42 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      bookmark: {
-        Row: {
-          created_at: string
-          id: string
-          service: string
-          user: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          service: string
-          user?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          service?: string
-          user?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookmark_service_fkey"
-            columns: ["service"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookmark_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "profile"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       categories: {
         Row: {
           created_at: string
@@ -493,13 +457,6 @@ export type Database = {
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "services_provider_fkey"
-            columns: ["provider"]
-            isOneToOne: false
-            referencedRelation: "profile"
-            referencedColumns: ["id"]
-          },
         ]
       }
       services_booking: {
@@ -586,27 +543,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_service_by_id: {
-        Args: { target_id: string }
-        Returns: {
-          active: boolean
-          booked_count: number
-          capacity: number
-          category: number
-          created_at: string
-          end_at: string
-          id: string
-          images: string[]
-          is_bookmarked: boolean
-          lat: number
-          lng: number
-          price: number
-          provider: Json
-          start_at: string
-          translations: Json
-          week_day: Database["public"]["Enums"]["week_day"][]
-        }[]
-      }
       search_services: {
         Args: {
           category_filter?: number[]

@@ -1,7 +1,6 @@
 import {AntDesign, Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {supabase, uploadFile} from '@/utils/supabase';
-import {Tables} from '@/types';
 import {useForm, Controller, type FieldErrors} from 'react-hook-form';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useRouter} from 'expo-router';
@@ -13,12 +12,14 @@ import Toast from 'react-native-toast-message';
 import {ServiceFormValues, LanguageCode, UnifiedImage, WeekDay} from '@/types/service';
 import {LANGUAGES, getDays} from '@/constants/service';
 import {useTranslation} from 'react-i18next';
+import LocationPickerModal from '@/components/modals/LocationPickerModal';
 
 export default function CreateServiceScreen() {
   const router = useRouter();
   const {t} = useTranslation();
   const queryClient = useQueryClient();
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
+  const [isLocationPickerVisible, setLocationPickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<LanguageCode>('en');
 
@@ -42,6 +43,8 @@ export default function CreateServiceScreen() {
       end_at: null,
       week_day: [],
       images: [],
+      lat: null,
+      lng: null,
     },
   });
 
@@ -88,6 +91,7 @@ export default function CreateServiceScreen() {
         price: parseFloat(data.price),
         start_at: data.start_at!.toLocaleTimeString('en-US', {hour12: false}),
         week_day: data.week_day,
+        location: data.lat && data.lng ? `POINT(${data.lng} ${data.lat})` : null,
       };
 
       if (uploadedImagePaths.length > 0) createPayload.images = uploadedImagePaths;
@@ -333,6 +337,25 @@ export default function CreateServiceScreen() {
           {errors.category && <Text className="mt-1 text-xs text-red-500">{errors.category.message}</Text>}
         </View>
 
+        {/* Location Selection */}
+        <View className="mb-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Location</Text>
+          <View className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
+            <View className="flex-row items-center">
+              <View className={`h-8 w-8 items-center justify-center rounded-full ${watch('lat') ? 'bg-green-100' : 'bg-gray-100'}`}>
+                <Feather name="map-pin" size={16} color={watch('lat') ? '#15803d' : 'gray'} />
+              </View>
+              <Text className={`ml-3 text-sm ${watch('lat') ? 'font-medium text-green-700' : 'text-gray-500'}`}>
+                {watch('lat') ? 'Location Selected' : 'No location selected'}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => setLocationPickerVisible(true)} className="rounded-md bg-green-50 px-3 py-1.5">
+              <Text className="text-xs font-bold text-green-700">{watch('lat') ? 'Change' : 'Pick on Map'}</Text>
+            </TouchableOpacity>
+          </View>
+          {errors.lat && <Text className="mt-1 text-xs text-red-500">Location is required</Text>}
+        </View>
+
         {/* Price & Capacity Row */}
         <View className="mb-4 flex-row justify-between gap-4">
           <View className="flex-1">
@@ -466,6 +489,15 @@ export default function CreateServiceScreen() {
         </TouchableOpacity>
 
         {/* Modals */}
+        <LocationPickerModal
+          visible={isLocationPickerVisible}
+          onClose={() => setLocationPickerVisible(false)}
+          onConfirm={(loc) => {
+            setValue('lat', loc.lat);
+            setValue('lng', loc.lng);
+          }}
+          initialLocation={watch('lat') && watch('lng') ? {lat: watch('lat')!, lng: watch('lng')!} : null}
+        />
       </ScrollView>
     </SafeAreaView>
   );

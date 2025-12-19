@@ -7,6 +7,8 @@ import {Feather} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import Toast from 'react-native-toast-message';
 import {useTranslation} from 'react-i18next';
+import {AppleMaps, GoogleMaps} from 'expo-maps';
+import {Platform} from 'react-native';
 
 export default function ServiceDetailsScreen() {
   const {t} = useTranslation();
@@ -15,6 +17,7 @@ export default function ServiceDetailsScreen() {
   const queryClient = useQueryClient();
   const {top} = useSafeAreaInsets();
   const [menuVisible, setMenuVisible] = useState(false);
+  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   // Fetch Service Details
   const {
@@ -90,6 +93,9 @@ export default function ServiceDetailsScreen() {
   // Generate Image URL (use first image for now, can be carousel later)
   const imageUrl =
     service.images && service.images.length > 0 ? supabase.storage.from('images').getPublicUrl(service.images[0]).data.publicUrl : null;
+
+  const lat = (service.location as any)?.coordinates ? (service.location as any).coordinates[1] : null;
+  const lng = (service.location as any)?.coordinates ? (service.location as any).coordinates[0] : null;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -174,6 +180,29 @@ export default function ServiceDetailsScreen() {
               <Text className="font-semibold text-gray-900">{service.capacity} People</Text>
             </View>
           </View>
+
+          {/* Location Map */}
+          {lat && lng && (
+            <View className="mb-6 h-40 overflow-hidden rounded-xl bg-gray-100">
+              <MapComponent
+                style={{flex: 1}}
+                cameraPosition={{
+                  coordinates: {latitude: lat, longitude: lng},
+                  zoom: 15,
+                }}
+                uiSettings={{
+                  scrollGesturesEnabled: false,
+                  zoomGesturesEnabled: false,
+                  myLocationButtonEnabled: false,
+                }}
+              />
+              <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center">
+                <View className="mb-4">
+                  <Feather name="map-pin" size={32} color="#15803d" />
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* Description */}
           <Text className="mb-2 text-lg font-bold text-gray-900">{t('services.aboutService')}</Text>
