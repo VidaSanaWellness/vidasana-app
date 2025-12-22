@@ -18,7 +18,6 @@ const Register = () => {
   const {t} = useTranslation();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   const {control, formState, handleSubmit} = useForm<FormData>({defaultValues: {fullName: '', email: '', phone: '', password: ''}});
 
@@ -26,7 +25,7 @@ const Register = () => {
     try {
       if (!agreeToTerms) return Alert.alert(t('auth.register.termsRequiredTitle'), t('auth.register.termsRequiredMessage'));
       const {email, phone, password, fullName} = data;
-      const {data: authData, error: signUpError} = await supabase.auth.signUp({email, password, options: {data: {full_name: fullName}}});
+      const {error: signUpError} = await supabase.auth.signUp({email, password, options: {data: {full_name: fullName}}});
       if (signUpError) throw signUpError;
       const {error} = await supabase.from('profile').insert({name: fullName, country: '', phone: phone});
       if (error) throw error;
@@ -70,9 +69,9 @@ const Register = () => {
                     <TextInput
                       {...field}
                       autoCapitalize="words"
-                      placeholder={t('auth.register.fullNamePlaceholder')}
                       placeholderTextColor="#999"
                       onChangeText={field.onChange}
+                      placeholder={t('auth.register.fullNamePlaceholder')}
                       className="m-0 h-14 px-4 text-base leading-5 text-black"
                     />
                   </View>
@@ -91,11 +90,11 @@ const Register = () => {
                   <View className={`rounded-xl border bg-gray-100 ${fieldState.error ? 'border-red-300 bg-red-100' : 'border-transparent'}`}>
                     <TextInput
                       {...field}
-                      placeholder={t('auth.register.emailPlaceholder')}
                       autoCapitalize="none"
                       placeholderTextColor="#999"
                       keyboardType="email-address"
                       onChangeText={field.onChange}
+                      placeholder={t('auth.register.emailPlaceholder')}
                       className="m-0 h-14 px-4 text-base leading-5 text-black"
                     />
                   </View>
@@ -118,9 +117,9 @@ const Register = () => {
                     <TextInput
                       {...field}
                       keyboardType="phone-pad"
-                      placeholder={t('auth.register.phonePlaceholder')}
                       placeholderTextColor="#999"
                       onChangeText={field.onChange}
+                      placeholder={t('auth.register.phonePlaceholder')}
                       className="m-0 h-14 px-4 text-base leading-5 text-black"
                     />
                   </View>
@@ -150,24 +149,17 @@ const Register = () => {
                     <View className="flex-row items-center">
                       <TextInput
                         {...field}
-                        placeholder={t('auth.register.passwordPlaceholder')}
+                        placeholderTextColor="#999"
                         onChangeText={field.onChange}
                         secureTextEntry={!showPassword}
-                        onFocus={() => setIsPasswordFocused(true)}
-                        onBlur={() => {
-                          field.onBlur();
-                          if (!fieldState.error) setIsPasswordFocused(false);
-                        }}
-                        placeholderTextColor="#999"
+                        placeholder={t('auth.register.passwordPlaceholder')}
                         className="m-0 h-14 flex-1 px-4 text-base leading-5 text-black"
                       />
                       <TouchableOpacity className="mr-1 p-2" onPress={() => setShowPassword(!showPassword)}>
                         <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
                       </TouchableOpacity>
                     </View>
-                    {(isPasswordFocused || (field?.value?.length || 0) > 0) && (
-                      <PasswordStrengthBar password={field?.value || ''} visible />
-                    )}
+                    <PasswordStrengthBar password={field?.value} visible={!fieldState.error?.message} />
                   </View>
                   {fieldState.error && <Text className="ml-2 mt-1 text-sm text-red-500">{fieldState.error.message}</Text>}
                 </View>

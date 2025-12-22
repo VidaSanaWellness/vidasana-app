@@ -42,6 +42,11 @@
       "rememberPassword": "Remember your password?",
       "loginLink": "Login"
     },
+    "changePassword": {
+      "title": "Change Password",
+      "subtitle": "Create a strong password to protect your account.",
+      "updatePassword": "Update Password"
+    },
     "orLoginWith": "or login with"
   },
   "settings": {
