@@ -252,21 +252,21 @@ const Profile = () => {
         <View className="mt-6 px-5">
           <Text className="mb-4 text-lg font-semibold text-black">{t('settings.preferences')}</Text>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
             onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
             <Ionicons name="notifications-outline" size={24} color="#3E6065" />
             <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.notifications')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
             onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
             <Ionicons name="moon-outline" size={24} color="#3E6065" />
             <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.darkMode')}</Text>
             <Ionicons name="chevron-forward" size={24} color="#3E6065" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => setIsLanguagePickerVisible(true)}>
             <Ionicons name="globe-outline" size={24} color="#3E6065" />

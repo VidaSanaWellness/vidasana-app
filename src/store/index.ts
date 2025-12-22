@@ -9,11 +9,5 @@ type AppStore = {
 };
 
 export const useAppStore = create<AppStore>()(
-  persist(
-    (set) => ({
-      session: null,
-      setSession: (session) => set({session}),
-    }),
-    {name: 'STORE', storage: createJSONStorage(() => storage as any)}
-  )
+  persist((set) => ({session: null, setSession: (session) => set({session})}), {name: 'STORE', storage: createJSONStorage(() => storage as any)})
 );

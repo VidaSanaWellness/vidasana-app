@@ -1,8 +1,6 @@
 import {Stack} from 'expo-router';
 
 export default function RootLayout() {
-  console.log('THIS IS CALL');
-
   return (
     <Stack screenOptions={{headerShown: false}}>
       <Stack.Screen name="(tabs)" />

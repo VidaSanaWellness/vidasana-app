@@ -1,7 +1,7 @@
 import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import {useQuery} from '@tanstack/react-query';
-import {Link, useLocalSearchParams, useRouter} from 'expo-router';
+import {useLocalSearchParams, useRouter} from 'expo-router';
 import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
@@ -15,7 +15,6 @@ export default function UserEventDetailsScreen() {
   const {data: event, isLoading} = useQuery({
     queryKey: ['event', id, i18n.language],
     queryFn: async () => {
-      // 1. Fetch Event with Translations and Tickets
       const {data, error} = await supabase
         .from('events')
         .select('*, event_translations(*), event_ticket_types(*), categories(*)')
@@ -24,7 +23,6 @@ export default function UserEventDetailsScreen() {
 
       if (error) throw error;
 
-      // 2. Resolve Translation (Fallback Logic)
       const translation =
         data.event_translations.find((tr: any) => tr.lang_code === i18n.language) ||
         data.event_translations.find((tr: any) => tr.lang_code === 'en') ||
