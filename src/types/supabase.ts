@@ -227,6 +227,7 @@ export type Database = {
           end_at: string
           id: string
           images: string[] | null
+          location: unknown
           provider: string
           start_at: string
           updated_at: string
@@ -239,6 +240,7 @@ export type Database = {
           end_at: string
           id?: string
           images?: string[] | null
+          location?: unknown
           provider: string
           start_at: string
           updated_at?: string
@@ -251,6 +253,7 @@ export type Database = {
           end_at?: string
           id?: string
           images?: string[] | null
+          location?: unknown
           provider?: string
           start_at?: string
           updated_at?: string
@@ -605,6 +608,41 @@ export type Database = {
           start_at: string
           translations: Json
           week_day: Database["public"]["Enums"]["week_day"][]
+        }[]
+      }
+      search_events: {
+        Args: {
+          category_filter?: number
+          date_from?: string
+          date_to?: string
+          page_limit?: number
+          page_offset?: number
+          radius_meters?: number
+          search_query?: string
+          sort_by?: string
+          target_lang?: string
+          user_lat?: number
+          user_lng?: number
+        }
+        Returns: {
+          active: boolean
+          book_till: string
+          category: number
+          category_name: string
+          created_at: string
+          description: string
+          dist_meters: number
+          end_at: string
+          id: string
+          images: string[]
+          lat: number
+          lng: number
+          price: number
+          provider: string
+          provider_name: string
+          start_at: string
+          title: string
+          updated_at: string
         }[]
       }
       search_services: {

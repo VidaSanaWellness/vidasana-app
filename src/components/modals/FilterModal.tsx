@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {Modal, View, Text, TouchableOpacity, ScrollView, Switch, Alert} from 'react-native';
+import {Modal, View, Text, TouchableOpacity, ScrollView, Switch, Alert, Platform} from 'react-native';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {useQuery} from '@tanstack/react-query';
@@ -10,28 +11,32 @@ import Slider from '@react-native-community/slider';
 // Types
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
+export interface FilterState {
+  categories: number[];
+  days: string[];
+  dateFrom: Date | null;
+  dateTo: Date | null;
+  sortBy: SortOption;
+  isNearMeEnabled: boolean;
+  radius: number; // radius in km
+}
+
 interface FilterModalProps {
   visible: boolean;
   onClose: () => void;
   onApply: (filters: FilterState) => void;
   initialFilters: FilterState;
   userLocation: {latitude: number; longitude: number} | null;
+  mode?: 'service' | 'event';
 }
 
-export interface FilterState {
-  categories: number[];
-  days: string[];
-  sortBy: SortOption;
-  isNearMeEnabled: boolean;
-  radius: number; // radius in km
-}
-
-export default function FilterModal({visible, onClose, onApply, initialFilters, userLocation}: FilterModalProps) {
+export default function FilterModal({visible, onClose, onApply, initialFilters, userLocation, mode = 'service'}: FilterModalProps) {
   const {t} = useTranslation();
 
-  // Local State: This isolates the modal logic from the parent
-  // Changes here won't trigger API calls until "Show Results" is pressed
+  // Local State
   const [localFilters, setLocalFilters] = useState<FilterState>(initialFilters);
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [activeDateField, setActiveDateField] = useState<'from' | 'to' | null>(null);
 
   // Sync with props when modal opens
   useEffect(() => {
@@ -63,7 +68,26 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
     setLocalFilters((prev) => ({...prev, days: prev.days.includes(day) ? prev.days.filter((d) => d !== day) : [...prev.days, day]}));
   };
 
-  const clearFilters = () => setLocalFilters({days: [], categories: [], sortBy: 'relevance', isNearMeEnabled: false, radius: 10});
+  const handleDateConfirm = (date: Date) => {
+    if (activeDateField === 'from') {
+      setLocalFilters((prev) => ({...prev, dateFrom: date}));
+    } else if (activeDateField === 'to') {
+      setLocalFilters((prev) => ({...prev, dateTo: date}));
+    }
+    setDatePickerVisible(false);
+    setActiveDateField(null);
+  };
+
+  const clearFilters = () =>
+    setLocalFilters({
+      days: [],
+      categories: [],
+      sortBy: 'relevance',
+      isNearMeEnabled: false,
+      radius: 10,
+      dateFrom: null,
+      dateTo: null,
+    });
 
   const handleApply = () => {
     onApply(localFilters);
@@ -160,25 +184,63 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
               </View>
             </View>
 
-            {/* Day Filter */}
-            <View className="mt-6">
-              <Text className="mb-3 text-base font-bold text-gray-900">{t('services.filterByDay', 'Day of Week')}</Text>
-              <View className="flex-row flex-wrap gap-2">
-                {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => (
+            {/* Day Filter (Service Only) */}
+            {mode === 'service' && (
+              <View className="mt-6">
+                <Text className="mb-3 text-base font-bold text-gray-900">{t('services.filterByDay', 'Day of Week')}</Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => (
+                    <TouchableOpacity
+                      key={day}
+                      onPress={() => toggleDay(day)}
+                      className={`rounded-full border px-4 py-2 ${
+                        localFilters.days.includes(day) ? 'border-green-700 bg-green-700' : 'border-gray-200 bg-white'
+                      }`}>
+                      <Text
+                        className={`text-center text-xs font-semibold capitalize ${localFilters.days.includes(day) ? 'text-white' : 'text-gray-700'}`}>
+                        {day.substring(0, 3)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Date Range Filter (Event Only) */}
+            {mode === 'event' && (
+              <View className="mt-6">
+                <Text className="mb-3 text-base font-bold text-gray-900">{t('events.dateRange', 'Date Range')}</Text>
+                <View className="flex-row gap-4">
                   <TouchableOpacity
-                    key={day}
-                    onPress={() => toggleDay(day)}
-                    className={`rounded-full border px-4 py-2 ${
-                      localFilters.days.includes(day) ? 'border-green-700 bg-green-700' : 'border-gray-200 bg-white'
-                    }`}>
-                    <Text
-                      className={`text-center text-xs font-semibold capitalize ${localFilters.days.includes(day) ? 'text-white' : 'text-gray-700'}`}>
-                      {day.substring(0, 3)}
+                    className="flex-1 rounded-xl border border-gray-200 bg-white p-3"
+                    onPress={() => {
+                      setActiveDateField('from');
+                      setDatePickerVisible(true);
+                    }}>
+                    <Text className="text-xs text-gray-500">From</Text>
+                    <Text className="font-semibold text-gray-900">
+                      {localFilters.dateFrom ? localFilters.dateFrom.toLocaleDateString() : 'Select Date'}
                     </Text>
                   </TouchableOpacity>
-                ))}
+                  <TouchableOpacity
+                    className="flex-1 rounded-xl border border-gray-200 bg-white p-3"
+                    onPress={() => {
+                      setActiveDateField('to');
+                      setDatePickerVisible(true);
+                    }}>
+                    <Text className="text-xs text-gray-500">To</Text>
+                    <Text className="font-semibold text-gray-900">
+                      {localFilters.dateTo ? localFilters.dateTo.toLocaleDateString() : 'Select Date'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                {(localFilters.dateFrom || localFilters.dateTo) && (
+                  <TouchableOpacity onPress={() => setLocalFilters((prev) => ({...prev, dateFrom: null, dateTo: null}))} className="mt-2 self-end">
+                    <Text className="text-xs text-red-500">Clear Dates</Text>
+                  </TouchableOpacity>
+                )}
               </View>
-            </View>
+            )}
 
             {/* Categories */}
             <View className="mb-10 mt-6">
@@ -221,6 +283,17 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
           </View>
         </View>
       </View>
+
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleDateConfirm}
+        onCancel={() => {
+          setDatePickerVisible(false);
+          setActiveDateField(null);
+        }}
+        textColor="black"
+      />
     </Modal>
   );
 }

@@ -1,45 +1,127 @@
 import {Link} from 'expo-router';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
-import {useQuery} from '@tanstack/react-query';
-import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
+import {useInfiniteQuery} from '@tanstack/react-query';
+import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {useState, useMemo} from 'react';
+import {useUserLocation} from '@/hooks';
+import {SearchHeader} from '@/components';
+import FilterModal, {FilterState} from '@/components/modals/FilterModal';
+import {useDebouncer} from '@/hooks/useDebounce';
 import {useTranslation} from 'react-i18next';
+
+// Types
+type Event = {
+  id: string;
+  title: string;
+  description: string;
+  images: string[] | null;
+  start_at: string;
+  dist_meters?: number;
+  price?: number;
+};
+
+type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
 export default function UserEventsScreen() {
   const {t, i18n} = useTranslation();
-  const {
-    data: events,
-    isLoading,
-    isRefetching,
-    refetch,
-  } = useQuery({
-    queryKey: ['user_events', i18n.language],
-    queryFn: async () => {
-      // Fetch ALL events (optionally filter by date > now?)
-      const {data, error} = await supabase
-        .from('events')
-        .select('*, event_translations(*)')
-        // .gt('start_at', new Date().toISOString()) // Optional: Only future events
-        .order('start_at', {ascending: true}); // Sort by start date
+  // -- State --
+  const [searchQuery, setSearchQuery, debouncedSearchQuery] = useDebouncer('', 500);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isFilterModalVisible, setFilterModalVisible] = useState(false);
 
-      if (error) throw error;
+  // Filter States
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  // Events use Date Range not Days
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
 
-      return data.map((event) => {
-        const translation =
-          event.event_translations.find((t: any) => t.lang_code === i18n.language) ||
-          event.event_translations.find((t: any) => t.lang_code === 'en') ||
-          event.event_translations[0];
+  const [sortBy, setSortBy] = useState<SortOption>('relevance');
+  const [isNearMeEnabled, setIsNearMeEnabled] = useState(false);
+  const [radius, setRadius] = useState<number>(10); // Default 10km
 
-        return {
-          ...event,
-          title: translation?.title || 'Untitled Event',
-          description: translation?.description || 'No description available',
-        };
+  // Location State
+  const userLocation = useUserLocation();
+
+  // Handler to Apply Filters from Modal
+  const handleApplyFilters = (filters: FilterState) => {
+    setSelectedCategories(filters.categories);
+    setDateFrom(filters.dateFrom);
+    setDateTo(filters.dateTo);
+    setSortBy(filters.sortBy);
+    setIsNearMeEnabled(filters.isNearMeEnabled);
+    setRadius(filters.radius || 10);
+  };
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategories.length > 0) count++;
+    if (dateFrom || dateTo) count++;
+    if (sortBy !== 'relevance') count++;
+    if (isNearMeEnabled) count++;
+    return count;
+  }, [selectedCategories, dateFrom, dateTo, sortBy, isNearMeEnabled]);
+
+  // -- Data Fetching --
+  const {data, isLoading, refetch, hasNextPage, fetchNextPage, isFetchingNextPage} = useInfiniteQuery({
+    queryKey: [
+      'events_search',
+      i18n.language,
+      debouncedSearchQuery,
+      selectedCategories,
+      dateFrom,
+      dateTo,
+      userLocation,
+      sortBy,
+      isNearMeEnabled,
+      radius,
+    ],
+    initialPageParam: 0,
+    queryFn: async ({pageParam = 0}) => {
+      const LIMIT = 10;
+      const {data: rpcData, error} = await supabase.rpc('search_events', {
+        search_query: debouncedSearchQuery || null,
+        target_lang: i18n.language,
+        category_filter: selectedCategories.length > 0 ? selectedCategories[0] : null,
+        date_from: dateFrom ? dateFrom.toISOString() : null,
+        date_to: dateTo ? dateTo.toISOString() : null,
+        user_lat: userLocation?.latitude || null,
+        user_lng: userLocation?.longitude || null,
+        radius_meters: isNearMeEnabled ? radius * 1000 : null,
+        sort_by: sortBy,
+        page_offset: pageParam,
+        page_limit: LIMIT,
       });
+
+      if (error) {
+        console.error('Search Events API Error:', error);
+        throw error;
+      }
+      return rpcData as Event[];
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      // If less than limit, no more pages
+      return lastPage && lastPage.length === 10 ? allPages.length * 10 : undefined;
     },
   });
 
-  const renderItem = ({item}: {item: any}) => {
+  const activeEvents = useMemo(() => {
+    return data?.pages.flatMap((page) => page) || [];
+  }, [data]);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  };
+
+  const formatDistance = (meters?: number) => {
+    if (!meters) return null;
+    if (meters < 1000) return `${Math.round(meters)}m`;
+    return `${(meters / 1000).toFixed(1)}km`;
+  };
+
+  const renderItem = ({item}: {item: Event}) => {
     // Get first image or placeholder
     const imageUrl = item.images && item.images.length > 0 ? supabase.storage.from('images').getPublicUrl(item.images[0]).data.publicUrl : null;
 
@@ -65,6 +147,12 @@ export default function UserEventsScreen() {
                   <Text className="flex-1 text-lg font-bold text-gray-900" numberOfLines={1}>
                     {item.title}
                   </Text>
+                  {item.dist_meters !== undefined && item.dist_meters !== null && (
+                    <View className="ml-2 flex-row items-center rounded bg-gray-100 px-1.5 py-0.5">
+                      <Feather name="map-pin" size={10} color="#6B7280" />
+                      <Text className="ml-1 text-[10px] text-gray-500">{formatDistance(item.dist_meters)}</Text>
+                    </View>
+                  )}
                 </View>
                 <Text className="mb-2 text-xs text-gray-500" numberOfLines={2}>
                   {item.description}
@@ -93,20 +181,37 @@ export default function UserEventsScreen() {
     );
   };
 
+  const renderHeader = () => (
+    <SearchHeader
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      onFilterPress={() => setFilterModalVisible(true)}
+      activeFilterCount={activeFilterCount}
+      placeholder={t('events.searchPlaceholder')}
+    />
+  );
+
   return (
     <View className="flex-1 bg-white">
       <View className="flex-1 px-4 pt-2">
-        {isLoading ? (
-          <ActivityIndicator size="large" color="#15803d" className="mt-10" />
-        ) : (
-          <FlatList
-            data={events}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{paddingBottom: 100}}
-            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-            ListEmptyComponent={() => (
+        <FlatList
+          data={activeEvents}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom: 100}}
+          ListHeaderComponent={renderHeader()}
+          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={isFetchingNextPage ? <ActivityIndicator size="small" color="#15803d" className="my-4" /> : null}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={() =>
+            !isLoading ? (
               <View className="mt-20 items-center justify-center">
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-50">
                   <Feather name="calendar" size={40} color="#D1D5DB" />
@@ -114,10 +219,28 @@ export default function UserEventsScreen() {
                 <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.noEvents')}</Text>
                 <Text className="mb-6 text-center text-gray-500">{t('events.noEventsSubtitle')}</Text>
               </View>
-            )}
-          />
-        )}
+            ) : (
+              <ActivityIndicator size="large" color="#15803d" className="mt-10" />
+            )
+          }
+        />
       </View>
+      <FilterModal
+        visible={isFilterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onApply={handleApplyFilters}
+        initialFilters={{
+          categories: selectedCategories,
+          days: [],
+          dateFrom,
+          dateTo,
+          sortBy,
+          isNearMeEnabled,
+          radius,
+        }}
+        userLocation={userLocation}
+        mode="event"
+      />
     </View>
   );
 }

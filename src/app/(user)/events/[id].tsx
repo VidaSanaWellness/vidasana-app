@@ -2,15 +2,17 @@ import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import {useQuery} from '@tanstack/react-query';
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Platform, Linking} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
+import {AppleMaps, GoogleMaps} from 'expo-maps';
 
 export default function UserEventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
   const {back} = useRouter();
   const {t, i18n} = useTranslation();
+  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   const {data: event, isLoading} = useQuery({
     queryKey: ['event', id, i18n.language],
@@ -31,7 +33,10 @@ export default function UserEventDetailsScreen() {
       return {
         ...data,
         title: translation?.title || 'Untitled Event',
+        title: translation?.title || 'Untitled Event',
         description: translation?.description || 'No description available',
+        lat: (data as any).location?.coordinates ? (data as any).location.coordinates[1] : null,
+        lng: (data as any).location?.coordinates ? (data as any).location.coordinates[0] : null,
       };
     },
   });
@@ -53,6 +58,13 @@ export default function UserEventDetailsScreen() {
   }
 
   const imageUrl = event.images && event.images.length > 0 ? supabase.storage.from('images').getPublicUrl(event.images[0]).data.publicUrl : null;
+
+  const openAddressOnMap = () => {
+    if (!event.lat || !event.lng) return;
+    const label = event.title;
+    const url = Platform.select({ios: `maps:0,0?q=${label}@${event.lat},${event.lng}`, android: `geo:0,0?q=${event.lat},${event.lng}(${label})`});
+    if (url) Linking.openURL(url);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -92,14 +104,9 @@ export default function UserEventDetailsScreen() {
                 <Feather name="calendar" size={20} color="#15803d" />
               </View>
               <View>
-                <Text className="text-xs text-gray-500">{t('events.date', 'Date')}</Text>
+                <Text className="text-xs text-gray-500">{t('events.date')}</Text>
                 <Text className="font-semibold text-gray-900">
-                  {new Date(event.start_at).toLocaleDateString(undefined, {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
+                  {new Date(event.start_at).toLocaleDateString(undefined, {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
                 </Text>
               </View>
             </View>
@@ -109,7 +116,7 @@ export default function UserEventDetailsScreen() {
                 <Feather name="clock" size={20} color="#15803d" />
               </View>
               <View>
-                <Text className="text-xs text-gray-500">{t('events.time', 'Time')}</Text>
+                <Text className="text-xs text-gray-500">{t('events.time')}</Text>
                 <Text className="font-semibold text-gray-900">
                   {new Date(event.start_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} -{' '}
                   {new Date(event.end_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
@@ -128,14 +135,54 @@ export default function UserEventDetailsScreen() {
 
           {/* Description */}
           <View className="mb-6">
-            <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.aboutEvent', 'About Event')}</Text>
+            <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.aboutEvent')}</Text>
+            <Text className="leading-6 text-gray-600">{event.description}</Text>
             <Text className="leading-6 text-gray-600">{event.description}</Text>
           </View>
+
+          {/* Location Map */}
+          {event.lat && event.lng ? (
+            <View className="mb-6">
+              <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.location')}</Text>
+              <View className="h-48 w-full overflow-hidden rounded-xl border border-gray-200">
+                <MapComponent
+                  style={{flex: 1}}
+                  cameraPosition={{
+                    coordinates: {latitude: event.lat, longitude: event.lng},
+                    zoom: 15,
+                  }}
+                  markers={[
+                    {
+                      id: 'event-loc',
+                      coordinates: {latitude: event.lat, longitude: event.lng},
+                      title: event.title,
+                    },
+                  ]}
+                  uiSettings={{
+                    scrollGesturesEnabled: false,
+                    zoomGesturesEnabled: false,
+                    zoomControlsEnabled: false,
+                    compassEnabled: false,
+                    myLocationButtonEnabled: false,
+                    rotationGesturesEnabled: false,
+                    tiltGesturesEnabled: false,
+                  }}
+                />
+
+                {/* Overlay for interaction */}
+                <TouchableOpacity className="absolute bottom-0 left-0 right-0 top-0 active:bg-black/5" onPress={openAddressOnMap} />
+              </View>
+              <TouchableOpacity onPress={openAddressOnMap} className="mt-2 flex-row items-center">
+                <Feather name="external-link" size={14} color="#15803d" />
+                <Text className="ml-1 text-sm font-semibold text-green-700">Open in Maps</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
 
           {/* Tickets */}
           {event.event_ticket_types && event.event_ticket_types.length > 0 && (
             <View className="mb-6">
-              <Text className="mb-3 text-lg font-bold text-gray-900">{t('events.tickets', 'Tickets')}</Text>
+              <Text className="mb-3 text-lg font-bold text-gray-900">{t('events.tickets')}</Text>
               {event.event_ticket_types.map((ticket: any) => (
                 <View key={ticket.id} className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 p-4">
                   <View>
@@ -153,7 +200,7 @@ export default function UserEventDetailsScreen() {
       {/* Book Button (Placeholder until flow is implemented) */}
       <View className="border-t border-gray-100 p-4">
         <TouchableOpacity className="items-center rounded-xl bg-green-700 py-4 shadow-sm active:bg-green-800">
-          <Text className="text-lg font-bold text-white">{t('events.bookNow', 'Book Tickets')}</Text>
+          <Text className="text-lg font-bold text-white">{t('events.bookNow')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

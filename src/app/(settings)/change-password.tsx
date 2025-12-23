@@ -15,6 +15,7 @@ type FormValues = {
   newPassword: string;
   confirmPassword: string;
 };
+
 const ChangePassword = () => {
   const {back} = useRouter();
   const {t} = useTranslation();
@@ -26,10 +27,10 @@ const ChangePassword = () => {
     try {
       const {error} = await supabase.auth.updateUser({password: newPassword});
       if (error) throw error;
-      Toast.show({type: 'success', text1: 'Password updated'});
+      Toast.show({type: 'success', text1: t('auth.changePassword.success')});
       back();
     } catch (err: any) {
-      Toast.show({type: 'error', text1: err?.message ?? 'Failed to update password'});
+      Toast.show({type: 'error', text1: err?.message ?? t('auth.changePassword.failure')});
     }
   };
 
@@ -56,13 +57,13 @@ const ChangePassword = () => {
               name="newPassword"
               control={control}
               rules={{
-                required: 'New password is required',
-                minLength: {value: 8, message: 'Password must be at least 8 characters long'},
+                required: t('validation.newPasswordRequired'),
+                minLength: {value: 8, message: t('validation.passwordMinLength', {count: 8})},
                 validate: (value) => {
-                  if (!/[A-Z]/.test(value)) return 'Add at least one uppercase letter';
-                  if (!/[a-z]/.test(value)) return 'Add at least one lowercase letter';
-                  if (!/[0-9]/.test(value)) return 'Add at least one number';
-                  if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return 'Add at least one special character';
+                  if (!/[A-Z]/.test(value)) return t('validation.passwordUppercase');
+                  if (!/[a-z]/.test(value)) return t('validation.passwordLowercase');
+                  if (!/[0-9]/.test(value)) return t('validation.passwordNumber');
+                  if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return t('validation.passwordSpecial');
                   return true;
                 },
               }}
@@ -76,7 +77,7 @@ const ChangePassword = () => {
                         autoCorrect={false}
                         autoCapitalize="none"
                         onChangeText={onChange}
-                        placeholder="New password"
+                        placeholder={t('auth.changePassword.newPasswordPlaceholder')}
                         placeholderTextColor="#999"
                         secureTextEntry={!showNewPassword}
                         className="m-0 h-14 flex-1 px-4 text-base leading-5 text-black"
@@ -96,8 +97,8 @@ const ChangePassword = () => {
               name="confirmPassword"
               control={control}
               rules={{
-                required: 'Confirm your password',
-                validate: (value, formValues) => (value === formValues.newPassword ? true : 'Passwords do not match'),
+                required: t('validation.confirmPasswordRequired'),
+                validate: (value, formValues) => (value === formValues.newPassword ? true : t('validation.passwordMatch')),
               }}
               render={({field: {onChange, onBlur, value}, fieldState: {error}}) => (
                 <View className="mb-4">
@@ -108,7 +109,7 @@ const ChangePassword = () => {
                         onBlur={onBlur}
                         onChangeText={onChange}
                         placeholderTextColor="#999"
-                        placeholder="Confirm password"
+                        placeholder={t('auth.changePassword.confirmPasswordPlaceholder')}
                         secureTextEntry={!showConfirmPassword}
                         className="m-0 h-14 flex-1 px-4 text-base leading-5 text-black"
                       />

@@ -2,15 +2,17 @@ import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import {useQuery} from '@tanstack/react-query';
 import {Link, useLocalSearchParams, useRouter} from 'expo-router';
-import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Platform} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
+import {AppleMaps, GoogleMaps} from 'expo-maps';
 
 export default function EventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
   const {back} = useRouter();
   const {t, i18n} = useTranslation();
+  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   const {data: event, isLoading} = useQuery({
     queryKey: ['event', id, i18n.language],
@@ -34,6 +36,8 @@ export default function EventDetailsScreen() {
         ...data,
         title: translation?.title || 'Untitled Event',
         description: translation?.description || 'No description available',
+        lat: (data as any).location?.coordinates ? (data as any).location.coordinates[1] : null,
+        lng: (data as any).location?.coordinates ? (data as any).location.coordinates[0] : null,
       };
     },
   });
@@ -101,7 +105,7 @@ export default function EventDetailsScreen() {
                 <Feather name="calendar" size={20} color="#15803d" />
               </View>
               <View>
-                <Text className="text-xs text-gray-500">{t('events.date', 'Date')}</Text>
+                <Text className="text-xs text-gray-500">{t('events.date')}</Text>
                 <Text className="font-semibold text-gray-900">
                   {new Date(event.start_at).toLocaleDateString(undefined, {
                     weekday: 'long',
@@ -118,7 +122,7 @@ export default function EventDetailsScreen() {
                 <Feather name="clock" size={20} color="#15803d" />
               </View>
               <View>
-                <Text className="text-xs text-gray-500">{t('events.time', 'Time')}</Text>
+                <Text className="text-xs text-gray-500">{t('events.time')}</Text>
                 <Text className="font-semibold text-gray-900">
                   {new Date(event.start_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} -{' '}
                   {new Date(event.end_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
@@ -137,14 +141,46 @@ export default function EventDetailsScreen() {
 
           {/* Description */}
           <View className="mb-6">
-            <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.aboutEvent', 'About Event')}</Text>
+            <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.aboutEvent')}</Text>
             <Text className="leading-6 text-gray-600">{event.description}</Text>
           </View>
+
+          {/* Location Map */}
+          {event.lat && event.lng ? (
+            <View className="mb-6">
+              <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.location')}</Text>
+              <View className="h-48 w-full overflow-hidden rounded-xl border border-gray-200">
+                <MapComponent
+                  style={{flex: 1}}
+                  cameraPosition={{
+                    coordinates: {latitude: event.lat, longitude: event.lng},
+                    zoom: 15,
+                  }}
+                  markers={[
+                    {
+                      id: 'event-loc',
+                      coordinates: {latitude: event.lat, longitude: event.lng},
+                      title: event.title,
+                    },
+                  ]}
+                  uiSettings={{
+                    scrollGesturesEnabled: false,
+                    zoomGesturesEnabled: false,
+                    zoomControlsEnabled: false,
+                    compassEnabled: false,
+                    myLocationButtonEnabled: false,
+                    rotationGesturesEnabled: false,
+                    tiltGesturesEnabled: false,
+                  }}
+                />
+              </View>
+            </View>
+          ) : null}
 
           {/* Tickets */}
           {event.event_ticket_types && event.event_ticket_types.length > 0 && (
             <View className="mb-6">
-              <Text className="mb-3 text-lg font-bold text-gray-900">{t('events.tickets', 'Tickets')}</Text>
+              <Text className="mb-3 text-lg font-bold text-gray-900">{t('events.tickets')}</Text>
               {event.event_ticket_types.map((ticket: any) => (
                 <View key={ticket.id} className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 p-4">
                   <View>

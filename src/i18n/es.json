@@ -5,7 +5,8 @@
     "submit": "Enviar",
     "cancel": "Cancelar",
     "and": "y",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "error": "Error"
   },
   "auth": {
     "login": {
@@ -45,7 +46,11 @@
     "changePassword": {
       "title": "Change Password",
       "subtitle": "Create a strong password to protect your account.",
-      "updatePassword": "Actualizar contraseña"
+      "updatePassword": "Actualizar contraseña",
+      "success": "Contraseña actualizada",
+      "failure": "Error al actualizar contraseña",
+      "newPasswordPlaceholder": "Nueva contraseña",
+      "confirmPasswordPlaceholder": "Confirmar contraseña"
     },
     "orLoginWith": "o inicia sesión con"
   },
@@ -99,7 +104,17 @@
     "addTicketType": "Añadir otro tipo de entrada",
     "createButton": "Crear evento",
     "noEvents": "Aún no hay eventos",
-    "noEventsSubtitle": "Crea tu primer evento para comenzar."
+    "noEventsSubtitle": "Crea tu primer evento para comenzar.",
+    "location": "Ubicación",
+    "editTitle": "Editar evento",
+    "updateButton": "Actualizar evento",
+    "date": "Fecha",
+    "time": "Hora",
+    "aboutEvent": "Sobre el evento",
+    "tickets": "Entradas",
+    "searchPlaceholder": "Buscar eventos...",
+    "dateRange": "Rango de fechas",
+    "bookNow": "Reservar entradas"
   },
   "services": {
     "createTitle": "Crear nuevo servicio",
@@ -118,7 +133,8 @@
     "active": "Activo",
     "disabled": "Deshabilitado",
     "enableConfirm": "¿Estás seguro de que quieres habilitar este servicio?",
-    "disableConfirm": "¿Estás seguro de que quieres deshabilitar este servicio? Los clientes ya no podrán reservarlo."
+    "disableConfirm": "¿Estás seguro de que quieres deshabilitar este servicio? Los clientes ya no podrán reservarlo.",
+    "locationRequired": "La ubicación es obligatoria"
   },
   "validation": {
     "required": "Requerido",
@@ -134,7 +150,10 @@
     "passwordUppercase": "La contraseña debe contener al menos una letra mayúscula",
     "passwordLowercase": "La contraseña debe contener al menos una letra minúscula",
     "passwordNumber": "La contraseña debe contener al menos un número",
-    "passwordSpecial": "La contraseña debe contener al menos un carácter especial"
+    "passwordSpecial": "La contraseña debe contener al menos un carácter especial",
+    "newPasswordRequired": "Nueva contraseña requerida",
+    "confirmPasswordRequired": "Confirma tu contraseña",
+    "passwordMatch": "Las contraseñas no coinciden"
   },
   "role": {
     "howWillYouUse": "¿Cómo usarás VidaSana?",

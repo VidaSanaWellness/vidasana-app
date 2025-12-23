@@ -5,7 +5,8 @@
     "submit": "Submit",
     "cancel": "Cancel",
     "and": "and",
-    "continue": "Continue"
+    "continue": "Continue",
+    "error": "Error"
   },
   "auth": {
     "login": {
@@ -45,7 +46,11 @@
     "changePassword": {
       "title": "Change Password",
       "subtitle": "Create a strong password to protect your account.",
-      "updatePassword": "Update Password"
+      "updatePassword": "Update Password",
+      "success": "Password updated",
+      "failure": "Failed to update password",
+      "newPasswordPlaceholder": "New password",
+      "confirmPasswordPlaceholder": "Confirm password"
     },
     "orLoginWith": "or login with"
   },
@@ -99,7 +104,17 @@
     "addTicketType": "Add Another Ticket Type",
     "createButton": "Create Event",
     "noEvents": "No Events Yet",
-    "noEventsSubtitle": "Create your first event to get started."
+    "noEventsSubtitle": "Create your first event to get started.",
+    "location": "Location",
+    "editTitle": "Edit Event",
+    "updateButton": "Update Event",
+    "date": "Date",
+    "time": "Time",
+    "aboutEvent": "About Event",
+    "tickets": "Tickets",
+    "searchPlaceholder": "Search events...",
+    "dateRange": "Date Range",
+    "bookNow": "Book Tickets"
   },
   "services": {
     "createTitle": "Create New Service",
@@ -118,7 +133,8 @@
     "active": "Active",
     "disabled": "Disabled",
     "enableConfirm": "Are you sure you want to enable this service?",
-    "disableConfirm": "Are you sure you want to disable this service? Clients will no longer be able to book it."
+    "disableConfirm": "Are you sure you want to disable this service? Clients will no longer be able to book it.",
+    "locationRequired": "Location is required"
   },
   "validation": {
     "required": "Required",
@@ -134,7 +150,10 @@
     "passwordUppercase": "Password must contain at least one uppercase letter",
     "passwordLowercase": "Password must contain at least one lowercase letter",
     "passwordNumber": "Password must contain at least one number",
-    "passwordSpecial": "Password must contain at least one special character"
+    "passwordSpecial": "Password must contain at least one special character",
+    "newPasswordRequired": "New password is required",
+    "confirmPasswordRequired": "Confirm your password",
+    "passwordMatch": "Passwords do not match"
   },
   "role": {
     "howWillYouUse": "How will you use VidaSana?",

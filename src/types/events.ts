@@ -29,4 +29,23 @@ export type EventFormValues = {
   book_till: Date | null;
   images: EventUnifiedImage[];
   ticket_types: TicketType[];
+  lat: number | null;
+  lng: number | null;
 };
+
+// UI Types
+export interface Event {
+  id: string;
+  title: string;
+  description: string;
+  images: string[] | null;
+  start_at: string;
+  end_at: string;
+  book_till: string | null;
+  category: number;
+  lat?: number | null;
+  lng?: number | null;
+  dist_meters?: number;
+  event_ticket_types?: {price: number}[];
+  price?: number; // Derived minimum price
+}

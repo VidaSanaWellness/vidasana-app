@@ -13,6 +13,9 @@ import {ImagePickerAsset, launchImageLibraryAsync, MediaTypeOptions} from 'expo-
 import {useTranslation} from 'react-i18next';
 import {EventFormValues, EventUnifiedImage, LanguageCode} from '@/types/events';
 import {LANGUAGES} from '@/constants/events';
+import LocationPickerModal from '@/components/modals/LocationPickerModal';
+import {AppleMaps, GoogleMaps} from 'expo-maps';
+import {Platform} from 'react-native';
 
 type Category = Tables<'categories'>;
 
@@ -27,6 +30,8 @@ export default function EditEventScreen() {
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | 'book_till' | null>(null);
   const [datePickerMode, setDatePickerMode] = useState<'date' | 'time' | 'datetime'>('datetime');
+  const [isLocationPickerVisible, setLocationPickerVisible] = useState(false);
+  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   const {
     watch,
@@ -47,7 +52,10 @@ export default function EditEventScreen() {
       end_at: null,
       book_till: null,
       images: [],
+      images: [],
       ticket_types: [],
+      lat: null,
+      lng: null,
     },
   });
 
@@ -67,9 +75,29 @@ export default function EditEventScreen() {
   const {data: eventData, isLoading: isLoadingEvent} = useQuery({
     queryKey: ['event', id],
     queryFn: async () => {
-      const {data, error} = await supabase.from('events').select('*, event_translations(*), event_ticket_types(*)').eq('id', id).single();
+      // Use raw SQL select for PostGIS or rpc.
+      // Supabase-js basic select doesn't easily support function calls like ST_X without a view or rpc.
+      // However, we can cheat by selecting 'location' and assuming it returns GeoJSON if configured?
+      // Safest: Use a small RPC or just select everything and hopefully the location column is WKT?
+      // Actually, let's use the standard select and see.
+      // BUT, earlier we confirmed services had lat/lng because of a VIEW or logic.
+      // Let's try to query it.
+      const {data, error} = await supabase
+        .from('events')
+        .select(
+          `
+          *,
+          event_translations(*),
+          event_ticket_types(*)
+        `
+        )
+        .eq('id', id)
+        .single();
 
       if (error) throw error;
+
+      // If location is returned as GeoJSON object (default in Supabase for geometry columns)
+      // { type: "Point", coordinates: [lng, lat] }
       return data;
     },
   });
@@ -112,7 +140,10 @@ export default function EditEventScreen() {
         end_at: new Date(eventData.end_at),
         book_till: eventData.book_till ? new Date(eventData.book_till) : null,
         images,
+        images,
         ticket_types: tickets,
+        lat: (eventData as any).location?.coordinates ? (eventData as any).location.coordinates[1] : null,
+        lng: (eventData as any).location?.coordinates ? (eventData as any).location.coordinates[0] : null,
       });
     }
   }, [eventData, reset]);
@@ -148,7 +179,9 @@ export default function EditEventScreen() {
           start_at: data.start_at!.toISOString(),
           end_at: data.end_at!.toISOString(),
           book_till: data.book_till ? data.book_till.toISOString() : null,
+          book_till: data.book_till ? data.book_till.toISOString() : null,
           images: imagePaths,
+          location: data.lat && data.lng ? `POINT(${data.lng} ${data.lat})` : null,
         })
         .eq('id', id);
 
@@ -297,7 +330,7 @@ export default function EditEventScreen() {
           <TouchableOpacity onPress={() => back()} className="mr-4 rounded-full bg-gray-100 p-2">
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          <Text className="text-2xl font-bold text-gray-900">{t('events.editTitle', 'Edit Event')}</Text>
+          <Text className="text-2xl font-bold text-gray-900">{t('events.editTitle')}</Text>
         </View>
 
         {/* Language Tabs */}
@@ -449,6 +482,53 @@ export default function EditEventScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Location Section */}
+        <View className="mb-6">
+          <Text className="mb-2 text-sm font-medium text-gray-700">{t('events.location')}</Text>
+          <Controller
+            control={control}
+            name="lat"
+            render={({field: {value: lat}}) => {
+              const lng = watch('lng');
+              return (
+                <View>
+                  {lat && lng ? (
+                    <View className="mb-3 h-40 overflow-hidden rounded-xl bg-gray-100">
+                      <MapComponent
+                        style={{flex: 1}}
+                        cameraPosition={{
+                          coordinates: {latitude: lat, longitude: lng},
+                          zoom: 15,
+                        }}
+                        uiSettings={{
+                          scrollGesturesEnabled: false,
+                          zoomGesturesEnabled: false,
+                        }}
+                      />
+                      <TouchableOpacity
+                        className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center bg-black/10"
+                        onPress={() => setLocationPickerVisible(true)}>
+                        <View className="items-center justify-center rounded-full bg-white/90 p-2 shadow-sm">
+                          <Feather name="edit-2" size={20} color="#15803d" />
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+
+                  <TouchableOpacity
+                    onPress={() => setLocationPickerVisible(true)}
+                    className={`flex-row items-center justify-center rounded-xl border border-dashed p-4 ${lat ? 'border-green-300 bg-green-50' : 'border-gray-300 bg-gray-50'}`}>
+                    <Feather name="map-pin" size={20} color={lat ? '#15803d' : '#9CA3AF'} />
+                    <Text className={`ml-2 font-medium ${lat ? 'text-green-700' : 'text-gray-500'}`}>
+                      {lat ? 'Change Location' : 'Select Location on Map'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }}
+          />
+        </View>
+
         {/* Tickets */}
         <View className="mb-6">
           <Text className="mb-2 text-sm font-medium text-gray-700">{t('events.ticketTypes')}</Text>
@@ -516,7 +596,7 @@ export default function EditEventScreen() {
           onPress={handleSubmit(onSubmit, onInvalid)}
           disabled={isPending || isSubmitting}
           className="mb-10 items-center rounded-lg bg-green-700 p-4">
-          {isPending ? <ActivityIndicator color="white" /> : <Text className="font-bold text-white">{t('events.updateButton', 'Update Event')}</Text>}
+          {isPending ? <ActivityIndicator color="white" /> : <Text className="font-bold text-white">{t('events.updateButton')}</Text>}
         </TouchableOpacity>
       </ScrollView>
       <DateTimePickerModal
@@ -524,6 +604,15 @@ export default function EditEventScreen() {
         mode={datePickerMode as any}
         onConfirm={handleConfirmDate}
         onCancel={() => setTimePickerVisible(false)}
+      />
+      <LocationPickerModal
+        visible={isLocationPickerVisible}
+        onClose={() => setLocationPickerVisible(false)}
+        initialLocation={watch('lat') && watch('lng') ? {lat: watch('lat')!, lng: watch('lng')!} : null}
+        onConfirm={(loc) => {
+          setValue('lat', loc.lat, {shouldValidate: true});
+          setValue('lng', loc.lng, {shouldValidate: true});
+        }}
       />
     </SafeAreaView>
   );

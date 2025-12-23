@@ -1,0 +1,44 @@
+import React from 'react';
+import {View, TextInput, TouchableOpacity} from 'react-native';
+import {Feather} from '@expo/vector-icons';
+
+interface SearchHeaderProps {
+  searchQuery: string;
+  onSearchChange: (text: string) => void;
+  onFilterPress: () => void;
+  activeFilterCount: number;
+  placeholder: string;
+}
+
+export const SearchHeader: React.FC<SearchHeaderProps> = ({searchQuery, onSearchChange, onFilterPress, activeFilterCount, placeholder}) => {
+  return (
+    <View className="mb-4">
+      <View className="flex-row items-center gap-3">
+        <View className="h-12 flex-1 flex-row items-center rounded-xl border border-gray-200 bg-gray-100 px-4">
+          <Feather name="search" size={20} color="#9CA3AF" />
+          <TextInput
+            placeholder={placeholder}
+            className="ml-2 h-full flex-1 text-gray-900"
+            value={searchQuery}
+            onChangeText={onSearchChange}
+            returnKeyType="search"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => onSearchChange('')}>
+              <Feather name="x" size={16} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <TouchableOpacity
+          onPress={onFilterPress}
+          className={`h-12 w-12 items-center justify-center rounded-xl border ${
+            activeFilterCount > 0 ? 'border-green-700 bg-green-700' : 'border-gray-200 bg-white'
+          }`}>
+          <Feather name="sliders" size={20} color={activeFilterCount > 0 ? 'white' : '#374151'} />
+          {activeFilterCount > 0 && <View className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-red-500" />}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};

@@ -5,7 +5,8 @@
     "submit": "Soumettre",
     "cancel": "Annuler",
     "and": "et",
-    "continue": "Continuer"
+    "continue": "Continuer",
+    "error": "Erreur"
   },
   "auth": {
     "login": {
@@ -45,7 +46,11 @@
     "changePassword": {
       "title": "Change Password",
       "subtitle": "Create a strong password to protect your account.",
-      "updatePassword": "Mettre à jour le mot de passe"
+      "updatePassword": "Mettre à jour le mot de passe",
+      "success": "Mot de passe mis à jour",
+      "failure": "Échec de la mise à jour du mot de passe",
+      "newPasswordPlaceholder": "Nouveau mot de passe",
+      "confirmPasswordPlaceholder": "Confirmer le mot de passe"
     },
     "orLoginWith": "ou connectez-vous avec"
   },
@@ -99,7 +104,17 @@
     "addTicketType": "Ajouter un autre type de billet",
     "createButton": "Créer l'événement",
     "noEvents": "Aucun événement pour le moment",
-    "noEventsSubtitle": "Créez votre premier événement pour commencer."
+    "noEventsSubtitle": "Créez votre premier événement pour commencer.",
+    "location": "Emplacement",
+    "editTitle": "Modifier l'événement",
+    "updateButton": "Mettre à jour l'événement",
+    "date": "Date",
+    "time": "Heure",
+    "aboutEvent": "À propos de l'événement",
+    "tickets": "Billets",
+    "searchPlaceholder": "Rechercher des événements...",
+    "dateRange": "Plage de dates",
+    "bookNow": "Réserver des billets"
   },
   "services": {
     "createTitle": "Créer un nouveau service",
@@ -118,7 +133,8 @@
     "active": "Actif",
     "disabled": "Désactivé",
     "enableConfirm": "Êtes-vous sûr de vouloir activer ce service ?",
-    "disableConfirm": "Êtes-vous sûr de vouloir désactiver ce service ? Les clients ne pourront plus le réserver."
+    "disableConfirm": "Êtes-vous sûr de vouloir désactiver ce service ? Les clients ne pourront plus le réserver.",
+    "locationRequired": "L'emplacement est requis"
   },
   "validation": {
     "required": "Requis",
@@ -134,7 +150,10 @@
     "passwordUppercase": "Le mot de passe doit contenir au moins une majuscule",
     "passwordLowercase": "Le mot de passe doit contenir au moins une minuscule",
     "passwordNumber": "Le mot de passe doit contenir au moins un chiffre",
-    "passwordSpecial": "Le mot de passe doit contenir au moins un caractère spécial"
+    "passwordSpecial": "Le mot de passe doit contenir au moins un caractère spécial",
+    "newPasswordRequired": "Nouveau mot de passe requis",
+    "confirmPasswordRequired": "Confirmez votre mot de passe",
+    "passwordMatch": "Les mots de passe ne correspondent pas"
   },
   "role": {
     "howWillYouUse": "Comment allez-vous utiliser VidaSana ?",
