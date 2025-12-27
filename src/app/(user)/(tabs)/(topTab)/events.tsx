@@ -80,14 +80,14 @@ export default function UserEventsScreen() {
     queryFn: async ({pageParam = 0}) => {
       const LIMIT = 10;
       const {data: rpcData, error} = await supabase.rpc('search_events', {
-        search_query: debouncedSearchQuery || null,
+        search_query: debouncedSearchQuery,
         target_lang: i18n.language,
-        category_filter: selectedCategories.length > 0 ? selectedCategories[0] : null,
-        date_from: dateFrom ? dateFrom.toISOString() : null,
-        date_to: dateTo ? dateTo.toISOString() : null,
-        user_lat: userLocation?.latitude || null,
-        user_lng: userLocation?.longitude || null,
-        radius_meters: isNearMeEnabled ? radius * 1000 : null,
+        category_filter: selectedCategories.length > 0 ? selectedCategories : undefined,
+        date_from: dateFrom ? dateFrom.toISOString() : undefined,
+        date_to: dateTo ? dateTo.toISOString() : undefined,
+        user_lat: userLocation?.latitude || undefined,
+        user_lng: userLocation?.longitude || undefined,
+        radius_meters: isNearMeEnabled ? radius * 1000 : undefined,
         sort_by: sortBy,
         page_offset: pageParam,
         page_limit: LIMIT,

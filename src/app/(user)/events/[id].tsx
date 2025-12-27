@@ -1,17 +1,21 @@
 import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Platform, Linking} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 import {AppleMaps, GoogleMaps} from 'expo-maps';
+import {useAppStore} from '@/store';
+import {LikeButton} from '@/components';
 
 export default function UserEventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
   const {back} = useRouter();
   const {t, i18n} = useTranslation();
+  const {user} = useAppStore((s) => s.session!);
+  const queryClient = useQueryClient();
   const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   const {data: event, isLoading} = useQuery({
@@ -25,6 +29,9 @@ export default function UserEventDetailsScreen() {
 
       if (error) throw error;
 
+      // Check if liked
+      const {count} = await supabase.from('event_bookmarks').select('*', {count: 'exact', head: true}).eq('event', id).eq('user', user.id);
+
       const translation =
         data.event_translations.find((tr: any) => tr.lang_code === i18n.language) ||
         data.event_translations.find((tr: any) => tr.lang_code === 'en') ||
@@ -33,11 +40,37 @@ export default function UserEventDetailsScreen() {
       return {
         ...data,
         title: translation?.title || 'Untitled Event',
-        title: translation?.title || 'Untitled Event',
         description: translation?.description || 'No description available',
         lat: (data as any).location?.coordinates ? (data as any).location.coordinates[1] : null,
         lng: (data as any).location?.coordinates ? (data as any).location.coordinates[0] : null,
+        is_liked: count ? count > 0 : false,
       };
+    },
+  });
+
+  const toggleLikeMutation = useMutation({
+    mutationFn: async ({isLiked}: {isLiked: boolean}) => {
+      if (isLiked) {
+        const {error} = await supabase.from('event_bookmarks').delete().eq('event', id).eq('user', user.id);
+        if (error) throw error;
+      } else {
+        const {error} = await supabase.from('event_bookmarks').insert({event: id, user: user.id});
+        if (error) throw error;
+      }
+    },
+    onMutate: async ({isLiked}) => {
+      await queryClient.cancelQueries({queryKey: ['event', id, i18n.language]});
+      const previousEvent = queryClient.getQueryData(['event', id, i18n.language]);
+      queryClient.setQueryData(['event', id, i18n.language], (old: any) => ({...old, is_liked: !isLiked}));
+      return {previousEvent};
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousEvent) {
+        queryClient.setQueryData(['event', id, i18n.language], context.previousEvent);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({queryKey: ['event', id, i18n.language]});
     },
   });
 
@@ -83,6 +116,19 @@ export default function UserEventDetailsScreen() {
           <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
+
+          {/* Like Button */}
+          <View className="absolute right-4 top-4">
+            <LikeButton
+              isLiked={event?.is_liked || false}
+              onToggle={() => {
+                if (!toggleLikeMutation.isPending) {
+                  toggleLikeMutation.mutate({isLiked: event?.is_liked || false});
+                }
+              }}
+              isLoading={toggleLikeMutation.isPending}
+            />
+          </View>
         </View>
 
         {/* Content */}

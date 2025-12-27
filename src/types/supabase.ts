@@ -142,6 +142,42 @@ export type Database = {
           },
         ]
       }
+      event_bookmarks: {
+        Row: {
+          created_at: string | null
+          event: string
+          id: string
+          user: string
+        }
+        Insert: {
+          created_at?: string | null
+          event: string
+          id?: string
+          user: string
+        }
+        Update: {
+          created_at?: string | null
+          event?: string
+          id?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_bookmarks_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bookmarks_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_ticket_types: {
         Row: {
           capacity: number | null
@@ -404,6 +440,51 @@ export type Database = {
         }
         Relationships: []
       }
+      service_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          rating: number
+          service_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating: number
+          service_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number
+          service_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_translations: {
         Row: {
           created_at: string
@@ -610,9 +691,28 @@ export type Database = {
           week_day: Database["public"]["Enums"]["week_day"][]
         }[]
       }
+      get_service_rating_summary: {
+        Args: { target_service_id: string }
+        Returns: {
+          avg_rating: number
+          count: number
+        }[]
+      }
+      get_service_reviews: {
+        Args: { target_service_id: string }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          user_id: string
+          user_image: string
+          user_name: string
+        }[]
+      }
       search_events: {
         Args: {
-          category_filter?: number
+          category_filter?: number[]
           date_from?: string
           date_to?: string
           page_limit?: number
@@ -643,6 +743,16 @@ export type Database = {
           start_at: string
           title: string
           updated_at: string
+        }[]
+      }
+      search_map_items: {
+        Args: { radius_meters: number; user_lat: number; user_lng: number }
+        Returns: {
+          id: string
+          lat: number
+          lng: number
+          title: string
+          type: string
         }[]
       }
       search_services: {

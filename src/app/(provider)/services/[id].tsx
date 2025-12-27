@@ -3,7 +3,7 @@ import {View, Text, ScrollView, Image, TouchableOpacity, Alert, ActivityIndicato
 import {useLocalSearchParams, useRouter, Link} from 'expo-router';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {Feather} from '@expo/vector-icons';
+import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import Toast from 'react-native-toast-message';
 import {useTranslation} from 'react-i18next';
@@ -30,6 +30,28 @@ export default function ServiceDetailsScreen() {
       const {data, error} = await supabase.from('services').select(`*, categories (name)`).eq('id', id).single();
       if (error) throw error;
       return data;
+    },
+    enabled: !!id,
+  });
+
+  // Fetch Rating Summary
+  const {data: ratingSummary} = useQuery({
+    queryKey: ['service_rating_summary', id],
+    queryFn: async () => {
+      const {data, error} = await supabase.rpc('get_service_rating_summary', {target_service_id: id});
+      if (error) throw error;
+      return data && data.length > 0 ? data[0] : {avg_rating: 0, count: 0};
+    },
+    enabled: !!id,
+  });
+
+  // Fetch Reviews
+  const {data: reviews} = useQuery({
+    queryKey: ['service_reviews', id],
+    queryFn: async () => {
+      const {data, error} = await supabase.rpc('get_service_reviews', {target_service_id: id});
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!id,
   });
@@ -161,7 +183,15 @@ export default function ServiceDetailsScreen() {
 
           {/* Title & Price */}
           <View className="mb-4 flex-row items-start justify-between">
-            <Text className="mr-2 flex-1 text-2xl font-bold text-gray-900">{service.title}</Text>
+            <View className="flex-1">
+              <Text className="mr-2 text-2xl font-bold text-gray-900">{service.title}</Text>
+              {/* Rating Summary */}
+              <View className="mt-1 flex-row items-center gap-1">
+                <Ionicons name="star" size={16} color="#F59E0B" />
+                <Text className="font-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Text>
+                <Text className="text-gray-500">({ratingSummary?.count || 0} reviews)</Text>
+              </View>
+            </View>
             <Text className="text-2xl font-bold text-green-700">${service.price}</Text>
           </View>
 
@@ -210,7 +240,7 @@ export default function ServiceDetailsScreen() {
 
           {/* Schedule */}
           <Text className="mb-3 text-lg font-bold text-gray-900">{t('services.schedule')}</Text>
-          <View className="flex-row flex-wrap gap-2">
+          <View className="mb-6 flex-row flex-wrap gap-2">
             {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => {
               const isActive = service.week_day?.includes(day as any);
               return (
@@ -219,6 +249,39 @@ export default function ServiceDetailsScreen() {
                 </View>
               );
             })}
+          </View>
+
+          {/* Reviews List */}
+          <View className="mt-2">
+            <Text className="mb-2 text-lg font-bold text-gray-900">Reviews ({ratingSummary?.count || 0})</Text>
+            {reviews && reviews.length > 0 ? (
+              reviews.map((review: any) => (
+                <View key={review.id} className="mb-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <View className="mb-2 flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-2">
+                      {review.user_image ? (
+                        <Image
+                          source={{uri: supabase.storage.from('avatars').getPublicUrl(review.user_image).data.publicUrl}}
+                          className="h-8 w-8 rounded-full"
+                        />
+                      ) : (
+                        <View className="h-8 w-8 items-center justify-center rounded-full bg-gray-300">
+                          <Feather name="user" size={16} color="white" />
+                        </View>
+                      )}
+                      <Text className="font-semibold text-gray-900">{review.user_name || 'Anonymous'}</Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      <Ionicons name="star" size={14} color="#F59E0B" />
+                      <Text className="ml-1 text-xs font-bold text-gray-900">{review.rating}</Text>
+                    </View>
+                  </View>
+                  {review.comment && <Text className="text-gray-600">{review.comment}</Text>}
+                </View>
+              ))
+            ) : (
+              <Text className="italic text-gray-500">No reviews yet.</Text>
+            )}
           </View>
         </View>
       </ScrollView>

@@ -1,10 +1,8 @@
 import {useEffect, useState} from 'react';
 
-type useDebouncer = (v: string, t: number) => [string, (v: string) => void, string];
-
-export const useDebouncer: useDebouncer = (initialValue = '', time = 500) => {
-  const [value, setValue] = useState(initialValue);
-  const [debounced, setDebounced] = useState(initialValue);
+export const useDebouncer = <T>(initialValue: T, time = 500): [T, React.Dispatch<React.SetStateAction<T>>, T] => {
+  const [value, setValue] = useState<T>(initialValue);
+  const [debounced, setDebounced] = useState<T>(initialValue);
 
   useEffect(() => {
     const handler = setTimeout(() => setDebounced(value), time);
