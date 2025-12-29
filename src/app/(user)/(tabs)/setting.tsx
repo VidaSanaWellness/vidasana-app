@@ -3,12 +3,13 @@ import {useState} from 'react';
 import {supabase} from '@/utils';
 import {useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
+import {useTranslation} from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
+import {LanguagePicker} from '@/components/LanguagePicker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {FadeIn, FadeOut, SlideInDown, SlideOutDown} from 'react-native-reanimated';
 import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {LanguagePicker} from '@/components/LanguagePicker';
-import {useTranslation} from 'react-i18next';
+import {useAppStore} from '@/store';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -16,6 +17,7 @@ const useCurrentUser = () => ({});
 
 const Profile = () => {
   const router = useRouter();
+  const {user} = useAppStore((s) => s.session!);
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<{fullName: string; email: string; phone: string; role: string}>({
@@ -211,10 +213,10 @@ const Profile = () => {
           </TouchableOpacity>
 
           <View className="flex-row items-center space-x-2">
-            <Text className="text-2xl font-semibold text-black">{userInfo.fullName || 'Your Name'}</Text>
+            <Text className="text-2xl font-semibold text-black">{user.email}</Text>
 
-            <View className={`rounded-full px-3 py-1 ${isProvider ? 'bg-[#3E6065]' : 'bg-gray-300'}`}>
-              <Text className="text-xs font-bold text-white">{roleLabel}</Text>
+            <View className={`rounded-full px-3 py-1 ${user.user_metadata.role === 'provider' ? 'bg-[#3E6065]' : 'bg-gray-300'}`}>
+              <Text className="text-xs font-bold text-white">{user.user_metadata.role}</Text>
             </View>
           </View>
 

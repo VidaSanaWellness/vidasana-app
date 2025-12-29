@@ -15,7 +15,6 @@ type LoginFormData = {email: string; password: string};
 
 const Page = () => {
   const {t} = useTranslation();
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const {control, clearErrors, handleSubmit, formState} = useForm({defaultValues: {email: '', password: ''}});
@@ -98,12 +97,6 @@ const Page = () => {
             </View>
 
             <View className="mb-6 mt-2 flex-row items-center justify-between">
-              <TouchableOpacity className="ml-1 mt-2 flex-row items-center" onPress={() => setRememberMe(!rememberMe)}>
-                <View className={`mr-2 h-5 w-5 items-center justify-center rounded border-2 border-black  ${rememberMe ? 'bg-white' : ''}`}>
-                  <View className={`h-3 w-3 rounded ${rememberMe ? 'bg-[#E03C31]' : ''}`} />
-                </View>
-                <Text className="text-sm text-gray-600">{t('auth.login.rememberMe')}</Text>
-              </TouchableOpacity>
               <Link href="/auth/forget-password">
                 <Text className="text-sm font-semibold text-[#E03C31]">{t('auth.login.forgotPassword')}</Text>
               </Link>
