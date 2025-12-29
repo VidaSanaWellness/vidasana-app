@@ -95,6 +95,7 @@ export default function UserServiceDetailsScreen() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({queryKey: ['service', id]});
+      queryClient.invalidateQueries({queryKey: ['liked-items']});
     },
   });
 

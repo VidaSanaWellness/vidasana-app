@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator} from 'react-native';
+import {View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useRouter} from 'expo-router';
 import {Ionicons, Feather} from '@expo/vector-icons';
@@ -19,6 +19,7 @@ export default function LikedItemsScreen() {
     data: likedItems,
     isLoading,
     refetch,
+    isRefetching,
   } = useQuery({
     queryKey: ['liked-items', user?.id, activeTab],
     queryFn: async () => {
@@ -31,14 +32,17 @@ export default function LikedItemsScreen() {
             id,
             created_at,
             service:services (
-              id, title, description, price, images, capacity, booked_count,
-              service_translations!service_translations_service_id_fkey (*)
+              id, price, images, capacity, 
+              service_translations!service_translations_service_fkey (*)
             )
           `
           )
           .eq('user', user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching service bookmarks:', error);
+          throw error;
+        }
 
         return bookmarks
           .filter((b) => b.service)
@@ -50,8 +54,8 @@ export default function LikedItemsScreen() {
               s.service_translations[0];
             return {
               ...s,
-              title: tr?.title || s.title,
-              description: tr?.description || s.description,
+              title: tr?.title || 'Untitled',
+              description: tr?.description || '',
               bookmark_id: b.id,
             };
           });
@@ -65,7 +69,7 @@ export default function LikedItemsScreen() {
             created_at,
             event:events (
               id, start_at, end_at, images, category,
-              event_translations!event_translations_event_id_fkey (*)
+              event_translations!event_translations_event_fkey (*)
             )
           `
           )
