@@ -105,12 +105,9 @@ export default function UserServiceDetailsScreen() {
       if (ratingInput === 0) {
         throw new Error('Please select a rating (at least 1 star)');
       }
-      const {error} = await supabase.from('service_reviews').upsert({
-        service_id: id,
-        user_id: user.id,
-        rating: ratingInput,
-        comment: commentInput,
-      });
+      const {error} = await supabase
+        .from('service_reviews')
+        .upsert({service_id: id, user_id: user.id, rating: ratingInput, comment: commentInput}, {onConflict: 'service_id, user_id'});
       if (error) throw error;
     },
     onSuccess: () => {
@@ -120,6 +117,7 @@ export default function UserServiceDetailsScreen() {
       queryClient.invalidateQueries({queryKey: ['service_rating_summary', id]});
     },
     onError: (err: any) => {
+      console.log('🚀 ~ UserServiceDetailsScreen ~ err:', err);
       Toast.show({type: 'error', text1: 'Failed to submit review', text2: err.message});
     },
   });

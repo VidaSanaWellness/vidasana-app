@@ -207,9 +207,10 @@ export default function LikedItemsScreen() {
           <FlatList
             data={likedItems || []}
             keyExtractor={(item) => item.id}
-            renderItem={activeTab === 'services' ? renderServiceItem : renderEventItem}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{paddingBottom: 40}}
+            renderItem={activeTab === 'services' ? renderServiceItem : renderEventItem}
+            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             ListEmptyComponent={
               <View className="mt-20 items-center justify-center">
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-100">

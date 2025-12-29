@@ -2,7 +2,7 @@ import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Platform, Linking} from 'react-native';
+import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Platform, Linking, RefreshControl} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 import {AppleMaps, GoogleMaps} from 'expo-maps';
@@ -18,7 +18,12 @@ export default function UserEventDetailsScreen() {
   const queryClient = useQueryClient();
   const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
-  const {data: event, isLoading} = useQuery({
+  const {
+    data: event,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ['event', id, i18n.language],
     queryFn: async () => {
       const {data, error} = await supabase
@@ -71,6 +76,7 @@ export default function UserEventDetailsScreen() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({queryKey: ['event', id, i18n.language]});
+      queryClient.invalidateQueries({queryKey: ['liked-items']});
     },
   });
 
@@ -101,7 +107,10 @@ export default function UserEventDetailsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#15803d" />}>
         {/* Header Image */}
         <View className="relative h-64 w-full bg-gray-200">
           {imageUrl ? (
