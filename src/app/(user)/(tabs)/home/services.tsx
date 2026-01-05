@@ -62,7 +62,7 @@ export default function ServicesScreen() {
   }, [initialCategoryId]);
 
   // Location State
-  const userLocation = useUserLocation();
+  const {location: userLocation} = useUserLocation();
 
   // Handler to Apply Filters from Modal
   const handleApplyFilters = (filters: FilterState) => {

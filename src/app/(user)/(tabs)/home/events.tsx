@@ -42,7 +42,7 @@ export default function EventsScreen() {
   const [radius, setRadius] = useState<number>(10); // Default 10km
 
   // Location State
-  const userLocation = useUserLocation();
+  const {location: userLocation} = useUserLocation();
 
   // Handler to Apply Filters from Modal
   const handleApplyFilters = (filters: FilterState) => {

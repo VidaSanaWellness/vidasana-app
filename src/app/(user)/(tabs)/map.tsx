@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, ActivityIndicator} from 'react-native';
 import {useQuery} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
-import * as Location from 'expo-location';
+import {useUserLocation} from '@/hooks';
 import {GoogleMaps} from 'expo-maps';
 import {useRouter} from 'expo-router';
 import {useDebouncer} from '@/hooks/useDebounce';
@@ -31,29 +31,23 @@ export default function MapScreen() {
   // Supercluster instance
 
   // -- User Location Setup --
+  const {location, isLoading: isLocationLoading} = useUserLocation();
+
   useEffect(() => {
-    (async () => {
-      try {
-        const {status} = await Location.requestForegroundPermissionsAsync();
-        if (status === 'granted') {
-          const loc = await Location.getCurrentPositionAsync({});
-          const newCamera = {
-            latitude: loc.coords.latitude,
-            longitude: loc.coords.longitude,
-            zoom: 14,
-          };
-          setInitialCamera(newCamera);
-          setCameraTarget({coordinates: {latitude: newCamera.latitude, longitude: newCamera.longitude}, zoom: 14});
-          setFetchParams({lat: newCamera.latitude, lng: newCamera.longitude, radius: getRadiusFromZoom(14), zoom: 14});
-        } else {
-          setInitialCamera({latitude: 37.7749, longitude: -122.4194, zoom: 14});
-        }
-      } catch (error) {
-        console.log('Loc Error', error);
-        setInitialCamera({latitude: 37.7749, longitude: -122.4194, zoom: 14});
-      }
-    })();
-  }, []);
+    if (location) {
+      const newCamera = {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        zoom: 14,
+      };
+      setInitialCamera(newCamera);
+      setCameraTarget({coordinates: {latitude: newCamera.latitude, longitude: newCamera.longitude}, zoom: 14});
+      setFetchParams({lat: newCamera.latitude, lng: newCamera.longitude, radius: getRadiusFromZoom(14), zoom: 14});
+    } else if (!isLocationLoading && !location) {
+      // Default to SF if denied or failed
+      setInitialCamera({latitude: 37.7749, longitude: -122.4194, zoom: 14});
+    }
+  }, [location, isLocationLoading]);
 
   // -- Data Fetching --
   const {data: items, isLoading} = useQuery({

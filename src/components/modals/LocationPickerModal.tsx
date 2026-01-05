@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Modal, View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator} from 'react-native';
 import {AppleMaps, GoogleMaps} from 'expo-maps';
-import * as Location from 'expo-location';
+import {useUserLocation} from '@/hooks';
 import {Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 
@@ -20,33 +20,25 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
   const [mapRegion, setMapRegion] = useState<{latitude: number; longitude: number; zoom: number} | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const {location: userLocation, isLoading: isLocLoading} = useUserLocation();
+
   useEffect(() => {
     if (visible && !initialLocation) {
-      (async () => {
-        setIsLoading(true);
-        try {
-          const {status} = await Location.requestForegroundPermissionsAsync();
-          if (status === 'granted') {
-            const location = await Location.getCurrentPositionAsync({});
-            const coords = {latitude: location.coords.latitude, longitude: location.coords.longitude, zoom: 15};
-            setMapRegion(coords);
-            setCurrentLocation({lat: location.coords.latitude, lng: location.coords.longitude});
-          } else {
-            // Default to a known location (e.g. city center) if permission denied
-            // For now just set a default or handle error
-            setMapRegion({latitude: 37.7749, longitude: -122.4194, zoom: 12}); // SF Default
-          }
-        } catch (error) {
-          console.error('Error getting location', error);
-        } finally {
-          setIsLoading(false);
-        }
-      })();
+      if (userLocation) {
+        const coords = {latitude: userLocation.latitude, longitude: userLocation.longitude, zoom: 15};
+        setMapRegion(coords);
+        setCurrentLocation({lat: userLocation.latitude, lng: userLocation.longitude});
+        setIsLoading(false);
+      } else if (!isLocLoading && !userLocation) {
+        // Default if location failed or denied
+        setMapRegion({latitude: 37.7749, longitude: -122.4194, zoom: 12});
+        setIsLoading(false);
+      }
     } else if (visible && initialLocation) {
       setMapRegion({latitude: initialLocation.lat, longitude: initialLocation.lng, zoom: 15});
       setIsLoading(false);
     }
-  }, [visible, initialLocation]);
+  }, [visible, initialLocation, userLocation, isLocLoading]);
 
   const handleCameraMove = (event: {coordinates: {latitude?: number; longitude?: number}}) => {
     // expo-maps API sends the camera state directly in the event object
