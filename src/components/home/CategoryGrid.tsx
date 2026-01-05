@@ -1,10 +1,10 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, ScrollView, ActivityIndicator} from 'react-native';
-import {Feather} from '@expo/vector-icons';
-import {useQuery} from '@tanstack/react-query';
-import {supabase} from '@/utils/supabase';
-import {useTranslation} from 'react-i18next';
 import {useRouter} from 'expo-router';
+import {supabase} from '@/utils/supabase';
+import {Feather} from '@expo/vector-icons';
+import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import {View, Text, TouchableOpacity, FlatList, ActivityIndicator} from 'react-native';
 
 export const CategoryGrid = () => {
   const {t} = useTranslation();
@@ -24,42 +24,55 @@ export const CategoryGrid = () => {
     return (iconName as keyof typeof Feather.glyphMap) in Feather.glyphMap ? (iconName as keyof typeof Feather.glyphMap) : 'grid';
   };
 
-  const handleCategoryPress = (categoryId: number) => {
-    router.push({
-      pathname: '/(user)/(tabs)/home/services',
-      params: {categoryId: categoryId.toString()},
-    });
+  const handleCategoryPress = (categoryId: number) =>
+    router.push({pathname: '/(user)/(tabs)/home/services', params: {categoryId: categoryId.toString()}});
+
+  const data = (() => {
+    if (!categories) return [];
+    const items: any[] = categories.slice(0, 7);
+    items.push({id: 'see-all', isSeeAll: true, name: t('common.seeAll'), icon: 'more-horizontal'});
+    return items;
+  })();
+
+  const renderItem = ({item}: {item: any}) => {
+    const isSeeAll = item.id === 'see-all';
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => (isSeeAll ? router.push('/(user)/(tabs)/home/services') : handleCategoryPress(item.id))}
+        className="mb-6 w-1/4 items-center px-1">
+        <View className={`mb-2 h-14 w-14 items-center justify-center rounded-full ${isSeeAll ? 'bg-gray-100' : 'bg-green-50'}`}>
+          <Feather name={getIconName(item.icon)} size={24} color={isSeeAll ? '#4B5563' : '#15803d'} />
+        </View>
+        <Text numberOfLines={1} className="text-center text-xs font-medium text-gray-700">
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
-  if (isLoading) {
+  if (isLoading)
     return (
       <View className="py-4">
         <ActivityIndicator size="small" color="#15803d" />
       </View>
     );
-  }
 
   return (
     <View className="mt-6 px-4">
       <View className="mb-4 flex-row items-center justify-between">
         <Text className="text-lg font-bold text-black">{t('services.categories')}</Text>
-        <TouchableOpacity onPress={() => router.push('/(user)/(tabs)/home/services')}>
-          <Text className="text-sm font-semibold text-green-700">{t('common.seeAll')}</Text>
-        </TouchableOpacity>
       </View>
 
-      <View className="flex-row flex-wrap justify-between">
-        {categories?.slice(0, 8).map((cat) => (
-          <TouchableOpacity key={cat.id} activeOpacity={0.7} onPress={() => handleCategoryPress(cat.id)} className="mb-6 w-[22%] items-center">
-            <View className="mb-2 h-14 w-14 items-center justify-center rounded-full bg-green-50">
-              <Feather name={getIconName(cat.icon || 'grid')} size={24} color="#15803d" />
-            </View>
-            <Text numberOfLines={1} className="text-xs font-medium text-gray-700">
-              {cat.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <FlatList
+        data={data}
+        numColumns={4}
+        scrollEnabled={false}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        columnWrapperStyle={{justifyContent: 'flex-start'}}
+      />
     </View>
   );
 };

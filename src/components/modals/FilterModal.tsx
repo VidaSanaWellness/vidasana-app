@@ -127,10 +127,6 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
                 thumbColor={'#f4f3f4'}
                 ios_backgroundColor="#3e3e3e"
                 onValueChange={(val) => {
-                  if (val && !userLocation) {
-                    Alert.alert(t('common.error'), t('services.locationRequired'));
-                    return;
-                  }
                   setLocalFilters((prev) => ({...prev, isNearMeEnabled: val}));
                 }}
                 value={localFilters.isNearMeEnabled}
