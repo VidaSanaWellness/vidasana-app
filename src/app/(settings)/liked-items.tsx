@@ -105,7 +105,7 @@ export default function LikedItemsScreen() {
         onPress={() => router.push(`/(user)/services/${item.id}`)}
         className="mb-4 flex-row overflow-hidden rounded-2xl bg-white shadow-sm"
         style={{shadowColor: '#000', shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2}}>
-        <View className="h-32 w-32 bg-gray-200">
+        <View className="aspect-square w-32 bg-gray-200">
           {imageUrl ? (
             <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
           ) : (
@@ -143,7 +143,7 @@ export default function LikedItemsScreen() {
         onPress={() => router.push(`/(user)/events/${item.id}`)}
         className="mb-4 flex-row overflow-hidden rounded-2xl bg-white shadow-sm"
         style={{shadowColor: '#000', shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2}}>
-        <View className="h-32 w-32 bg-gray-200">
+        <View className="aspect-square w-32 bg-gray-200">
           {imageUrl ? (
             <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
           ) : (

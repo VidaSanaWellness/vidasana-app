@@ -1,4 +1,5 @@
 export * from './Loader';
+export * from './Avatar';
 export * from './GoogleLogin';
 export * from './SearchHeader';
 export * from './modals/create';

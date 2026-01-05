@@ -53,7 +53,7 @@ export default function EventsScreen() {
         <Pressable className="mb-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
           <View className="flex-row">
             {/* Image (Left Side) - Keeping consistent 32x32 size */}
-            <View className="h-32 w-32 bg-gray-200">
+            <View className="aspect-square w-32 bg-gray-200">
               {imageUrl ? (
                 <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
               ) : (

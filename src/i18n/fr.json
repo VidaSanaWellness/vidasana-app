@@ -6,7 +6,14 @@
     "cancel": "Annuler",
     "and": "et",
     "continue": "Continuer",
-    "error": "Erreur"
+    "error": "Erreur",
+    "greeting": "Bonjour",
+    "goodMorning": "Bonjour",
+    "goodAfternoon": "Bon Après-midi",
+    "goodEvening": "Bonsoir",
+    "goodNight": "Bonne Nuit",
+    "seeAll": "Voir Tout",
+    "comingSoon": "Bientôt Disponible"
   },
   "auth": {
     "login": {
@@ -17,7 +24,8 @@
       "forgotPassword": "Mot de passe oublié ?",
       "noAccount": "Vous n'avez pas de compte ?",
       "signUp": "S'inscrire",
-      "loginBoxTitle": "Connexion"
+      "loginBoxTitle": "Connexion",
+      "loginButton": "Connexion"
     },
     "register": {
       "title": "Commencer",
@@ -113,7 +121,8 @@
     "tickets": "Billets",
     "searchPlaceholder": "Rechercher des événements...",
     "dateRange": "Plage de dates",
-    "bookNow": "Réserver des billets"
+    "bookNow": "Réserver des billets",
+    "popular": "Événements à Venir"
   },
   "services": {
     "createTitle": "Créer un nouveau service",
@@ -133,7 +142,11 @@
     "disabled": "Désactivé",
     "enableConfirm": "Êtes-vous sûr de vouloir activer ce service ?",
     "disableConfirm": "Êtes-vous sûr de vouloir désactiver ce service ? Les clients ne pourront plus le réserver.",
-    "locationRequired": "L'emplacement est requis"
+    "locationRequired": "L'emplacement est requis",
+    "categories": "Services",
+    "popular": "Services Populaires",
+    "searchPlaceholder": "Rechercher des services...",
+    "viewDetails": "Voir Détails"
   },
   "validation": {
     "required": "Requis",
@@ -181,5 +194,8 @@
     "fair": "Moyen",
     "good": "Bon",
     "strong": "Fort"
+  },
+  "notifications": {
+    "title": "Notifications"
   }
 }

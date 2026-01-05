@@ -1,35 +1,23 @@
-import {
-  ActivityIndicator,
-  Image,
-  Text,
-  TouchableOpacity,
-  View,
-  Platform,
-  Linking,
-  Modal,
-  TextInput,
-  FlatList,
-  KeyboardAvoidingView,
-} from 'react-native';
+import {ActivityIndicator, Image, Text, TouchableOpacity, View, Platform, Linking, Modal, TextInput, KeyboardAvoidingView} from 'react-native';
 import {AppleMaps, GoogleMaps} from 'expo-maps';
 import {Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView} from 'react-native';
 import {supabase} from '@/utils/supabase';
-import {useLocalSearchParams, useRouter} from 'expo-router';
+import {Link, useLocalSearchParams, useRouter} from 'expo-router';
 import {useMemo, useState} from 'react';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {useAppStore} from '@/store';
 import Toast from 'react-native-toast-message';
-import {LikeButton} from '@/components';
+import {Avatar, LikeButton} from '@/components';
 import {Rating} from 'react-native-ratings';
 
 export default function UserServiceDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
   const {user} = useAppStore((s) => s.session!);
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
-  const {back} = useRouter();
+  const {back, push} = useRouter();
   const {t, i18n} = useTranslation();
   const queryClient = useQueryClient();
 
@@ -177,7 +165,7 @@ export default function UserServiceDetailsScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header Image */}
-        <View className="relative h-64 w-full bg-gray-200">
+        <View className="relative aspect-square w-full bg-gray-200">
           {imageUrl ? (
             <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
           ) : (
@@ -208,12 +196,22 @@ export default function UserServiceDetailsScreen() {
         {/* Content */}
         <View className="p-5 pb-10">
           <View className="mb-2 flex-row items-center justify-between">
-            <View className="flex-1">
-              <Text className="text-2xl font-bold text-gray-900">{title}</Text>
-              <View className="mt-1 flex-row items-center gap-1">
-                <Ionicons name="star" size={16} color="#F59E0B" />
-                <Text className="font-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Text>
-                <Text className="text-gray-500">({ratingSummary?.count || 0} reviews)</Text>
+            <View className="flex-1 pr-4">
+              <View className="flex-row items-center">
+                {/* Provider Image - Clickable */}
+
+                <Link href={`/(user)/provider/${(service.provider as any).id}`}>
+                  <Avatar size={52} name="Test" className="h-full w-full" uri={''} />
+                </Link>
+
+                <View className="ml-3 flex-1">
+                  <Text className="text-2xl font-bold text-gray-900">{title}</Text>
+                  <View className="mt-1 flex-row items-center gap-1">
+                    <Ionicons name="star" size={16} color="#F59E0B" />
+                    <Text className="font-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Text>
+                    <Text className="text-gray-500">({ratingSummary?.count || 0} reviews)</Text>
+                  </View>
+                </View>
               </View>
             </View>
 

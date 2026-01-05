@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, ActivityIndicator} from 'react-native';
 import {useQuery} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
@@ -6,6 +6,8 @@ import * as Location from 'expo-location';
 import {GoogleMaps} from 'expo-maps';
 import {useRouter} from 'expo-router';
 import {useDebouncer} from '@/hooks/useDebounce';
+import Supercluster from 'supercluster';
+import {Point, Feature} from 'geojson';
 
 // Types
 type MapItem = {
@@ -23,7 +25,10 @@ export default function MapScreen() {
   const router = useRouter();
 
   const [initialCamera, setInitialCamera] = useState<{latitude: number; longitude: number; zoom: number} | null>(null);
+  const [cameraTarget, setCameraTarget] = useState<{coordinates: {latitude: number; longitude: number}; zoom: number} | undefined>(undefined);
   const [fetchParams, setFetchParams, debouncedParams] = useDebouncer({zoom: 14, lat: 37.7749, radius: 5000, lng: -122.4194}, 600);
+
+  // Supercluster instance
 
   // -- User Location Setup --
   useEffect(() => {
@@ -38,6 +43,7 @@ export default function MapScreen() {
             zoom: 14,
           };
           setInitialCamera(newCamera);
+          setCameraTarget({coordinates: {latitude: newCamera.latitude, longitude: newCamera.longitude}, zoom: 14});
           setFetchParams({lat: newCamera.latitude, lng: newCamera.longitude, radius: getRadiusFromZoom(14), zoom: 14});
         } else {
           setInitialCamera({latitude: 37.7749, longitude: -122.4194, zoom: 14});
@@ -65,36 +71,95 @@ export default function MapScreen() {
     },
   });
 
+  // -- Clustering Logic --
+  // Supercluster instance populated with points
+  const supercluster = new Supercluster({radius: 40, maxZoom: 20});
+
+  const points = (items || [])
+    .filter((i) => i.lat && i.lng)
+    .map(
+      (i) =>
+        ({
+          type: 'Feature',
+          properties: {cluster: false, itemId: i.id, title: i.title, itemType: i.type},
+          geometry: {type: 'Point', coordinates: [i.lng, i.lat]},
+        }) as Feature<Point>
+    );
+
+  supercluster.load(points);
+
+  // Derive clusters for current view
+  const bounds = [-180, -85, 180, 85] as [number, number, number, number];
+  const clusters = supercluster.getClusters(bounds, Math.floor(debouncedParams.zoom));
+
+  // -- Clustering Logic --
+
   // -- Handlers --
+  const moveTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Simple Camera Move Handler (updates hook state directly)
   const onCameraMove = (event: {zoom: number; coordinates: {latitude: number; longitude: number}}) => {
-    const newRadius = event.zoom ? getRadiusFromZoom(event.zoom) : fetchParams.radius;
+    // Release programmatic control on user interaction
+    if (cameraTarget) setCameraTarget(undefined);
 
-    // Calculate distance from last update (to reduce state updates if needed, though hook handles debounce)
-    // Optimization: Only set state if significantly moved to reduce React rendering even if hook handles debouncing downstream
-    const dist = Math.sqrt(Math.pow(event.coordinates.latitude - fetchParams.lat, 2) + Math.pow(event.coordinates.longitude - fetchParams.lng, 2));
+    // Debounce the API call/State update to only trigger after movement stops
+    if (moveTimeout.current) clearTimeout(moveTimeout.current);
 
-    // Update if moved > 0.0005 deg or radius changed significantly or zoom changed integer
-    if (dist > 0.0005 || Math.abs(newRadius - fetchParams.radius) > 1000 || Math.round(event.zoom) !== Math.round(fetchParams.zoom)) {
-      setFetchParams({
-        radius: newRadius,
-        zoom: event.zoom ? event.zoom : fetchParams.zoom,
-        lat: parseFloat(event.coordinates.latitude.toFixed(4)),
-        lng: parseFloat(event.coordinates.longitude.toFixed(4)),
-      });
-    }
+    moveTimeout.current = setTimeout(() => {
+      const newRadius = event.zoom ? getRadiusFromZoom(event.zoom) : fetchParams.radius;
+      const dist = Math.sqrt(Math.pow(event.coordinates.latitude - fetchParams.lat, 2) + Math.pow(event.coordinates.longitude - fetchParams.lng, 2));
+
+      // Only update if significantly changed
+      if (dist > 0.0005 || Math.abs(newRadius - fetchParams.radius) > 1000 || Math.round(event.zoom) !== Math.round(fetchParams.zoom)) {
+        setFetchParams({
+          radius: newRadius,
+          zoom: event.zoom ? event.zoom : fetchParams.zoom,
+          lat: parseFloat(event.coordinates.latitude.toFixed(4)),
+          lng: parseFloat(event.coordinates.longitude.toFixed(4)),
+        });
+      }
+    }, 600); // Wait for 600ms of idleness
   };
 
   const handleMarkerClick = (event: any) => {
     const markerId = event.nativeEvent?.id || event.id;
     if (!markerId) return;
 
-    const item = items?.find((i) => i.id === markerId);
-    if (item?.type === 'event') {
-      router.push(`/(user)/events/${markerId}`);
-    } else {
-      router.push(`/(user)/services/${markerId}`);
+    // Find if it's a cluster or item
+    // The markerId for clusters is generated by us or supercluster
+    // Supercluster gives integer IDs for clusters. Our items use UUIDs (strings).
+
+    // However, we need to lookup the cluster object to get expansion zoom or item details.
+    // Optimization: we can encode type in ID or search the `clusters` array.
+
+    const cluster = clusters.find((c) => String(c.id) === markerId || (c.properties.itemId && c.properties.itemId === markerId));
+
+    if (cluster) {
+      if (cluster.properties.cluster) {
+        // It's a cluster -> Zoom in
+        const expansionZoom = supercluster.getClusterExpansionZoom(cluster.id as number);
+
+        const newTarget = {
+          coordinates: {latitude: cluster.geometry.coordinates[1], longitude: cluster.geometry.coordinates[0]},
+          zoom: expansionZoom,
+        };
+
+        setCameraTarget(newTarget);
+        setFetchParams({
+          ...fetchParams,
+          zoom: newTarget.zoom,
+          lat: newTarget.coordinates.latitude,
+          lng: newTarget.coordinates.longitude,
+        });
+      } else {
+        // It's an item -> Navigate
+        const type = cluster.properties.itemType;
+        const itemId = cluster.properties.itemId;
+        if (type === 'event') {
+          router.push(`/(user)/events/${itemId}`);
+        } else {
+          router.push(`/(user)/services/${itemId}`);
+        }
+      }
     }
   };
 
@@ -105,19 +170,20 @@ export default function MapScreen() {
       </View>
     );
 
-  // -- Markers --
-  // Use debounced zoom for showing/hiding markers so they match the data availability
-  const showMarkers = debouncedParams.zoom >= 10;
+  // Convert clusters to markers format
+  const mapMarkers = (clusters || []).map((feature) => {
+    const isCluster = feature.properties.cluster;
+    const {coordinates} = feature.geometry;
 
-  const mapMarkers =
-    (showMarkers ? items : [])
-      ?.filter((i) => i.lat && i.lng)
-      .map((item) => ({
-        id: item.id,
-        title: item.title,
-        coordinates: {latitude: item.lat, longitude: item.lng},
-        markerColor: item.type === 'event' ? '#2DD4BF' : '#15803D',
-      })) || [];
+    return {
+      id: String(isCluster ? feature.id : feature.properties.itemId),
+      title: isCluster ? `${feature.properties.point_count} items` : feature.properties.title,
+      coordinates: {latitude: coordinates[1], longitude: coordinates[0]},
+      // Color coding: Clusters = Orange, Events = Teal, Services = Green
+      markerColor: isCluster ? '#F97316' : feature.properties.itemType === 'event' ? '#2DD4BF' : '#15803D',
+      icon: isCluster ? 'default' : undefined, // We can't easily customize icon shape with simple props, stick to colors/title
+    };
+  });
 
   const MapView = GoogleMaps.View;
 
@@ -131,7 +197,7 @@ export default function MapScreen() {
         showUserLocationButton={true}
         onMarkerClick={handleMarkerClick}
         properties={{minZoomPreference: 2, maxZoomPreference: 20}}
-        cameraPosition={{zoom: initialCamera.zoom, coordinates: {latitude: initialCamera.latitude, longitude: initialCamera.longitude}}}
+        cameraPosition={cameraTarget}
       />
 
       {/* Map Legend */}
@@ -141,20 +207,16 @@ export default function MapScreen() {
           <View className="h-3 w-3 rounded-full bg-[#15803d]" />
           <Text className="text-xs font-semibold text-gray-700">Services</Text>
         </View>
-        <View className="flex-row items-center gap-2">
+        <View className="mb-2 flex-row items-center gap-2">
           <View className="h-3 w-3 rounded-full bg-[#2dd4bf]" />
           <Text className="text-xs font-semibold text-gray-700">Events</Text>
         </View>
-      </View>
-
-      {/* Zoom Warning (Use instant params for immediate feedback) */}
-      {fetchParams.zoom < 10 && (
-        <View className="pointer-events-none absolute left-0 right-0 top-32 items-center">
-          <View className="rounded-full bg-black/60 px-4 py-2">
-            <Text className="text-xs font-semibold text-white">Zoom in to see results</Text>
-          </View>
+        {/* Cluster Legend */}
+        <View className="flex-row items-center gap-2">
+          <View className="h-3 w-3 rounded-full bg-orange-500" />
+          <Text className="text-xs font-semibold text-gray-700">Cluster</Text>
         </View>
-      )}
+      </View>
 
       {isLoading && debouncedParams.zoom >= 10 && (
         <View className="pointer-events-none absolute left-0 right-0 top-14 items-center">

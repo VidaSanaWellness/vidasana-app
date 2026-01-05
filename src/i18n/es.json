@@ -6,7 +6,14 @@
     "cancel": "Cancelar",
     "and": "y",
     "continue": "Continuar",
-    "error": "Error"
+    "error": "Error",
+    "greeting": "Buenos Días",
+    "goodMorning": "Buenos Días",
+    "goodAfternoon": "Buenas Tardes",
+    "goodEvening": "Buenas Noches",
+    "goodNight": "Buenas Noches",
+    "seeAll": "Ver Todo",
+    "comingSoon": "Próximamente"
   },
   "auth": {
     "login": {
@@ -17,7 +24,8 @@
       "forgotPassword": "¿Olvidaste tu contraseña?",
       "noAccount": "¿No tienes una cuenta?",
       "signUp": "Regístrate",
-      "loginBoxTitle": "Iniciar sesión"
+      "loginBoxTitle": "Iniciar sesión",
+      "loginButton": "Iniciar sesión"
     },
     "register": {
       "title": "Empezar",
@@ -113,7 +121,8 @@
     "tickets": "Entradas",
     "searchPlaceholder": "Buscar eventos...",
     "dateRange": "Rango de fechas",
-    "bookNow": "Reservar entradas"
+    "bookNow": "Reservar entradas",
+    "popular": "Próximos Eventos"
   },
   "services": {
     "createTitle": "Crear nuevo servicio",
@@ -133,7 +142,11 @@
     "disabled": "Deshabilitado",
     "enableConfirm": "¿Estás seguro de que quieres habilitar este servicio?",
     "disableConfirm": "¿Estás seguro de que quieres deshabilitar este servicio? Los clientes ya no podrán reservarlo.",
-    "locationRequired": "La ubicación es obligatoria"
+    "locationRequired": "La ubicación es obligatoria",
+    "categories": "Servicios",
+    "popular": "Servicios Populares",
+    "searchPlaceholder": "Buscar servicios...",
+    "viewDetails": "Ver Detalles"
   },
   "validation": {
     "required": "Requerido",
@@ -181,5 +194,8 @@
     "fair": "Regular",
     "good": "Buena",
     "strong": "Fuerte"
+  },
+  "notifications": {
+    "title": "Notificaciones"
   }
 }

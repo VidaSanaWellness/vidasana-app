@@ -4,11 +4,12 @@ import {supabase} from '@/utils';
 import {expo} from '@/../app.json';
 import {useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
+import {useTranslation} from 'react-i18next';
+import Toast from 'react-native-toast-message';
 import {useForm, Controller} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Image} from 'react-native';
-import {useTranslation} from 'react-i18next';
 
 const Page = () => {
   const {t} = useTranslation();
@@ -18,13 +19,10 @@ const Page = () => {
   const onSubmit = async (data: {email: string}) => {
     try {
       const {error} = await supabase.auth.resetPasswordForEmail(data.email, {redirectTo: `${expo.scheme}://reset-password`});
-      if (error) {
-        console.error(error.message);
-      } else {
-        back();
-      }
-    } catch (err) {
-      console.error(err);
+      if (error) throw error;
+      back();
+    } catch (e: any) {
+      Toast.show({text1: e.message || 'Something went wrong'});
     }
   };
 

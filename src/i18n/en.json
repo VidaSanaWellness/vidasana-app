@@ -6,7 +6,14 @@
     "cancel": "Cancel",
     "and": "and",
     "continue": "Continue",
-    "error": "Error"
+    "error": "Error",
+    "greeting": "Good Morning",
+    "goodMorning": "Good Morning",
+    "goodAfternoon": "Good Afternoon",
+    "goodEvening": "Good Evening",
+    "goodNight": "Good Night",
+    "seeAll": "See All",
+    "comingSoon": "Coming Soon"
   },
   "auth": {
     "login": {
@@ -17,7 +24,8 @@
       "forgotPassword": "Forget password?",
       "noAccount": "Don't have an account?",
       "signUp": "Sign up",
-      "loginBoxTitle": "Login"
+      "loginBoxTitle": "Login",
+      "loginButton": "Login"
     },
     "register": {
       "title": "Get Started",
@@ -113,7 +121,8 @@
     "tickets": "Tickets",
     "searchPlaceholder": "Search events...",
     "dateRange": "Date Range",
-    "bookNow": "Book Tickets"
+    "bookNow": "Book Tickets",
+    "popular": "Upcoming Events"
   },
   "services": {
     "createTitle": "Create New Service",
@@ -133,7 +142,11 @@
     "disabled": "Disabled",
     "enableConfirm": "Are you sure you want to enable this service?",
     "disableConfirm": "Are you sure you want to disable this service? Clients will no longer be able to book it.",
-    "locationRequired": "Location is required"
+    "locationRequired": "Location is required",
+    "categories": "Services",
+    "popular": "Most Popular Services",
+    "searchPlaceholder": "Search services...",
+    "viewDetails": "View Details"
   },
   "validation": {
     "required": "Required",
@@ -181,5 +194,8 @@
     "fair": "Fair",
     "good": "Good",
     "strong": "Strong"
+  },
+  "notifications": {
+    "title": "Notifications"
   }
 }

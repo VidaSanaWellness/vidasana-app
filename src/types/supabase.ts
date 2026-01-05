@@ -178,6 +178,51 @@ export type Database = {
           },
         ]
       }
+      event_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          event_id: string
+          id: string
+          rating: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          event_id: string
+          id?: string
+          rating: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          rating?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reviews_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_ticket_types: {
         Row: {
           capacity: number | null
@@ -670,6 +715,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_event_rating_summary: {
+        Args: { target_event_id: string }
+        Returns: {
+          avg_rating: number
+          count: number
+        }[]
+      }
+      get_event_reviews: {
+        Args: { target_event_id: string }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          user_id: string
+          user_image: string
+          user_name: string
+        }[]
+      }
       get_service_by_id: {
         Args: { target_id: string }
         Returns: {

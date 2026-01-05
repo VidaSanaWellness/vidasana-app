@@ -23,7 +23,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: isDark ? INACTIVE_DARK : INACTIVE_LIGHT,
         tabBarStyle: {paddingTop: 12, alignItems: 'center', height: BASE_TAB_BAR_HEIGHT, backgroundColor: colorScheme === 'dark' ? '#000' : '#fff'},
       }}>
-      <Tabs.Screen name="(topTab)" options={{title: 'Home', tabBarIcon: ({color}) => <Feather name="home" size={24} color={color} />}} />
+      <Tabs.Screen name="home" options={{title: 'Home', tabBarIcon: ({color}) => <Feather name="home" size={24} color={color} />}} />
       <Tabs.Screen name="map" options={{title: 'Map', tabBarIcon: ({color}) => <Feather name="map" size={24} color={color} />}} />
       <Tabs.Screen name="booking" options={{tabBarIcon: ({color}) => <Feather name="inbox" size={24} color={color} />}} />
       <Tabs.Screen name="setting" options={{tabBarIcon: ({color}) => <Feather name="settings" size={24} color={color} />}} />

@@ -96,7 +96,7 @@ const Page = () => {
               />
             </View>
 
-            <View className="mb-6 mt-2 flex-row items-center justify-between">
+            <View className="mb-6 mt-2 flex-row items-center justify-end">
               <Link href="/auth/forget-password">
                 <Text className="text-sm font-semibold text-[#E03C31]">{t('auth.login.forgotPassword')}</Text>
               </Link>
@@ -111,7 +111,7 @@ const Page = () => {
               {formState.isSubmitting ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text className="text-lg font-semibold text-white">{t('common.done')}</Text>
+                <Text className="text-lg font-semibold text-white">{t('auth.login.loginButton')}</Text>
               )}
             </TouchableOpacity>
 
