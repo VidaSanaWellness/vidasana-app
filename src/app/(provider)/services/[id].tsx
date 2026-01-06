@@ -7,8 +7,9 @@ import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import Toast from 'react-native-toast-message';
 import {useTranslation} from 'react-i18next';
-import {AppleMaps, GoogleMaps} from 'expo-maps';
 import {Platform} from 'react-native';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import {ImageCarousel} from '@/components';
 
 export default function ServiceDetailsScreen() {
   const {t} = useTranslation();
@@ -17,7 +18,6 @@ export default function ServiceDetailsScreen() {
   const queryClient = useQueryClient();
   const {top} = useSafeAreaInsets();
   const [menuVisible, setMenuVisible] = useState(false);
-  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   // Fetch Service Details
   const {
@@ -157,14 +157,8 @@ export default function ServiceDetailsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Valid Image */}
-        <View className="h-64 w-full bg-gray-100">
-          {imageUrl ? (
-            <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
-          ) : (
-            <View className="flex-1 items-center justify-center">
-              <Feather name="image" size={48} color="#D1D5DB" />
-            </View>
-          )}
+        <View className="aspect-square w-full bg-gray-100">
+          <ImageCarousel images={service?.images} aspectRatio="square" />
         </View>
 
         <View className="p-5 pb-20">
@@ -215,17 +209,20 @@ export default function ServiceDetailsScreen() {
           {lat && lng && (
             <View className="mb-6 h-40 overflow-hidden rounded-xl bg-gray-100">
               <MapComponent
+                provider={PROVIDER_GOOGLE}
                 style={{flex: 1}}
-                cameraPosition={{
-                  coordinates: {latitude: lat, longitude: lng},
-                  zoom: 15,
+                initialRegion={{
+                  latitude: lat,
+                  longitude: lng,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
                 }}
-                uiSettings={{
-                  scrollGesturesEnabled: false,
-                  zoomGesturesEnabled: false,
-                  myLocationButtonEnabled: false,
-                }}
-              />
+                scrollEnabled={false}
+                zoomEnabled={false}
+                pitchEnabled={false}
+                rotateEnabled={false}>
+                <Marker coordinate={{latitude: lat, longitude: lng}} />
+              </MapComponent>
               <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center">
                 <View className="mb-4">
                   <Feather name="map-pin" size={32} color="#15803d" />

@@ -14,7 +14,7 @@ import {useTranslation} from 'react-i18next';
 import {EventFormValues, EventUnifiedImage, LanguageCode} from '@/types/events';
 import {LANGUAGES} from '@/constants/events';
 import LocationPickerModal from '@/components/modals/LocationPickerModal';
-import {AppleMaps, GoogleMaps} from 'expo-maps';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {Platform} from 'react-native';
 
 type Category = Tables<'categories'>;
@@ -31,7 +31,6 @@ export default function EditEventScreen() {
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | 'book_till' | null>(null);
   const [datePickerMode, setDatePickerMode] = useState<'date' | 'time' | 'datetime'>('datetime');
   const [isLocationPickerVisible, setLocationPickerVisible] = useState(false);
-  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   const {
     watch,
@@ -51,7 +50,6 @@ export default function EditEventScreen() {
       start_at: null,
       end_at: null,
       book_till: null,
-      images: [],
       images: [],
       ticket_types: [],
       lat: null,
@@ -140,7 +138,6 @@ export default function EditEventScreen() {
         end_at: new Date(eventData.end_at),
         book_till: eventData.book_till ? new Date(eventData.book_till) : null,
         images,
-        images,
         ticket_types: tickets,
         lat: (eventData as any).location?.coordinates ? (eventData as any).location.coordinates[1] : null,
         lng: (eventData as any).location?.coordinates ? (eventData as any).location.coordinates[0] : null,
@@ -178,7 +175,6 @@ export default function EditEventScreen() {
           category: data.category!,
           start_at: data.start_at!.toISOString(),
           end_at: data.end_at!.toISOString(),
-          book_till: data.book_till ? data.book_till.toISOString() : null,
           book_till: data.book_till ? data.book_till.toISOString() : null,
           images: imagePaths,
           location: data.lat && data.lng ? `POINT(${data.lng} ${data.lat})` : null,
@@ -494,17 +490,21 @@ export default function EditEventScreen() {
                 <View>
                   {lat && lng ? (
                     <View className="mb-3 h-40 overflow-hidden rounded-xl bg-gray-100">
-                      <MapComponent
+                      <MapView
+                        provider={PROVIDER_GOOGLE}
                         style={{flex: 1}}
-                        cameraPosition={{
-                          coordinates: {latitude: lat, longitude: lng},
-                          zoom: 15,
+                        initialRegion={{
+                          latitude: lat,
+                          longitude: lng,
+                          latitudeDelta: 0.01,
+                          longitudeDelta: 0.01,
                         }}
-                        uiSettings={{
-                          scrollGesturesEnabled: false,
-                          zoomGesturesEnabled: false,
-                        }}
-                      />
+                        scrollEnabled={false}
+                        zoomEnabled={false}
+                        pitchEnabled={false}
+                        rotateEnabled={false}>
+                        <Marker coordinate={{latitude: lat, longitude: lng}} />
+                      </MapView>
                       <TouchableOpacity
                         className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center bg-black/10"
                         onPress={() => setLocationPickerVisible(true)}>

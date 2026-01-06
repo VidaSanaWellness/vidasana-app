@@ -1,4 +1,4 @@
-import {Link} from 'expo-router';
+import {Link, router} from 'expo-router';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useInfiniteQuery} from '@tanstack/react-query';
@@ -191,36 +191,15 @@ export default function ServicesScreen() {
   };
 
   const renderHeader = () => (
-    <View className="mb-4 px-4 pt-4">
-      {/* Search Header Inline Implementation to access ref */}
-      <View className="flex-row items-center gap-3">
-        <View className="h-12 flex-1 flex-row items-center rounded-xl border border-gray-200 bg-gray-100 px-4">
-          <Feather name="search" size={20} color="#9CA3AF" />
-          <TextInput
-            ref={setInputRef}
-            placeholder={t('services.searchPlaceholder')}
-            className="ml-2 h-full flex-1 text-gray-900"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            returnKeyType="search"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Feather name="x" size={16} color="#9CA3AF" />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <TouchableOpacity
-          onPress={() => setFilterModalVisible(true)}
-          className={`h-12 w-12 items-center justify-center rounded-xl border ${
-            activeFilterCount > 0 ? 'border-green-700 bg-green-700' : 'border-gray-200 bg-white'
-          }`}>
-          <Feather name="sliders" size={20} color={activeFilterCount > 0 ? 'white' : '#374151'} />
-          {activeFilterCount > 0 && <View className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-red-500" />}
-        </TouchableOpacity>
-      </View>
-    </View>
+    <SearchHeader
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      onFilterPress={() => setFilterModalVisible(true)}
+      activeFilterCount={activeFilterCount}
+      placeholder={t('services.searchPlaceholder')}
+      onBack={() => router.back()}
+      inputRef={setInputRef}
+    />
   );
 
   return (

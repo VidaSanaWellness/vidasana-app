@@ -39,7 +39,7 @@ export const TopEventsList = () => {
         activeOpacity={0.8}
         onPress={() => router.push(`/(user)/events/${item.id}`)}
         className="mr-4 w-60 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
-        <View className="mb-3 h-32 w-full overflow-hidden rounded-xl bg-gray-100">
+        <View className="mb-3 aspect-square w-full overflow-hidden rounded-xl bg-gray-100">
           {imageUrl ? (
             <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
           ) : (
@@ -47,9 +47,6 @@ export const TopEventsList = () => {
               <Feather name="calendar" size={24} color="#9CA3AF" />
             </View>
           )}
-          <View className="absolute right-2 top-2 rounded-full bg-white p-1.5 shadow-sm">
-            <Ionicons name="heart-outline" size={16} color="#15803d" />
-          </View>
         </View>
 
         <View>

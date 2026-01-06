@@ -3,16 +3,16 @@ import {supabase} from '@/utils/supabase';
 import {useQuery} from '@tanstack/react-query';
 import {Link, useLocalSearchParams, useRouter} from 'expo-router';
 import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Platform} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useTranslation} from 'react-i18next';
-import {AppleMaps, GoogleMaps} from 'expo-maps';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {ImageCarousel} from '@/components';
 
 export default function EventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
   const {back} = useRouter();
   const {t, i18n} = useTranslation();
-  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   const {data: event, isLoading} = useQuery({
     queryKey: ['event', id, i18n.language],
@@ -63,15 +63,9 @@ export default function EventDetailsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header Image */}
-        <View className="relative h-64 w-full bg-gray-200">
-          {imageUrl ? (
-            <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
-          ) : (
-            <View className="h-full w-full items-center justify-center">
-              <Feather name="image" size={40} color="gray" />
-            </View>
-          )}
+        {/* Header Image Carousel */}
+        <View className="relative aspect-square w-full bg-gray-200">
+          <ImageCarousel images={event?.images} aspectRatio="square" />
 
           {/* Back Button */}
           <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
@@ -150,29 +144,21 @@ export default function EventDetailsScreen() {
             <View className="mb-6">
               <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.location')}</Text>
               <View className="h-48 w-full overflow-hidden rounded-xl border border-gray-200">
-                <MapComponent
+                <MapView
                   style={{flex: 1}}
-                  cameraPosition={{
-                    coordinates: {latitude: event.lat, longitude: event.lng},
-                    zoom: 15,
+                  provider={PROVIDER_GOOGLE}
+                  initialRegion={{
+                    latitude: event.lat,
+                    longitude: event.lng,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
                   }}
-                  markers={[
-                    {
-                      id: 'event-loc',
-                      coordinates: {latitude: event.lat, longitude: event.lng},
-                      title: event.title,
-                    },
-                  ]}
-                  uiSettings={{
-                    scrollGesturesEnabled: false,
-                    zoomGesturesEnabled: false,
-                    zoomControlsEnabled: false,
-                    compassEnabled: false,
-                    myLocationButtonEnabled: false,
-                    rotationGesturesEnabled: false,
-                    tiltGesturesEnabled: false,
-                  }}
-                />
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  pitchEnabled={false}
+                  rotateEnabled={false}>
+                  <Marker coordinate={{latitude: event.lat, longitude: event.lng}} title={event.title} />
+                </MapView>
               </View>
             </View>
           ) : null}

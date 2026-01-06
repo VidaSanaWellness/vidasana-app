@@ -2,6 +2,7 @@ import {Feather} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
 import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import React from 'react';
 import {HomeHeader} from '@/components/home/HomeHeader';
 import {CategoryGrid} from '@/components/home/CategoryGrid';
@@ -15,7 +16,7 @@ export default function HomeScreen() {
   const handleSearchPress = () => router.push('/(user)/(tabs)/home/services?focus=true');
 
   return (
-    <View className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <HomeHeader />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 100}}>
@@ -38,6 +39,6 @@ export default function HomeScreen() {
 
         <TopEventsList />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

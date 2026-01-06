@@ -12,7 +12,7 @@ export const HomeHeader = () => {
   const profileImage = user?.user_metadata?.image;
 
   return (
-    <View className="flex-row items-center justify-between bg-white px-4 pb-4 pt-14">
+    <View className="flex-row items-center justify-between bg-white px-4 py-4">
       <View className="flex-row items-center">
         {profileImage ? (
           <Image source={{uri: profileImage}} className="h-12 w-12 rounded-full" />

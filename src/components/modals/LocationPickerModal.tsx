@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {Modal, View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator} from 'react-native';
-import {AppleMaps, GoogleMaps} from 'expo-maps';
+import {Modal, View, Text, TouchableOpacity, ActivityIndicator, Platform} from 'react-native';
+import MapView, {Region, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useUserLocation} from '@/hooks';
 import {Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
@@ -14,10 +14,10 @@ interface LocationPickerModalProps {
 
 export default function LocationPickerModal({visible, onClose, onConfirm, initialLocation}: LocationPickerModalProps) {
   const {t} = useTranslation();
-  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
+  const mapRef = React.useRef<MapView>(null);
 
   const [currentLocation, setCurrentLocation] = useState<{lat: number; lng: number} | null>(initialLocation || null);
-  const [mapRegion, setMapRegion] = useState<{latitude: number; longitude: number; zoom: number} | null>(null);
+  const [initialRegion, setInitialRegion] = useState<Region | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const {location: userLocation, isLoading: isLocLoading} = useUserLocation();
@@ -25,29 +25,35 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
   useEffect(() => {
     if (visible && !initialLocation) {
       if (userLocation) {
-        const coords = {latitude: userLocation.latitude, longitude: userLocation.longitude, zoom: 15};
-        setMapRegion(coords);
+        setInitialRegion({
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          latitudeDelta: 0.01, // Zoom level 15 approx
+          longitudeDelta: 0.01,
+        });
         setCurrentLocation({lat: userLocation.latitude, lng: userLocation.longitude});
         setIsLoading(false);
       } else if (!isLocLoading && !userLocation) {
         // Default if location failed or denied
-        setMapRegion({latitude: 37.7749, longitude: -122.4194, zoom: 12});
+        setInitialRegion({latitude: 37.7749, longitude: -122.4194, latitudeDelta: 0.05, longitudeDelta: 0.05});
         setIsLoading(false);
       }
     } else if (visible && initialLocation) {
-      setMapRegion({latitude: initialLocation.lat, longitude: initialLocation.lng, zoom: 15});
+      setInitialRegion({
+        latitude: initialLocation.lat,
+        longitude: initialLocation.lng,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
       setIsLoading(false);
     }
   }, [visible, initialLocation, userLocation, isLocLoading]);
 
-  const handleCameraMove = (event: {coordinates: {latitude?: number; longitude?: number}}) => {
-    // expo-maps API sends the camera state directly in the event object
-    if (event.coordinates && event.coordinates.latitude !== undefined && event.coordinates.longitude !== undefined) {
-      setCurrentLocation({
-        lat: event.coordinates.latitude,
-        lng: event.coordinates.longitude,
-      });
-    }
+  const onRegionChangeComplete = (region: Region) => {
+    setCurrentLocation({
+      lat: region.latitude,
+      lng: region.longitude,
+    });
   };
 
   const handleConfirm = () => {
@@ -55,6 +61,24 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
       onConfirm(currentLocation);
       onClose();
     }
+  };
+
+  const handleZoomIn = () => {
+    if (!mapRef.current) return;
+    mapRef.current.getCamera().then((camera) => {
+      if (camera && camera.zoom) {
+        mapRef.current?.animateCamera({zoom: camera.zoom + 1});
+      }
+    });
+  };
+
+  const handleZoomOut = () => {
+    if (!mapRef.current) return;
+    mapRef.current.getCamera().then((camera) => {
+      if (camera && camera.zoom) {
+        mapRef.current?.animateCamera({zoom: camera.zoom - 1});
+      }
+    });
   };
 
   return (
@@ -70,26 +94,22 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
         </View>
 
         <View className="relative flex-1">
-          {isLoading ? (
+          {isLoading || !initialRegion ? (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color="#15803d" />
             </View>
           ) : (
             <>
-              {mapRegion && (
-                <MapComponent
-                  style={{flex: 1}}
-                  cameraPosition={{
-                    coordinates: {latitude: mapRegion.latitude, longitude: mapRegion.longitude},
-                    zoom: mapRegion.zoom,
-                  }}
-                  onCameraMove={handleCameraMove}
-                  uiSettings={{
-                    myLocationButtonEnabled: true,
-                    compassEnabled: true,
-                  }}
-                />
-              )}
+              <MapView
+                ref={mapRef}
+                style={{flex: 1}}
+                provider={PROVIDER_GOOGLE}
+                initialRegion={initialRegion}
+                onRegionChangeComplete={onRegionChangeComplete}
+                showsUserLocation
+                showsMyLocationButton
+                zoomControlEnabled={true}
+              />
               {/* Center Marker Overlay */}
               <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center">
                 <View className="mb-8">
@@ -99,6 +119,21 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
             </>
           )}
         </View>
+
+        {Platform.OS === 'ios' && (
+          <View className="absolute bottom-[100px] right-4 gap-3">
+            <TouchableOpacity
+              onPress={handleZoomIn}
+              className="h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg active:bg-gray-50">
+              <Feather name="plus" size={24} color="#374151" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleZoomOut}
+              className="h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg active:bg-gray-50">
+              <Feather name="minus" size={24} color="#374151" />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Footer Info */}
         <View className="mb-safe border-t border-gray-100 bg-white px-6 py-4">

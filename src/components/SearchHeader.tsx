@@ -8,15 +8,32 @@ interface SearchHeaderProps {
   onFilterPress: () => void;
   activeFilterCount: number;
   placeholder: string;
+  onBack?: () => void;
+  inputRef?: React.Ref<TextInput>;
 }
 
-export const SearchHeader: React.FC<SearchHeaderProps> = ({searchQuery, onSearchChange, onFilterPress, activeFilterCount, placeholder}) => {
+export const SearchHeader: React.FC<SearchHeaderProps> = ({
+  searchQuery,
+  onSearchChange,
+  onFilterPress,
+  activeFilterCount,
+  placeholder,
+  onBack,
+  inputRef,
+}) => {
   return (
-    <View className="mb-4">
+    <View className="mb-4 px-4 pt-4">
       <View className="flex-row items-center gap-3">
+        {onBack && (
+          <TouchableOpacity onPress={onBack} className="h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-white">
+            <Feather name="arrow-left" size={20} color="#374151" />
+          </TouchableOpacity>
+        )}
+
         <View className="h-12 flex-1 flex-row items-center rounded-xl border border-gray-200 bg-gray-100 px-4">
           <Feather name="search" size={20} color="#9CA3AF" />
           <TextInput
+            ref={inputRef}
             placeholder={placeholder}
             className="ml-2 h-full flex-1 text-gray-900"
             value={searchQuery}

@@ -20,7 +20,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vidasana"
+      "bundleIdentifier": "com.vidasana",
+      "config": {
+        "googleMapsApiKey": "AIzaSyD2Q1ArCXQ_-R_FBH8sXrRWwF6NDqHT2Hk"
+      }
     },
     "android": {
       "package": "com.vidasana",
@@ -53,13 +56,6 @@
           "imageWidth": 200,
           "backgroundColor": "#FFFFFF",
           "image": "./src/assets/logo.png"
-        }
-      ],
-      [
-        "expo-maps",
-        {
-          "requestLocationPermission": true,
-          "locationPermission": "Allow $(PRODUCT_NAME) to use your location to search events near you."
         }
       ],
       [

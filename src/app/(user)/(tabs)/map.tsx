@@ -1,74 +1,96 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, ActivityIndicator} from 'react-native';
+import {View, Text, ActivityIndicator, TouchableOpacity, Platform} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {useQuery} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
-import {useUserLocation} from '@/hooks';
-import {GoogleMaps} from 'expo-maps';
-import {useRouter} from 'expo-router';
-import {useDebouncer} from '@/hooks/useDebounce';
+import {router} from 'expo-router';
+import MapView, {Marker, PROVIDER_GOOGLE, Region} from 'react-native-maps';
 import Supercluster from 'supercluster';
-import {Point, Feature} from 'geojson';
+import {Feature, Point} from 'geojson';
+import {useDebouncer} from '@/hooks/useDebounce';
+import {useUserLocation} from '@/hooks/useUserLocation';
+import {Feather} from '@expo/vector-icons';
 
-// Types
-type MapItem = {
-  id: string;
-  lat: number;
-  lng: number;
-  title: string;
-  type: 'service' | 'event' | 'selected';
+// Helper to convert zoom level to radius (approximate)
+const getRadiusFromZoom = (zoom: number) => {
+  return Math.max(1, 40000 / Math.pow(2, zoom));
 };
 
-// Heuristic: Zoom level to Radius (meters)
-const getRadiusFromZoom = (zoom: number) => Math.round(40000000 / Math.pow(2, zoom));
-
 export default function MapScreen() {
-  const router = useRouter();
+  const mapRef = useRef<MapView>(null);
+  const [initialRegion, setInitialRegion] = useState<Region | null>(null);
 
-  const [initialCamera, setInitialCamera] = useState<{latitude: number; longitude: number; zoom: number} | null>(null);
-  const [cameraTarget, setCameraTarget] = useState<{coordinates: {latitude: number; longitude: number}; zoom: number} | undefined>(undefined);
-  const [fetchParams, setFetchParams, debouncedParams] = useDebouncer({zoom: 14, lat: 37.7749, radius: 5000, lng: -122.4194}, 600);
-
-  // Supercluster instance
+  // State for fetching parameters (Debounced)
+  const [fetchParams, setFetchParams, debouncedParams] = useDebouncer(
+    {
+      lat: 37.7749,
+      lng: -122.4194,
+      radius: 10,
+      zoom: 14,
+    },
+    1000
+  );
 
   // -- User Location Setup --
   const {location, isLoading: isLocationLoading} = useUserLocation();
 
   useEffect(() => {
     if (location) {
-      const newCamera = {
+      const region = {
         latitude: location.latitude,
         longitude: location.longitude,
-        zoom: 14,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
       };
-      setInitialCamera(newCamera);
-      setCameraTarget({coordinates: {latitude: newCamera.latitude, longitude: newCamera.longitude}, zoom: 14});
-      setFetchParams({lat: newCamera.latitude, lng: newCamera.longitude, radius: getRadiusFromZoom(14), zoom: 14});
+      setInitialRegion(region);
+      setFetchParams({lat: location.latitude, lng: location.longitude, radius: 10, zoom: 14});
+
+      // Animate if map is ready
+      mapRef.current?.animateToRegion(region, 1000);
     } else if (!isLocationLoading && !location) {
-      // Default to SF if denied or failed
-      setInitialCamera({latitude: 37.7749, longitude: -122.4194, zoom: 14});
+      // Default SF
+      setInitialRegion({
+        latitude: 37.7749,
+        longitude: -122.4194,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
     }
   }, [location, isLocationLoading]);
 
   // -- Data Fetching --
   const {data: items, isLoading} = useQuery({
     staleTime: 1000 * 60 * 5,
-    enabled: !!initialCamera && debouncedParams.zoom >= 10,
+    enabled: !!initialRegion,
     queryKey: ['map_items', debouncedParams.lat, debouncedParams.lng, debouncedParams.radius],
     queryFn: async () => {
+      const radiusMeters = Math.round(debouncedParams.radius * 1000);
+      console.log('Fetching map items:', {
+        lat: debouncedParams.lat,
+        lng: debouncedParams.lng,
+        radiusKm: debouncedParams.radius,
+        radiusMeters,
+      });
+
       const {data, error} = await supabase.rpc('search_map_items', {
         user_lat: debouncedParams.lat,
         user_lng: debouncedParams.lng,
-        radius_meters: debouncedParams.radius,
+        radius_meters: radiusMeters,
       });
-      if (error) throw error;
-      return data as MapItem[];
+
+      if (error) {
+        console.error('Map fetch error:', error);
+        throw error;
+      }
+      console.log('Map items fetched:', data?.length);
+      return data;
     },
   });
 
-  // -- Clustering Logic --
-  // Supercluster instance populated with points
-  const supercluster = new Supercluster({radius: 40, maxZoom: 20});
+  const [currentZoom, setCurrentZoom] = useState(14);
 
+  // Supercluster instance
+  const index = new Supercluster({radius: 40, maxZoom: 20});
   const points = (items || [])
     .filter((i) => i.lat && i.lng)
     .map(
@@ -79,147 +101,171 @@ export default function MapScreen() {
           geometry: {type: 'Point', coordinates: [i.lng, i.lat]},
         }) as Feature<Point>
     );
-
-  supercluster.load(points);
-
-  // Derive clusters for current view
-  const bounds = [-180, -85, 180, 85] as [number, number, number, number];
-  const clusters = supercluster.getClusters(bounds, Math.floor(debouncedParams.zoom));
-
-  // -- Clustering Logic --
+  index.load(points);
+  const clusters = index.getClusters([-180, -85, 180, 85], Math.floor(currentZoom));
 
   // -- Handlers --
-  const moveTimeout = useRef<NodeJS.Timeout | null>(null);
+  // Track current region for zooming
+  const currentRegionRef = useRef<Region | null>(null);
 
-  const onCameraMove = (event: {zoom: number; coordinates: {latitude: number; longitude: number}}) => {
-    // Release programmatic control on user interaction
-    if (cameraTarget) setCameraTarget(undefined);
-
-    // Debounce the API call/State update to only trigger after movement stops
-    if (moveTimeout.current) clearTimeout(moveTimeout.current);
-
-    moveTimeout.current = setTimeout(() => {
-      const newRadius = event.zoom ? getRadiusFromZoom(event.zoom) : fetchParams.radius;
-      const dist = Math.sqrt(Math.pow(event.coordinates.latitude - fetchParams.lat, 2) + Math.pow(event.coordinates.longitude - fetchParams.lng, 2));
-
-      // Only update if significantly changed
-      if (dist > 0.0005 || Math.abs(newRadius - fetchParams.radius) > 1000 || Math.round(event.zoom) !== Math.round(fetchParams.zoom)) {
-        setFetchParams({
-          radius: newRadius,
-          zoom: event.zoom ? event.zoom : fetchParams.zoom,
-          lat: parseFloat(event.coordinates.latitude.toFixed(4)),
-          lng: parseFloat(event.coordinates.longitude.toFixed(4)),
-        });
-      }
-    }, 600); // Wait for 600ms of idleness
-  };
-
-  const handleMarkerClick = (event: any) => {
-    const markerId = event.nativeEvent?.id || event.id;
-    if (!markerId) return;
-
-    // Find if it's a cluster or item
-    // The markerId for clusters is generated by us or supercluster
-    // Supercluster gives integer IDs for clusters. Our items use UUIDs (strings).
-
-    // However, we need to lookup the cluster object to get expansion zoom or item details.
-    // Optimization: we can encode type in ID or search the `clusters` array.
-
-    const cluster = clusters.find((c) => String(c.id) === markerId || (c.properties.itemId && c.properties.itemId === markerId));
-
-    if (cluster) {
-      if (cluster.properties.cluster) {
-        // It's a cluster -> Zoom in
-        const expansionZoom = supercluster.getClusterExpansionZoom(cluster.id as number);
-
-        const newTarget = {
-          coordinates: {latitude: cluster.geometry.coordinates[1], longitude: cluster.geometry.coordinates[0]},
-          zoom: expansionZoom,
-        };
-
-        setCameraTarget(newTarget);
-        setFetchParams({
-          ...fetchParams,
-          zoom: newTarget.zoom,
-          lat: newTarget.coordinates.latitude,
-          lng: newTarget.coordinates.longitude,
-        });
-      } else {
-        // It's an item -> Navigate
-        const type = cluster.properties.itemType;
-        const itemId = cluster.properties.itemId;
-        if (type === 'event') {
-          router.push(`/(user)/events/${itemId}`);
-        } else {
-          router.push(`/(user)/services/${itemId}`);
-        }
-      }
+  useEffect(() => {
+    if (initialRegion) {
+      currentRegionRef.current = initialRegion;
     }
+  }, [initialRegion]);
+
+  const onRegionChangeComplete = (region: Region) => {
+    currentRegionRef.current = region;
+
+    // Calculate zoom level approx
+    const zoom = Math.round(Math.log(360 / region.longitudeDelta) / Math.LN2);
+    setCurrentZoom(zoom);
+    const newRadius = getRadiusFromZoom(zoom);
+
+    setFetchParams({
+      lat: parseFloat(region.latitude.toFixed(4)),
+      lng: parseFloat(region.longitude.toFixed(4)),
+      radius: newRadius,
+      zoom: zoom,
+    });
   };
 
-  if (!initialCamera)
+  const handleClusterPress = (clusterId: number, coordinate: {latitude: number; longitude: number}) => {
+    // Re-create index to get expansion zoom
+    const index = new Supercluster({radius: 40, maxZoom: 20});
+    const points = (items || [])
+      .filter((i) => i.lat && i.lng)
+      .map(
+        (i) =>
+          ({
+            type: 'Feature',
+            properties: {cluster: false, itemId: i.id, title: i.title, itemType: i.type},
+            geometry: {type: 'Point', coordinates: [i.lng, i.lat]},
+          }) as Feature<Point>
+      );
+    index.load(points);
+    const expansionZoom = index.getClusterExpansionZoom(clusterId);
+
+    mapRef.current?.animateCamera({center: coordinate, zoom: expansionZoom}, {duration: 500});
+  };
+
+  const handleZoomIn = () => {
+    const region = currentRegionRef.current;
+    if (!region || !mapRef.current) return;
+
+    const newRegion = {
+      ...region,
+      latitudeDelta: region.latitudeDelta / 2,
+      longitudeDelta: region.longitudeDelta / 2,
+    };
+    mapRef.current.animateToRegion(newRegion, 400);
+  };
+
+  const handleZoomOut = () => {
+    const region = currentRegionRef.current;
+    if (!region || !mapRef.current) return;
+
+    const newRegion = {
+      ...region,
+      latitudeDelta: region.latitudeDelta * 2,
+      longitudeDelta: region.longitudeDelta * 2,
+    };
+    mapRef.current.animateToRegion(newRegion, 400);
+  };
+
+  if (!initialRegion)
     return (
       <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator size="large" color="#15803d" />
       </View>
     );
 
-  // Convert clusters to markers format
-  const mapMarkers = (clusters || []).map((feature) => {
-    const isCluster = feature.properties.cluster;
-    const {coordinates} = feature.geometry;
-
-    return {
-      id: String(isCluster ? feature.id : feature.properties.itemId),
-      title: isCluster ? `${feature.properties.point_count} items` : feature.properties.title,
-      coordinates: {latitude: coordinates[1], longitude: coordinates[0]},
-      // Color coding: Clusters = Orange, Events = Teal, Services = Green
-      markerColor: isCluster ? '#F97316' : feature.properties.itemType === 'event' ? '#2DD4BF' : '#15803D',
-      icon: isCluster ? 'default' : undefined, // We can't easily customize icon shape with simple props, stick to colors/title
-    };
-  });
-
-  const MapView = GoogleMaps.View;
-
   return (
-    <View className="relative flex-1">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <MapView
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
         style={{flex: 1}}
-        markers={mapMarkers}
-        showUserLocation={true}
-        onCameraMove={onCameraMove}
-        showUserLocationButton={true}
-        onMarkerClick={handleMarkerClick}
-        properties={{minZoomPreference: 2, maxZoomPreference: 20}}
-        cameraPosition={cameraTarget}
-      />
+        initialRegion={initialRegion}
+        showsUserLocation
+        showsMyLocationButton
+        zoomControlEnabled={true}
+        onRegionChangeComplete={onRegionChangeComplete}>
+        {clusters.map((feature) => {
+          const isCluster = feature.properties.cluster;
+          const coordinate = {
+            latitude: feature.geometry.coordinates[1],
+            longitude: feature.geometry.coordinates[0],
+          };
 
-      {/* Map Legend */}
-      <View className="absolute right-4 top-16 rounded-xl bg-white/90 p-3 shadow-md backdrop-blur-sm">
-        <Text className="mb-2 text-xs font-bold text-gray-500">Legend</Text>
-        <View className="mb-2 flex-row items-center gap-2">
-          <View className="h-3 w-3 rounded-full bg-[#15803d]" />
-          <Text className="text-xs font-semibold text-gray-700">Services</Text>
-        </View>
-        <View className="mb-2 flex-row items-center gap-2">
-          <View className="h-3 w-3 rounded-full bg-[#2dd4bf]" />
-          <Text className="text-xs font-semibold text-gray-700">Events</Text>
-        </View>
-        {/* Cluster Legend */}
-        <View className="flex-row items-center gap-2">
-          <View className="h-3 w-3 rounded-full bg-orange-500" />
-          <Text className="text-xs font-semibold text-gray-700">Cluster</Text>
-        </View>
-      </View>
+          if (isCluster) {
+            return (
+              <Marker key={`cluster-${feature.id}`} coordinate={coordinate} onPress={() => handleClusterPress(feature.id as number, coordinate)}>
+                <View className="h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-orange-500">
+                  <Text className="font-bold text-white">{feature.properties.point_count}</Text>
+                </View>
+              </Marker>
+            );
+          }
 
-      {isLoading && debouncedParams.zoom >= 10 && (
+          return (
+            <Marker
+              key={`item-${feature.properties.itemId}`}
+              coordinate={coordinate}
+              pinColor={feature.properties.itemType === 'event' ? 'teal' : 'green'}
+              title={feature.properties.title}
+              onCalloutPress={() => {
+                const path =
+                  feature.properties.itemType === 'event'
+                    ? `/(user)/events/${feature.properties.itemId}`
+                    : `/(user)/services/${feature.properties.itemId}`;
+                router.push(path as any);
+              }}
+            />
+          );
+        })}
+      </MapView>
+
+      {/* Loading Indicator */}
+      {isLoading && (
         <View className="pointer-events-none absolute left-0 right-0 top-14 items-center">
-          <View className="flex-row items-center space-x-2 rounded-full bg-white/90 px-4 py-2 shadow-md">
+          <View className="rounded-full bg-white px-4 py-2 shadow-sm">
             <ActivityIndicator size="small" color="#15803d" />
-            <Text className="ml-2 text-xs font-semibold text-gray-700">Searching...</Text>
           </View>
         </View>
       )}
-    </View>
+
+      {/* Zoom Controls (iOS Only - Android uses native zoomControlEnabled) */}
+      {Platform.OS === 'ios' && (
+        <View className="absolute bottom-32 right-4 gap-3">
+          <TouchableOpacity
+            onPress={handleZoomIn}
+            className="h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg active:bg-gray-50">
+            <Feather name="plus" size={24} color="#374151" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleZoomOut}
+            className="h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg active:bg-gray-50">
+            <Feather name="minus" size={24} color="#374151" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Legend */}
+      <View className="absolute bottom-8 left-4 rounded-lg bg-white/90 p-3 shadow-lg">
+        <View className="mb-2 flex-row items-center gap-2">
+          <View className="h-3 w-3 rounded-full bg-green-700" />
+          <Text className="text-xs font-medium text-gray-700">Services</Text>
+        </View>
+        <View className="mb-2 flex-row items-center gap-2">
+          <View className="h-3 w-3 rounded-full bg-teal-400" />
+          <Text className="text-xs font-medium text-gray-700">Events</Text>
+        </View>
+        <View className="flex-row items-center gap-2">
+          <View className="h-3 w-3 rounded-full bg-orange-500" />
+          <Text className="text-xs font-medium text-gray-700">Cluster</Text>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }

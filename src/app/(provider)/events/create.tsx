@@ -12,7 +12,7 @@ import Toast from 'react-native-toast-message';
 import {ImagePickerAsset, launchImageLibraryAsync, MediaTypeOptions} from 'expo-image-picker';
 import {useTranslation} from 'react-i18next';
 import LocationPickerModal from '@/components/modals/LocationPickerModal';
-import {AppleMaps, GoogleMaps} from 'expo-maps';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {Platform} from 'react-native';
 
 import {EventFormValues, EventUnifiedImage, LanguageCode} from '@/types/events';
@@ -30,7 +30,6 @@ export default function CreateEventScreen() {
   const [datePickerMode, setDatePickerMode] = useState<'date' | 'time' | 'datetime'>('datetime');
   const [activeLanguage, setActiveLanguage] = useState<LanguageCode>('en');
   const [isLocationPickerVisible, setLocationPickerVisible] = useState(false);
-  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   const {
     watch,
@@ -446,17 +445,21 @@ export default function CreateEventScreen() {
                 <View>
                   {lat && lng ? (
                     <View className="mb-3 h-40 overflow-hidden rounded-xl bg-gray-100">
-                      <MapComponent
+                      <MapView
+                        provider={PROVIDER_GOOGLE}
                         style={{flex: 1}}
-                        cameraPosition={{
-                          coordinates: {latitude: lat, longitude: lng},
-                          zoom: 15,
+                        initialRegion={{
+                          latitude: lat,
+                          longitude: lng,
+                          latitudeDelta: 0.01,
+                          longitudeDelta: 0.01,
                         }}
-                        uiSettings={{
-                          scrollGesturesEnabled: false,
-                          zoomGesturesEnabled: false,
-                        }}
-                      />
+                        scrollEnabled={false}
+                        zoomEnabled={false}
+                        pitchEnabled={false}
+                        rotateEnabled={false}>
+                        <Marker coordinate={{latitude: lat, longitude: lng}} />
+                      </MapView>
                       {/* Overlay to catch taps */}
                       <TouchableOpacity
                         className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center bg-black/10"

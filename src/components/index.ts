@@ -6,3 +6,4 @@ export * from './modals/create';
 export * from './ImagePickerRow';
 export * from './PasswordStrengthBar';
 export * from './LikeButton';
+export {default as ImageCarousel} from './ImageCarousel';

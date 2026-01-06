@@ -1,5 +1,5 @@
 import {ActivityIndicator, Image, Text, TouchableOpacity, View, Platform, Linking, Modal, TextInput, KeyboardAvoidingView} from 'react-native';
-import {AppleMaps, GoogleMaps} from 'expo-maps';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView} from 'react-native';
@@ -10,7 +10,7 @@ import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {useAppStore} from '@/store';
 import Toast from 'react-native-toast-message';
-import {Avatar, LikeButton} from '@/components';
+import {Avatar, LikeButton, ImageCarousel} from '@/components';
 import {Rating} from 'react-native-ratings';
 
 export default function UserServiceDetailsScreen() {
@@ -128,10 +128,6 @@ export default function UserServiceDetailsScreen() {
   const imageUrl =
     service?.images && service.images.length > 0 ? supabase.storage.from('images').getPublicUrl(service.images[0]).data.publicUrl : null;
 
-  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
-  const mapMarkers =
-    service?.lat && service?.lng ? [{id: service.id, title: title, coordinates: {latitude: service.lat, longitude: service.lng}}] : [];
-
   const isBookmarked = service?.is_bookmarked || false;
 
   const openAddressOnMap = (lat: number, lng: number, label: string) => {
@@ -164,15 +160,9 @@ export default function UserServiceDetailsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header Image */}
+        {/* Header Image Carousel */}
         <View className="relative aspect-square w-full bg-gray-200">
-          {imageUrl ? (
-            <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
-          ) : (
-            <View className="h-full w-full items-center justify-center">
-              <Feather name="image" size={40} color="gray" />
-            </View>
-          )}
+          <ImageCarousel images={service?.images} aspectRatio="square" />
 
           {/* Back Button */}
           <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
@@ -239,20 +229,21 @@ export default function UserServiceDetailsScreen() {
             <View className="mt-4">
               <Text className="mb-3 text-lg font-bold text-gray-900">Location</Text>
               <View className="relative h-48 w-full overflow-hidden rounded-2xl border border-gray-100">
-                <MapComponent
+                <MapView
+                  provider={PROVIDER_GOOGLE}
                   style={{flex: 1}}
-                  cameraPosition={{zoom: 15, coordinates: {latitude: service.lat, longitude: service.lng}}}
-                  markers={mapMarkers}
-                  uiSettings={{
-                    scrollGesturesEnabled: false,
-                    zoomGesturesEnabled: false,
-                    zoomControlsEnabled: false,
-                    compassEnabled: false,
-                    myLocationButtonEnabled: false,
-                    rotationGesturesEnabled: false,
-                    tiltGesturesEnabled: false,
+                  initialRegion={{
+                    latitude: service.lat,
+                    longitude: service.lng,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
                   }}
-                />
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  pitchEnabled={false}
+                  rotateEnabled={false}>
+                  <Marker coordinate={{latitude: service.lat, longitude: service.lng}} title={title} />
+                </MapView>
 
                 <TouchableOpacity
                   activeOpacity={0.8}

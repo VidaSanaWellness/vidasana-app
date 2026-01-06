@@ -18,9 +18,9 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
-import {AppleMaps, GoogleMaps} from 'expo-maps';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useAppStore} from '@/store';
-import {LikeButton} from '@/components';
+import {LikeButton, ImageCarousel} from '@/components';
 import {Rating} from 'react-native-ratings';
 import Toast from 'react-native-toast-message';
 import {useState} from 'react';
@@ -32,7 +32,6 @@ export default function UserEventDetailsScreen() {
   const {t, i18n} = useTranslation();
   const {user} = useAppStore((s) => s.session!);
   const queryClient = useQueryClient();
-  const MapComponent = Platform.OS === 'ios' ? AppleMaps.View : GoogleMaps.View;
 
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
   const [ratingInput, setRatingInput] = useState(0);
@@ -176,15 +175,9 @@ export default function UserEventDetailsScreen() {
         className="flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#15803d" />}>
-        {/* Header Image */}
+        {/* Header Image Carousel */}
         <View className="relative aspect-square w-full bg-gray-200">
-          {imageUrl ? (
-            <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
-          ) : (
-            <View className="h-full w-full items-center justify-center">
-              <Feather name="image" size={40} color="gray" />
-            </View>
-          )}
+          <ImageCarousel images={event?.images} aspectRatio="square" />
 
           {/* Back Button */}
           <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
@@ -270,29 +263,21 @@ export default function UserEventDetailsScreen() {
             <View className="mb-6">
               <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.location')}</Text>
               <View className="h-48 w-full overflow-hidden rounded-xl border border-gray-200">
-                <MapComponent
+                <MapView
                   style={{flex: 1}}
-                  cameraPosition={{
-                    coordinates: {latitude: event.lat, longitude: event.lng},
-                    zoom: 15,
+                  provider={PROVIDER_GOOGLE}
+                  initialRegion={{
+                    latitude: event.lat,
+                    longitude: event.lng,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
                   }}
-                  markers={[
-                    {
-                      id: 'event-loc',
-                      coordinates: {latitude: event.lat, longitude: event.lng},
-                      title: event.title,
-                    },
-                  ]}
-                  uiSettings={{
-                    scrollGesturesEnabled: false,
-                    zoomGesturesEnabled: false,
-                    zoomControlsEnabled: false,
-                    compassEnabled: false,
-                    myLocationButtonEnabled: false,
-                    rotationGesturesEnabled: false,
-                    tiltGesturesEnabled: false,
-                  }}
-                />
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  pitchEnabled={false}
+                  rotateEnabled={false}>
+                  <Marker coordinate={{latitude: event.lat, longitude: event.lng}} title={event.title} />
+                </MapView>
 
                 {/* Overlay for interaction */}
                 <TouchableOpacity className="absolute bottom-0 left-0 right-0 top-0 active:bg-black/5" onPress={openAddressOnMap} />

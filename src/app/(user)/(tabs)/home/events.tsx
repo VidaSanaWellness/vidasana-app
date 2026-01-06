@@ -1,4 +1,4 @@
-import {Link} from 'expo-router';
+import {Link, router} from 'expo-router';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useInfiniteQuery} from '@tanstack/react-query';
@@ -189,12 +189,13 @@ export default function EventsScreen() {
       onFilterPress={() => setFilterModalVisible(true)}
       activeFilterCount={activeFilterCount}
       placeholder={t('events.searchPlaceholder')}
+      onBack={() => router.back()}
     />
   );
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 px-4 pt-2">
+      <View className="flex-1">
         <FlatList
           data={activeEvents}
           renderItem={renderItem}
