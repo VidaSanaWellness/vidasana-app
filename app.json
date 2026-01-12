@@ -63,6 +63,13 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to search events near you."
         }
+      ],
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.vidasana.app",
+          "enableGooglePay": true
+        }
       ]
     ],
     "extra": {

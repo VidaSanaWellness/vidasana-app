@@ -12,6 +12,10 @@ import {useAppStore} from '@/store';
 import Toast from 'react-native-toast-message';
 import {Avatar, LikeButton, ImageCarousel} from '@/components';
 import {Rating} from 'react-native-ratings';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import {stripe} from '@/utils/stripe';
+
+import {useStripe} from '@stripe/stripe-react-native';
 
 export default function UserServiceDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
@@ -20,10 +24,78 @@ export default function UserServiceDetailsScreen() {
   const {back, push} = useRouter();
   const {t, i18n} = useTranslation();
   const queryClient = useQueryClient();
+  const {initPaymentSheet, presentPaymentSheet} = useStripe();
 
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
   const [ratingInput, setRatingInput] = useState(0);
   const [commentInput, setCommentInput] = useState('');
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [isBookingLoading, setBookingLoading] = useState(false);
+
+  const handleBooking = async (date: Date) => {
+    setDatePickerVisible(false);
+    setBookingLoading(true);
+    try {
+      // 0. Validate Week Day
+      const weekDays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+      const selectedDayIndex = date.getDay();
+      const selectedDay = weekDays[selectedDayIndex];
+
+      if (service?.week_day && !service.week_day.includes(selectedDay)) {
+        Toast.show({
+          type: 'error',
+          text1: 'Unavailable on this day',
+          text2: `Available days: ${service.week_day.map((d: string) => d.toUpperCase()).join(', ')}`,
+        });
+        setBookingLoading(false);
+        return;
+      }
+
+      // 1. Fetch Payment Intent & Keys (Production)
+      const {paymentIntent, ephemeralKey, customer} = await stripe.fetchPaymentSheetParams({serviceId: id});
+
+      // 2. Initialize Payment Sheet
+      const {error: initError} = await initPaymentSheet({
+        merchantDisplayName: 'VidaSana Wellness',
+        customerId: customer,
+        customerEphemeralKeySecret: ephemeralKey,
+        paymentIntentClientSecret: paymentIntent,
+        defaultBillingDetails: {
+          name: user.user_metadata?.full_name || 'User',
+          email: user.email,
+        },
+        returnURL: 'vidasana://booking/success', // For iOS redirect
+      });
+
+      if (initError) {
+        console.error(initError);
+        Toast.show({type: 'error', text1: 'Payment Init Failed', text2: initError.message});
+        setBookingLoading(false);
+        return;
+      }
+
+      // 3. Present Payment Sheet
+      const {error: presentError} = await presentPaymentSheet();
+
+      if (presentError) {
+        console.error(presentError);
+        if (presentError.code === 'Canceled') {
+          // User canceled, do nothing
+        } else {
+          Toast.show({type: 'error', text1: 'Payment Failed', text2: presentError.message});
+        }
+      } else {
+        // Success
+        Toast.show({type: 'success', text1: 'Booking Confirmed!', text2: 'Payment successful'});
+        // push('/booking/success'); // Or navigate to bookings tab
+      }
+    } catch (error: any) {
+      console.error(error);
+      Toast.show({type: 'error', text1: 'Error', text2: error.message});
+    } finally {
+      setBookingLoading(false);
+    }
+  };
 
   const {
     data: service,
@@ -298,10 +370,26 @@ export default function UserServiceDetailsScreen() {
 
       {/* Book Button */}
       <View className="border-t border-gray-100 p-4">
-        <TouchableOpacity className="items-center rounded-xl bg-green-700 py-4 shadow-sm active:bg-green-800">
-          <Text className="text-lg font-bold text-white">{t('services.bookNow', 'Book Now')}</Text>
+        <TouchableOpacity
+          onPress={() => setDatePickerVisible(true)}
+          disabled={!service.active || isBookingLoading}
+          className={`items-center rounded-xl py-4 shadow-sm ${!service.active || isBookingLoading ? 'bg-gray-300' : 'bg-green-700 active:bg-green-800'}`}>
+          {isBookingLoading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-lg font-bold text-white">{service.active ? t('services.bookNow', 'Book Now') : 'Unavailable'}</Text>
+          )}
         </TouchableOpacity>
       </View>
+
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleBooking}
+        onCancel={() => setDatePickerVisible(false)}
+        minimumDate={new Date()}
+        maximumDate={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
+      />
 
       {/* Review Modal */}
       <Modal visible={reviewModalVisible} animationType="slide" transparent>
