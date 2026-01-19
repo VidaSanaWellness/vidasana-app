@@ -83,9 +83,13 @@ export const stripe = {
       let destinationValid = false;
       if (stripeAccountId) {
         try {
-          // Retrieve Account
-          await stripeFetch(`accounts/${stripeAccountId}`, 'GET');
-          destinationValid = true;
+          // Retrieve Account and check capabilities
+          const account = await stripeFetch(`accounts/${stripeAccountId}`, 'GET');
+          if (account.capabilities?.transfers === 'active' || account.capabilities?.card_payments === 'active') {
+            destinationValid = true;
+          } else {
+            console.log('Stripe Account found but transfers not active:', account.capabilities);
+          }
         } catch (e: any) {
           // Account validation failed; destinationValid stays false
         }
