@@ -1,5 +1,4 @@
 import {Link} from 'expo-router';
-import {Create} from '@/components';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useQuery} from '@tanstack/react-query';

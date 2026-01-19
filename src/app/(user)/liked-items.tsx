@@ -7,7 +7,6 @@ import {useQuery} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
 import {useTranslation} from 'react-i18next';
 import {useAppStore} from '@/store';
-import {LikeButton} from '@/components';
 
 export default function LikedItemsScreen() {
   const router = useRouter();
@@ -116,15 +115,15 @@ export default function LikedItemsScreen() {
         </View>
         <View className="flex-1 justify-between p-3">
           <View>
-            <Text numberOfLines={1} className="mb-1 text-base font-bold text-gray-900">
+            <Text numberOfLines={1} className="mb-1 font-nunito-bold text-base text-gray-900">
               {item.title}
             </Text>
-            <Text numberOfLines={2} className="text-xs text-gray-500">
+            <Text numberOfLines={2} className="font-nunito text-xs text-gray-500">
               {item.description}
             </Text>
           </View>
           <View className="flex-row items-center justify-between">
-            <Text className="font-bold text-green-700">${item.price}</Text>
+            <Text className="font-nunito-bold text-primary">${item.price}</Text>
             {/* We don't render LikeButton here to avoid complex list state mgmt for now, just list them */}
             <Ionicons name="heart" size={20} color="#ef4444" />
           </View>
@@ -154,16 +153,16 @@ export default function LikedItemsScreen() {
         </View>
         <View className="flex-1 justify-between p-3">
           <View>
-            <Text numberOfLines={1} className="mb-1 text-base font-bold text-gray-900">
+            <Text numberOfLines={1} className="mb-1 font-nunito-bold text-base text-gray-900">
               {item.title}
             </Text>
             <View className="flex-row items-center">
               <Feather name="calendar" size={12} color="gray" />
-              <Text className="ml-1 text-xs text-gray-500">{date}</Text>
+              <Text className="ml-1 font-nunito text-xs text-gray-500">{date}</Text>
             </View>
           </View>
           <View className="flex-row items-center justify-between">
-            <Text className="text-xs font-medium text-green-700">View Details</Text>
+            <Text className="font-nunito-bold text-xs text-primary">View Details</Text>
             <Ionicons name="heart" size={20} color="#ef4444" />
           </View>
         </View>
@@ -178,22 +177,22 @@ export default function LikedItemsScreen() {
         <TouchableOpacity onPress={() => router.back()} className="absolute left-4 z-10 rounded-full bg-gray-100 p-2">
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-gray-900">Liked Items</Text>
+        <Text className="font-nunito-bold text-lg text-gray-900">Liked Items</Text>
       </View>
 
       {/* Tabs */}
       <View className="flex-row p-4">
         <TouchableOpacity
           onPress={() => setActiveTab('services')}
-          className={`mr-3 flex-1 items-center justify-center rounded-xl py-3 ${activeTab === 'services' ? 'bg-green-700' : 'bg-white'}`}
+          className={`mr-3 flex-1 items-center justify-center rounded-xl py-3 ${activeTab === 'services' ? 'bg-primary' : 'bg-white'}`}
           style={activeTab !== 'services' && {borderWidth: 1, borderColor: '#E5E7EB'}}>
-          <Text className={`font-semibold ${activeTab === 'services' ? 'text-white' : 'text-gray-600'}`}>Services</Text>
+          <Text className={`font-nunito-bold ${activeTab === 'services' ? 'text-white' : 'text-gray-600'}`}>Services</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setActiveTab('events')}
-          className={`flex-1 items-center justify-center rounded-xl py-3 ${activeTab === 'events' ? 'bg-green-700' : 'bg-white'}`}
+          className={`flex-1 items-center justify-center rounded-xl py-3 ${activeTab === 'events' ? 'bg-primary' : 'bg-white'}`}
           style={activeTab !== 'events' && {borderWidth: 1, borderColor: '#E5E7EB'}}>
-          <Text className={`font-semibold ${activeTab === 'events' ? 'text-white' : 'text-gray-600'}`}>Events</Text>
+          <Text className={`font-nunito-bold ${activeTab === 'events' ? 'text-white' : 'text-gray-600'}`}>Events</Text>
         </TouchableOpacity>
       </View>
 
@@ -201,7 +200,7 @@ export default function LikedItemsScreen() {
       <View className="flex-1 px-4">
         {isLoading ? (
           <View className="mt-10 items-center">
-            <ActivityIndicator size="large" color="#15803d" />
+            <ActivityIndicator size="large" color="#00594f" />
           </View>
         ) : (
           <FlatList
@@ -210,14 +209,14 @@ export default function LikedItemsScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{paddingBottom: 40}}
             renderItem={activeTab === 'services' ? renderServiceItem : renderEventItem}
-            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#00594f" />}
             ListEmptyComponent={
               <View className="mt-20 items-center justify-center">
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-100">
                   <Ionicons name="heart-outline" size={40} color="#D1D5DB" />
                 </View>
-                <Text className="text-lg font-bold text-gray-900">No liked {activeTab}</Text>
-                <Text className="mt-2 text-center text-gray-500">Items you like will appear here.</Text>
+                <Text className="font-nunito-bold text-lg text-gray-900">No liked {activeTab}</Text>
+                <Text className="mt-2 text-center font-nunito text-gray-500">Items you like will appear here.</Text>
               </View>
             }
           />

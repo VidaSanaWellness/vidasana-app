@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 
 type PasswordStrengthBarProps = {password: string; visible: boolean};
 
-const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProps) => {
+export const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProps) => {
   const {t} = useTranslation();
 
   const score = (() => {
@@ -35,8 +35,8 @@ const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProps) => {
   return !visible ? null : (
     <View className="mb-2 px-2">
       <View className="mb-1 flex-row items-center justify-between">
-        <Text className="text-[14px] text-[#666]">{t('passwordStrength.label')}</Text>
-        <Text className="text-[14px] font-semibold" style={{color: getStrengthColor()}}>
+        <Text className="font-nunito text-[14px] text-[#666]">{t('passwordStrength.label')}</Text>
+        <Text className="font-nunito-bold text-[14px]" style={{color: getStrengthColor()}}>
           {getStrengthLabel()}
         </Text>
       </View>
@@ -47,5 +47,3 @@ const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProps) => {
     </View>
   );
 };
-
-export default PasswordStrengthBar;

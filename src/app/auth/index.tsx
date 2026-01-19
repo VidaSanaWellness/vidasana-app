@@ -5,11 +5,12 @@ import React, {useState} from 'react';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import Toast from 'react-native-toast-message';
-import {GoogleSignInButton} from '@/components';
 import {useForm, Controller} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
-import {View, Text, Image, Platform, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView} from 'react-native';
+import {View, Text, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
+import {Display, Subtitle} from '@/components/Typography';
+import {Button} from '@/components/Button';
 
 type LoginFormData = {email: string; password: string};
 
@@ -25,7 +26,7 @@ const Page = () => {
       const {email, password} = data;
       const {error} = await supabase.auth.signInWithPassword({email, password});
       if (error) throw error;
-    } catch (e) {
+    } catch (e: any) {
       return Toast.show({type: 'error', text1: e?.message});
     }
   };
@@ -38,9 +39,13 @@ const Page = () => {
             <Image source={IMAGES.logo} className="mt-12 aspect-square h-28" resizeMode="contain" />
           </View>
 
-          <Animated.View entering={FadeInDown.delay(200)} className="mb-8 items-center">
-            <Text className="mb-2 text-3xl font-bold text-black">{t('auth.login.welcomeBack')}</Text>
-            <Text className="text-base text-gray-500">{t('auth.login.signInSubtitle')}</Text>
+          <Animated.View entering={FadeInDown.delay(200)} className="mb-8 items-center px-6">
+            <Display align="center" className="mb-2 text-black">
+              {t('auth.login.welcomeBack')}
+            </Display>
+            <Subtitle align="center" color="gray">
+              {t('auth.login.signInSubtitle')}
+            </Subtitle>
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(400)} className="px-6">
@@ -60,9 +65,10 @@ const Page = () => {
                       keyboardType="email-address"
                       onChangeText={field.onChange}
                       placeholder={t('auth.login.emailPlaceholder')}
-                      className={`m-0 h-14 rounded-xl border bg-gray-100 px-4 text-base leading-5 text-black ${fieldState.error ? 'border-red-300 bg-red-100' : 'border-transparent'}`}
+                      style={{fontFamily: 'Nunito_400Regular'}}
+                      className={`m-0 h-14 rounded-lg border bg-gray-50 px-4 text-base leading-5 text-black ${fieldState.error ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-primary'}`}
                     />
-                    {fieldState.error && <Text className="ml-2 mt-1 text-sm text-red-500">{fieldState.error.message}</Text>}
+                    {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
                   </>
                 )}
               />
@@ -77,20 +83,21 @@ const Page = () => {
                 render={({field, fieldState}) => (
                   <>
                     <View
-                      className={`flex-row items-center rounded-xl border bg-gray-100 ${formState?.errors.password ? 'border-red-300 bg-red-100' : 'border-transparent'}`}>
+                      className={`flex-row items-center rounded-lg border bg-gray-50 ${formState?.errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-primary'}`}>
                       <TextInput
                         {...field}
                         placeholder={t('auth.login.passwordPlaceholder')}
                         placeholderTextColor="#999"
                         onChangeText={field.onChange}
                         secureTextEntry={!showPassword}
+                        style={{fontFamily: 'Nunito_400Regular'}}
                         className="m-0 h-14 flex-1 px-4 text-base leading-5 text-black"
                       />
-                      <TouchableOpacity className="mr-1 p-2" onPress={() => setShowPassword(!showPassword)}>
-                        <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
+                      <TouchableOpacity className="mr-2 p-2" onPress={() => setShowPassword(!showPassword)}>
+                        <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
                       </TouchableOpacity>
                     </View>
-                    {fieldState.error && <Text className="ml-2 mt-1 text-sm text-red-500">{fieldState.error.message}</Text>}
+                    {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
                   </>
                 )}
               />
@@ -98,30 +105,20 @@ const Page = () => {
 
             <View className="mb-6 mt-2 flex-row items-center justify-end">
               <Link href="/auth/forget-password">
-                <Text className="text-sm font-semibold text-[#E03C31]">{t('auth.login.forgotPassword')}</Text>
+                <Text className="font-nunito-bold text-sm font-semibold text-secondary">{t('auth.login.forgotPassword')}</Text>
               </Link>
             </View>
 
             {/* SUBMIT BUTTON */}
+            <Button onPress={handleSubmit(onSubmit)} loading={formState.isSubmitting} label={t('auth.login.loginButton')} fullWidth />
 
-            <TouchableOpacity
-              onPress={handleSubmit(onSubmit)}
-              disabled={formState?.isSubmitting}
-              className="h-14 items-center justify-center rounded-full bg-[#3E6065] shadow">
-              {formState.isSubmitting ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text className="text-lg font-semibold text-white">{t('auth.login.loginButton')}</Text>
-              )}
-            </TouchableOpacity>
-
-            <GoogleSignInButton />
+            {/* <GoogleSignInButton /> */}
 
             {/* SIGN UP LINK */}
-            <View className="mt-5 flex-row items-center justify-center">
-              <Text className="text-sm text-gray-600">{t('auth.login.noAccount')} </Text>
+            <View className="mt-8 flex-row items-center justify-center">
+              <Text className="font-nunito text-sm text-gray-600">{t('auth.login.noAccount')} </Text>
               <Link replace href="/auth/register">
-                <Text className="text-sm font-semibold text-[#E03C31]">{t('auth.login.signUp')}</Text>
+                <Text className="font-nunito-bold text-sm font-semibold text-secondary">{t('auth.login.signUp')}</Text>
               </Link>
             </View>
           </Animated.View>

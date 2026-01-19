@@ -26,8 +26,8 @@ export default function HomeScreen() {
             onPress={handleSearchPress}
             className="h-14 flex-row items-center rounded-xl border border-gray-100 bg-gray-50 px-4">
             <Feather name="search" size={20} color="#9CA3AF" />
-            <Text className="ml-3 flex-1 text-base text-gray-400">{t('services.searchPlaceholder')}</Text>
-            <View className="rounded-lg bg-[#3E6065] p-2">
+            <Text className="font-nunito ml-3 flex-1 text-base text-gray-400">{t('services.searchPlaceholder')}</Text>
+            <View className="bg-primary rounded-lg p-2">
               <Feather name="sliders" size={16} color="white" />
             </View>
           </TouchableOpacity>

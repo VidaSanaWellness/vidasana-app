@@ -101,6 +101,7 @@ export default function MapScreen() {
           geometry: {type: 'Point', coordinates: [i.lng, i.lat]},
         }) as Feature<Point>
     );
+  // @ts-ignore
   index.load(points);
   const clusters = index.getClusters([-180, -85, 180, 85], Math.floor(currentZoom));
 
@@ -143,6 +144,7 @@ export default function MapScreen() {
             geometry: {type: 'Point', coordinates: [i.lng, i.lat]},
           }) as Feature<Point>
       );
+    // @ts-ignore
     index.load(points);
     const expansionZoom = index.getClusterExpansionZoom(clusterId);
 
@@ -176,7 +178,7 @@ export default function MapScreen() {
   if (!initialRegion)
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#15803d" />
+        <ActivityIndicator size="large" color="#00594f" />
       </View>
     );
 
@@ -230,7 +232,7 @@ export default function MapScreen() {
       {isLoading && (
         <View className="pointer-events-none absolute left-0 right-0 top-14 items-center">
           <View className="rounded-full bg-white px-4 py-2 shadow-sm">
-            <ActivityIndicator size="small" color="#15803d" />
+            <ActivityIndicator size="small" color="#00594f" />
           </View>
         </View>
       )}
@@ -254,16 +256,16 @@ export default function MapScreen() {
       {/* Legend */}
       <View className="absolute bottom-8 left-4 rounded-lg bg-white/90 p-3 shadow-lg">
         <View className="mb-2 flex-row items-center gap-2">
-          <View className="h-3 w-3 rounded-full bg-green-700" />
-          <Text className="text-xs font-medium text-gray-700">Services</Text>
+          <View className="h-3 w-3 rounded-full bg-primary" />
+          <Text className="font-nunito text-xs font-medium text-gray-700">Services</Text>
         </View>
         <View className="mb-2 flex-row items-center gap-2">
-          <View className="h-3 w-3 rounded-full bg-teal-400" />
-          <Text className="text-xs font-medium text-gray-700">Events</Text>
+          <View className="h-3 w-3 rounded-full bg-sage" />
+          <Text className="font-nunito text-xs font-medium text-gray-700">Events</Text>
         </View>
         <View className="flex-row items-center gap-2">
           <View className="h-3 w-3 rounded-full bg-orange-500" />
-          <Text className="text-xs font-medium text-gray-700">Cluster</Text>
+          <Text className="font-nunito text-xs font-medium text-gray-700">Cluster</Text>
         </View>
       </View>
     </SafeAreaView>

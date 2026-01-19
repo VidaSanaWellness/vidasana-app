@@ -1,0 +1,115 @@
+import {serve} from 'https://deno.land/std@0.168.0/http/server.ts';
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import Stripe from 'https://esm.sh/stripe@12.0.0?target=deno';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
+  apiVersion: '2022-11-15',
+  httpClient: Stripe.createFetchHttpClient(),
+});
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', {headers: corsHeaders});
+  }
+
+  try {
+    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
+      global: {headers: {Authorization: req.headers.get('Authorization')!}},
+    });
+
+    const {
+      data: {user},
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const {action} = await req.json();
+
+    if (action === 'create_account_link') {
+      // 1. Check if provider has stripe_account_id
+      let {data: provider} = await supabaseClient.from('provider').select('stripe').eq('id', user.id).single();
+
+      let accountId = provider?.stripe;
+
+      // 2. If not, create Express account
+      if (!accountId) {
+        const account = await stripe.accounts.create({
+          type: 'express',
+          country: 'US', // Default to US or make dynamic if needed
+          email: user.email,
+          capabilities: {
+            card_payments: {requested: true},
+            transfers: {requested: true},
+          },
+        });
+        accountId = account.id;
+
+        // Save to DB
+        await supabaseClient.from('provider').update({stripe: accountId}).eq('id', user.id);
+      }
+
+      // 3. Create Account Link
+      const accountLink = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: 'https://stripe.com', // Stripe requires HTTPS; Manual close needed on mobile
+        return_url: 'https://stripe.com', // Stripe requires HTTPS; Manual close needed on mobile
+        type: 'account_onboarding',
+      });
+
+      return new Response(JSON.stringify({url: accountLink.url}), {
+        headers: {...corsHeaders, 'Content-Type': 'application/json'},
+      });
+    }
+
+    if (action === 'create_login_link') {
+      // Get account ID
+      let {data: provider} = await supabaseClient.from('provider').select('stripe').eq('id', user.id).single();
+
+      if (!provider?.stripe) throw new Error('No Stripe account found');
+
+      const loginLink = await stripe.accounts.createLoginLink(provider.stripe);
+
+      return new Response(JSON.stringify({url: loginLink.url}), {
+        headers: {...corsHeaders, 'Content-Type': 'application/json'},
+      });
+    }
+
+    if (action === 'check_status') {
+      let {data: provider} = await supabaseClient.from('provider').select('stripe').eq('id', user.id).single();
+
+      if (!provider?.stripe) {
+        return new Response(JSON.stringify({isConnected: false}), {
+          headers: {...corsHeaders, 'Content-Type': 'application/json'},
+        });
+      }
+
+      const account = await stripe.accounts.retrieve(provider.stripe);
+
+      return new Response(
+        JSON.stringify({
+          isConnected: true,
+          details_submitted: account.details_submitted,
+          charges_enabled: account.charges_enabled,
+          payouts_enabled: account.payouts_enabled,
+        }),
+        {
+          headers: {...corsHeaders, 'Content-Type': 'application/json'},
+        }
+      );
+    }
+
+    throw new Error('Invalid action');
+  } catch (error) {
+    return new Response(JSON.stringify({error: error.message}), {
+      headers: {...corsHeaders, 'Content-Type': 'application/json'},
+      status: 400,
+    });
+  }
+});

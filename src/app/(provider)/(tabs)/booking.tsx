@@ -1,5 +1,4 @@
-import {useEffect, useMemo} from 'react';
-import {View, Text, SectionList, TouchableOpacity, Image, ActivityIndicator, RefreshControl} from 'react-native';
+import {View, Text, SectionList, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Linking} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
@@ -7,7 +6,6 @@ import {useAppStore} from '@/store';
 import dayjs from 'dayjs';
 import {Ionicons, Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
-import {Link} from 'expo-router';
 
 export default function ProviderBookingsScreen() {
   const {user} = useAppStore((s) => s.session!);
@@ -16,6 +14,7 @@ export default function ProviderBookingsScreen() {
 
   const {
     data: bookings,
+    error,
     isLoading,
     refetch,
     isRefetching,
@@ -56,7 +55,7 @@ export default function ProviderBookingsScreen() {
   });
 
   // Group bookings by day
-  const sections = useMemo(() => {
+  const sections = (() => {
     if (!bookings) return [];
 
     const groups: {[key: string]: any[]} = {};
@@ -77,7 +76,7 @@ export default function ProviderBookingsScreen() {
         title: dateKey,
         data: groups[dateKey],
       }));
-  }, [bookings]);
+  })();
 
   const renderSectionHeader = ({section: {title}}: any) => {
     const date = dayjs(title);
@@ -91,7 +90,7 @@ export default function ProviderBookingsScreen() {
 
     return (
       <View className="mt-2 bg-gray-100 px-5 py-3">
-        <Text className="text-sm font-bold uppercase tracking-wide text-gray-500">{headerText}</Text>
+        <Text className="font-nunito-bold text-sm uppercase tracking-wide text-gray-500">{headerText}</Text>
       </View>
     );
   };
@@ -109,16 +108,10 @@ export default function ProviderBookingsScreen() {
     return (
       <View className="flex-row items-center border-b border-gray-100 bg-white p-4">
         {/* Time Column */}
-        {/* <View className="w-16 items-center justify-center border-r border-gray-100 pr-3 mr-3">
-            <Text className="font-bold text-gray-800">{time}</Text>
-        </View> */}
-        {/* Since removed time selection, 'appointed' is just the date at 00:00 or ISO string?
-            If we removed time, handleBooking passes `date.toISOString()`.
-            If user picks "2024-01-20" in picker, the Date object is usually localized or UTC 00:00.
-            For now assuming generic time or just date relevant.
-            Actually, if time is removed, maybe we don't show time?
-            But let's keep the structure.
-        */}
+        <View className="mr-3 w-16 items-center justify-center border-r border-gray-100 pr-3">
+          <Text className="font-nunito-bold text-lg text-gray-900">{dayjs(item.appointed).format('h:mm')}</Text>
+          <Text className="font-nunito text-xs font-semibold text-gray-500">{dayjs(item.appointed).format('A')}</Text>
+        </View>
 
         {/* User Avatar */}
         <View className="mr-4">
@@ -133,25 +126,34 @@ export default function ProviderBookingsScreen() {
 
         {/* Content */}
         <View className="flex-1">
-          <Text className="text-base font-semibold text-gray-900" numberOfLines={1}>
+          <Text className="font-nunito-bold text-base text-gray-900" numberOfLines={1}>
             {item.user?.name || 'Unknown User'}
           </Text>
-          <Text className="mt-0.5 text-sm text-gray-500" numberOfLines={1}>
+          <Text className="mt-0.5 font-nunito text-sm text-gray-500" numberOfLines={1}>
             {serviceTitle}
           </Text>
           <View className="mt-1 flex-row items-center">
-            <View className={`rounded-full px-2 py-0.5 ${item.status === 'booked' ? 'bg-green-100' : 'bg-gray-100'}`}>
-              <Text className={`text-xs capitalize ${item.status === 'booked' ? 'font-bold text-green-700' : 'text-gray-600'}`}>{item.status}</Text>
+            <View className={`rounded-full px-2 py-0.5 ${item.status === 'booked' ? 'bg-sage/20' : 'bg-gray-100'}`}>
+              <Text className={`font-nunito-bold text-xs capitalize ${item.status === 'booked' ? 'text-sage' : 'text-gray-600'}`}>{item.status}</Text>
             </View>
-            <Text className="ml-3 text-xs font-medium text-gray-400">ID: {item.id.substring(0, 6)}</Text>
+            <Text className="ml-3 font-nunito text-xs font-medium text-gray-400">ID: {item.id.substring(0, 6)}</Text>
           </View>
         </View>
 
         {/* Price/Action */}
         <View className="items-end">
-          <Text className="text-base font-bold text-gray-900">${item.price}</Text>
-          <TouchableOpacity className="mt-2 rounded-full bg-gray-50 p-2">
-            <Ionicons name="chatbubble-outline" size={18} color="gray" />
+          <Text className="font-nunito-bold text-base text-gray-900">${item.price}</Text>
+          <TouchableOpacity
+            className="mt-2 rounded-full bg-gray-50 p-2"
+            onPress={() => {
+              if (item.user?.phone) {
+                Linking.openURL(`tel:${item.user.phone}`);
+              } else {
+                // Fallback or alert if no phone
+                console.warn('No phone number available');
+              }
+            }}>
+            <Ionicons name="call-outline" size={18} color="gray" />
           </TouchableOpacity>
         </View>
       </View>
@@ -161,7 +163,7 @@ export default function ProviderBookingsScreen() {
   if (isLoading && !isRefetching) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#15803d" />
+        <ActivityIndicator size="large" color="#00594f" />
       </View>
     );
   }
@@ -169,10 +171,7 @@ export default function ProviderBookingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
-        <Text className="text-2xl font-bold text-gray-900">Bookings</Text>
-        <TouchableOpacity onPress={() => refetch()} className="rounded-full bg-gray-50 p-2">
-          <Ionicons name="refresh" size={20} color="black" />
-        </TouchableOpacity>
+        <Text className="font-nunito-bold text-2xl text-gray-900">Bookings</Text>
       </View>
 
       {bookings && bookings.length > 0 ? (
@@ -182,7 +181,7 @@ export default function ProviderBookingsScreen() {
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
           stickySectionHeadersEnabled={false} // Clean look
-          refreshControl={<RefreshControl refreshing={isLoading || isRefetching} onRefresh={refetch} />}
+          refreshControl={<RefreshControl refreshing={isLoading || isRefetching} onRefresh={refetch} tintColor="#00594f" />}
           contentContainerStyle={{paddingBottom: 20}}
         />
       ) : (
@@ -190,10 +189,10 @@ export default function ProviderBookingsScreen() {
           <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-100">
             <Feather name="calendar" size={32} color="gray" />
           </View>
-          <Text className="text-center text-lg font-bold text-gray-900">No Bookings Yet</Text>
-          <Text className="mt-2 text-center text-gray-500">Your future bookings will appear here grouped by date.</Text>
-          <TouchableOpacity onPress={() => refetch()} className="mt-6 rounded-full bg-gray-900 px-6 py-3">
-            <Text className="font-bold text-white">Refresh</Text>
+          <Text className="text-center font-nunito-bold text-lg text-gray-900">No Bookings Yet</Text>
+          <Text className="mt-2 text-center font-nunito text-gray-500">Your future bookings will appear here grouped by date.</Text>
+          <TouchableOpacity onPress={() => refetch()} className="mt-6 rounded-full bg-primary px-6 py-3">
+            <Text className="font-nunito-bold text-white">Refresh</Text>
           </TouchableOpacity>
         </View>
       )}

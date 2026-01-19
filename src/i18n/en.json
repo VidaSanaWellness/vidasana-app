@@ -41,7 +41,8 @@
       "conditions": "Conditions",
       "signUpButton": "Sign Up",
       "alreadyMember": "Already a member?",
-      "loginLink": "Login"
+      "loginLink": "Login",
+      "success": "Registration successful! Please complete your payout setup."
     },
     "forgotPassword": {
       "title": "Reset Password",
@@ -165,7 +166,8 @@
     "passwordSpecial": "Password must contain at least one special character",
     "newPasswordRequired": "New password is required",
     "confirmPasswordRequired": "Confirm your password",
-    "passwordMatch": "Passwords do not match"
+    "passwordMatch": "Passwords do not match",
+    "docRequired": "Document upload is required"
   },
   "role": {
     "howWillYouUse": "How will you use VidaSana?",

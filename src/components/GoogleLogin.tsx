@@ -78,7 +78,7 @@ export function GoogleSignInButton() {
       </View>
       <TouchableOpacity onPress={handleGoogleAuth} disabled={loading}>
         {loading ? (
-          <ActivityIndicator color="#000" />
+          <ActivityIndicator color="#00594f" />
         ) : (
           <Image
             // source={require('../../../assets/google-logo.png')}

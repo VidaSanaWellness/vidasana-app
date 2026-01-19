@@ -41,7 +41,8 @@
       "conditions": "Conditions",
       "signUpButton": "S'inscrire",
       "alreadyMember": "Déjà membre ?",
-      "loginLink": "Connexion"
+      "loginLink": "Connexion",
+      "success": "Inscription réussie ! Veuillez compléter la configuration des paiements."
     },
     "forgotPassword": {
       "title": "Réinitialiser le mot de passe",
@@ -165,7 +166,8 @@
     "passwordSpecial": "Le mot de passe doit contenir au moins un caractère spécial",
     "newPasswordRequired": "Nouveau mot de passe requis",
     "confirmPasswordRequired": "Confirmez votre mot de passe",
-    "passwordMatch": "Les mots de passe ne correspondent pas"
+    "passwordMatch": "Les mots de passe ne correspondent pas",
+    "docRequired": "Document requis"
   },
   "role": {
     "howWillYouUse": "Comment allez-vous utiliser VidaSana ?",

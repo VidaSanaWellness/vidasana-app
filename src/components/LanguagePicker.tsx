@@ -4,10 +4,15 @@ import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback} from 'react-native';
 
+// ... imports
+import {H3, Body} from '@/components/Typography';
+
 interface LanguagePickerProps {
   visible: boolean;
   onClose: () => void;
 }
+
+// ... interface
 
 export const LanguagePicker: React.FC<LanguagePickerProps> = ({visible, onClose}) => {
   const insets = useSafeAreaInsets();
@@ -33,7 +38,9 @@ export const LanguagePicker: React.FC<LanguagePickerProps> = ({visible, onClose}
           <TouchableWithoutFeedback>
             <View className="rounded-t-3xl bg-white" style={{paddingBottom: insets.bottom + 20}}>
               <View className="border-b border-gray-100 p-4">
-                <Text className="text-center text-lg font-semibold text-gray-900">{t('settings.selectLanguage')}</Text>
+                <H3 align="center" className="text-gray-900">
+                  {t('settings.selectLanguage')}
+                </H3>
               </View>
 
               <View className="p-4">
@@ -43,14 +50,14 @@ export const LanguagePicker: React.FC<LanguagePickerProps> = ({visible, onClose}
                     <TouchableOpacity
                       key={lang.code}
                       onPress={() => handleLanguageSelect(lang.code)}
-                      className={`mb-3 flex-row items-center justify-between rounded-xl border p-4 ${
-                        isSelected ? 'border-[#3E6065] bg-[#3E6065]/5' : 'border-gray-100 bg-gray-50'
+                      className={`mb-3 flex-row items-center justify-between rounded-2xl border p-4 ${
+                        isSelected ? 'border-primary bg-primary/5' : 'border-gray-100 bg-gray-50'
                       }`}>
                       <View className="flex-row items-center space-x-3">
                         <Text className="text-2xl">{lang.icon}</Text>
-                        <Text className={`text-base ${isSelected ? 'font-semibold text-[#3E6065]' : 'text-gray-700'}`}>{lang.label}</Text>
+                        <Body className={`${isSelected ? 'font-nunito-bold text-primary' : 'text-gray-700'}`}>{lang.label}</Body>
                       </View>
-                      {isSelected && <Ionicons name="checkmark-circle" size={24} color="#3E6065" />}
+                      {isSelected && <Ionicons name="checkmark-circle" size={24} color="#00594f" />}
                     </TouchableOpacity>
                   );
                 })}

@@ -1,10 +1,11 @@
 import {AntDesign, Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {supabase, uploadFile} from '@/utils/supabase';
+import {useAppStore} from '@/store';
 import {useForm, Controller, type FieldErrors} from 'react-hook-form';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useRouter} from 'expo-router';
-import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image, Alert} from 'react-native';
+import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import React, {useState} from 'react';
@@ -64,9 +65,7 @@ export default function CreateServiceScreen() {
   const createServiceMutation = useMutation({
     mutationFn: async (data: ServiceFormValues) => {
       // 1. Get Current User
-      const {
-        data: {user},
-      } = await supabase.auth.getUser();
+      const {user} = useAppStore.getState().session!;
       if (!user) throw new Error('User not authenticated');
 
       // 2. Upload Images
@@ -215,7 +214,7 @@ export default function CreateServiceScreen() {
           <TouchableOpacity onPress={() => router.back()} className="mr-4 rounded-full bg-gray-100 p-2">
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          <Text className="text-2xl font-bold text-gray-900">{t('services.createTitle')}</Text>
+          <Text className="font-nunito-bold text-2xl text-gray-900">{t('services.createTitle')}</Text>
         </View>
 
         {/* Language Tabs */}
@@ -225,7 +224,7 @@ export default function CreateServiceScreen() {
               key={i}
               onPress={() => setActiveLanguage(lang.code)}
               className={`flex-1 items-center rounded-md py-2 ${activeLanguage === lang.code ? 'bg-white shadow-sm' : 'shadow-none'}`}>
-              <Text className={`font-medium ${activeLanguage === lang.code ? 'text-green-700' : 'text-gray-500'}`}>{lang.label}</Text>
+              <Text className={`font-nunito-bold ${activeLanguage === lang.code ? 'text-primary' : 'text-gray-500'}`}>{lang.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -234,7 +233,7 @@ export default function CreateServiceScreen() {
           <View key={lang.code} style={{display: activeLanguage === lang.code ? 'flex' : 'none'}}>
             {/* Title (Multi-lang) */}
             <View className="mb-4">
-              <Text className="mb-1 text-sm font-medium text-gray-700">
+              <Text className="mb-1 font-nunito-bold text-sm text-gray-700">
                 {t('services.serviceTitle')} ({lang.label})
               </Text>
               <Controller
@@ -244,13 +243,13 @@ export default function CreateServiceScreen() {
                 render={({field: {onChange, value}}) => (
                   <View>
                     <TextInput
-                      className="rounded-lg border border-gray-300 px-4 py-3"
+                      className="rounded-lg border border-gray-300 bg-white p-3 font-nunito"
                       placeholder={t('services.serviceTitlePlaceholder')}
                       value={value}
                       onChangeText={onChange}
                     />
                     {errors.translations?.[lang.code]?.title && (
-                      <Text className="mt-1 text-xs text-red-500">{errors.translations[lang.code]?.title?.message}</Text>
+                      <Text className="mt-1 font-nunito text-xs text-red-500">{errors.translations[lang.code]?.title?.message}</Text>
                     )}
                   </View>
                 )}
@@ -259,7 +258,7 @@ export default function CreateServiceScreen() {
 
             {/* Description (Multi-lang) */}
             <View className="mb-4">
-              <Text className="mb-1 text-sm font-medium text-gray-700">
+              <Text className="mb-1 font-nunito-bold text-sm text-gray-700">
                 {t('events.description')} ({lang.label})
               </Text>
               <Controller
@@ -269,7 +268,7 @@ export default function CreateServiceScreen() {
                 render={({field: {onChange, value}}) => (
                   <View>
                     <TextInput
-                      className="min-h-[100px] rounded-lg border border-gray-300 px-4 py-3 pb-4"
+                      className="min-h-[100px] rounded-lg border border-gray-300 bg-white p-3 font-nunito"
                       placeholder={t('events.descriptionPlaceholder')}
                       value={value}
                       multiline
@@ -277,7 +276,7 @@ export default function CreateServiceScreen() {
                       onChangeText={onChange}
                     />
                     {errors.translations?.[lang.code]?.description && (
-                      <Text className="mt-1 text-xs text-red-500">{errors.translations[lang.code]?.description?.message}</Text>
+                      <Text className="mt-1 font-nunito text-xs text-red-500">{errors.translations[lang.code]?.description?.message}</Text>
                     )}
                   </View>
                 )}
@@ -287,7 +286,7 @@ export default function CreateServiceScreen() {
         ))}
         {/* Images */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.images')}</Text>
+          <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.images')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2 flex-row">
             {selectedImages.map((img, index) => (
               <View key={index} className="relative mr-2">
@@ -301,7 +300,7 @@ export default function CreateServiceScreen() {
               onPress={pickImages}
               className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
               <Feather name="camera" size={24} color="gray" />
-              <Text className="mt-1 text-xs text-gray-500">{t('events.addPhotos')}</Text>
+              <Text className="mt-1 font-nunito text-xs text-gray-500">{t('events.addPhotos')}</Text>
             </TouchableOpacity>
           </ScrollView>
           <Controller
@@ -315,7 +314,7 @@ export default function CreateServiceScreen() {
 
         {/* Category */}
         <View className="mb-4">
-          <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.category')}</Text>
+          <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.category')}</Text>
           {isLoadingCategories ? (
             <ActivityIndicator size="small" />
           ) : (
@@ -326,8 +325,8 @@ export default function CreateServiceScreen() {
                   <TouchableOpacity
                     key={cat.id}
                     onPress={() => setValue('category', cat.id, {shouldValidate: true})}
-                    className={`rounded-full border px-4 py-2 ${isSelected ? 'border-green-700 bg-green-700' : 'border-gray-300 bg-white'}`}>
-                    <Text className={isSelected ? 'text-white' : 'text-gray-700'}>{cat.name}</Text>
+                    className={`rounded-full border px-4 py-2 ${isSelected ? 'border-primary bg-primary' : 'border-gray-300 bg-white'}`}>
+                    <Text className={`font-nunito-bold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{cat.name}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -339,18 +338,18 @@ export default function CreateServiceScreen() {
 
         {/* Location Selection */}
         <View className="mb-6">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Location</Text>
+          <Text className="mb-1 font-nunito-bold text-sm text-gray-700">Location</Text>
           <View className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
             <View className="flex-row items-center">
-              <View className={`h-8 w-8 items-center justify-center rounded-full ${watch('lat') ? 'bg-green-100' : 'bg-gray-100'}`}>
-                <Feather name="map-pin" size={16} color={watch('lat') ? '#15803d' : 'gray'} />
+              <View className={`h-8 w-8 items-center justify-center rounded-full ${watch('lat') ? 'bg-primary/10' : 'bg-gray-100'}`}>
+                <Feather name="map-pin" size={16} color={watch('lat') ? '#00594f' : 'gray'} />
               </View>
-              <Text className={`ml-3 text-sm ${watch('lat') ? 'font-medium text-green-700' : 'text-gray-500'}`}>
+              <Text className={`ml-3 font-nunito text-sm ${watch('lat') ? 'font-bold text-primary' : 'text-gray-500'}`}>
                 {watch('lat') ? 'Location Selected' : 'No location selected'}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => setLocationPickerVisible(true)} className="rounded-md bg-green-50 px-3 py-1.5">
-              <Text className="text-xs font-bold text-green-700">{watch('lat') ? 'Change' : 'Pick on Map'}</Text>
+            <TouchableOpacity onPress={() => setLocationPickerVisible(true)} className="rounded-md bg-primary/10 px-3 py-1.5">
+              <Text className="font-nunito-bold text-xs text-primary">{watch('lat') ? 'Change' : 'Pick on Map'}</Text>
             </TouchableOpacity>
           </View>
           {errors.lat && <Text className="mt-1 text-xs text-red-500">Location is required</Text>}
@@ -359,30 +358,30 @@ export default function CreateServiceScreen() {
         {/* Price & Capacity Row */}
         <View className="mb-4 flex-row justify-between gap-4">
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.price')}</Text>
+            <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.price')}</Text>
             <Controller
               control={control}
               rules={{required: t('validation.required')}}
               name="price"
               render={({field: {onChange, value}}) => (
                 <View className="flex-row items-center rounded-lg border border-gray-300 bg-white px-3">
-                  <Text className="mr-1 text-gray-500">$</Text>
-                  <TextInput className="flex-1 py-3" placeholder="0.00" keyboardType="numeric" value={value} onChangeText={onChange} />
+                  <Text className="mr-1 font-nunito text-gray-500">$</Text>
+                  <TextInput className="flex-1 py-3 font-nunito" placeholder="0.00" keyboardType="numeric" value={value} onChangeText={onChange} />
                 </View>
               )}
             />
-            {errors.price && <Text className="mt-1 text-xs text-red-500">{errors.price.message}</Text>}
+            {errors.price && <Text className="mt-1 font-nunito text-xs text-red-500">{errors.price.message}</Text>}
           </View>
 
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.capacity')}</Text>
+            <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.capacity')}</Text>
             <Controller
               control={control}
               rules={{required: t('validation.required')}}
               name="capacity"
               render={({field: {onChange, value}}) => (
                 <TextInput
-                  className="rounded-lg border border-gray-300 bg-white p-3"
+                  className="rounded-lg border border-gray-300 bg-white p-3 font-nunito"
                   placeholder="e.g. 10"
                   keyboardType="numeric"
                   value={value}
@@ -397,7 +396,7 @@ export default function CreateServiceScreen() {
         {/* Time Row */}
         <View className="mb-4 flex-row justify-between gap-4">
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.startTime')}</Text>
+            <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.startTime')}</Text>
             <Controller
               control={control}
               name="start_at"
@@ -410,7 +409,7 @@ export default function CreateServiceScreen() {
                       setTimePickerVisible(true);
                     }}
                     className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
-                    <Text className={value ? 'text-black' : 'text-gray-400'}>
+                    <Text className={`font-nunito ${value ? 'text-gray-900' : 'text-gray-400'}`}>
                       {value?.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) || t('events.selectStart')}
                     </Text>
                     <Feather name="clock" size={18} color="gray" />
@@ -422,7 +421,7 @@ export default function CreateServiceScreen() {
           </View>
 
           <View className="flex-1">
-            <Text className="mb-1 text-sm font-medium text-gray-700">{t('events.endTime')}</Text>
+            <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.endTime')}</Text>
             <Controller
               control={control}
               name="end_at"
@@ -435,7 +434,7 @@ export default function CreateServiceScreen() {
                       setTimePickerVisible(true);
                     }}
                     className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
-                    <Text className={value ? 'text-black' : 'text-gray-400'}>
+                    <Text className={`font-nunito ${value ? 'text-gray-900' : 'text-gray-400'}`}>
                       {value?.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) || t('events.selectEnd')}
                     </Text>
                     <Feather name="clock" size={18} color="gray" />
@@ -449,7 +448,7 @@ export default function CreateServiceScreen() {
 
         {/* Week Days */}
         <View className="mb-6">
-          <Text className="mb-2 text-sm font-medium text-gray-700">{t('services.availableDays')}</Text>
+          <Text className="mb-2 font-nunito-bold text-sm text-gray-700">{t('services.availableDays')}</Text>
 
           <Controller
             name="week_day"
@@ -464,8 +463,8 @@ export default function CreateServiceScreen() {
                       <TouchableOpacity
                         key={day.value}
                         onPress={() => toggleWeekDay(day.value)}
-                        className={`mb-2 h-10 w-10 items-center justify-center rounded-full ${isSelected ? 'bg-green-700' : 'bg-gray-100'}`}>
-                        <Text className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-600'}`}>{day.label}</Text>
+                        className={`mb-2 h-10 w-10 items-center justify-center rounded-full ${isSelected ? 'bg-primary' : 'bg-gray-100'}`}>
+                        <Text className={`font-nunito-bold text-xs ${isSelected ? 'text-white' : 'text-gray-600'}`}>{day.label}</Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -480,11 +479,11 @@ export default function CreateServiceScreen() {
         <TouchableOpacity
           onPress={handleSubmit(onSubmit, onInvalid)}
           disabled={createServiceMutation.isPending || isSubmitting}
-          className={`mb-10 items-center rounded-lg p-4 ${createServiceMutation.isPending ? 'bg-gray-400' : 'bg-green-700'}`}>
+          className={`mb-10 items-center rounded-lg p-4 ${createServiceMutation.isPending ? 'bg-gray-400' : 'bg-primary'}`}>
           {createServiceMutation.isPending ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-lg font-bold text-white">{t('services.createButton')}</Text>
+            <Text className="font-nunito-bold text-lg text-white">{t('services.createButton')}</Text>
           )}
         </TouchableOpacity>
 

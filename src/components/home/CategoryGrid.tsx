@@ -42,10 +42,10 @@ export const CategoryGrid = () => {
         activeOpacity={0.7}
         onPress={() => (isSeeAll ? router.push('/(user)/(tabs)/home/services') : handleCategoryPress(item.id))}
         className="mb-6 w-1/4 items-center px-1">
-        <View className={`mb-2 h-14 w-14 items-center justify-center rounded-full ${isSeeAll ? 'bg-gray-100' : 'bg-green-50'}`}>
-          <Feather name={getIconName(item.icon)} size={24} color={isSeeAll ? '#4B5563' : '#15803d'} />
+        <View className={`mb-2 h-14 w-14 items-center justify-center rounded-2xl ${isSeeAll ? 'bg-gray-100' : 'bg-primary/5'}`}>
+          <Feather name={getIconName(item.icon)} size={24} color={isSeeAll ? '#4B5563' : '#00594f'} />
         </View>
-        <Text numberOfLines={1} className="text-center text-xs font-medium text-gray-700">
+        <Text numberOfLines={1} className="font-nunito-bold text-center text-xs text-gray-700">
           {item.name}
         </Text>
       </TouchableOpacity>
@@ -55,14 +55,14 @@ export const CategoryGrid = () => {
   if (isLoading)
     return (
       <View className="py-4">
-        <ActivityIndicator size="small" color="#15803d" />
+        <ActivityIndicator size="small" color="#00594f" />
       </View>
     );
 
   return (
     <View className="mt-6 px-4">
       <View className="mb-4 flex-row items-center justify-between">
-        <Text className="text-lg font-bold text-black">{t('services.categories')}</Text>
+        <Text className="font-nunito-bold text-lg text-black">{t('services.categories')}</Text>
       </View>
 
       <FlatList

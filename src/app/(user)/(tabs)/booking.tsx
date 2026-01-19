@@ -5,6 +5,7 @@ import {supabase} from '@/utils/supabase';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {useAppStore} from '@/store';
+import {useRouter, Link} from 'expo-router';
 
 type Booking = {
   id: string;
@@ -32,6 +33,7 @@ export default function BookingsScreen() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const {t} = useTranslation();
+  const router = useRouter(); // Added useRouter hook
 
   const fetchBookings = async () => {
     try {
@@ -44,7 +46,10 @@ export default function BookingsScreen() {
         .select(
           `
           id, created_at, status, price, appointed,
-          services (title, images)
+          services (
+            images,
+            service_translations (title)
+          )
         `
         )
         .eq('user', user.id)
@@ -58,7 +63,11 @@ export default function BookingsScreen() {
         .select(
           `
           id, created_at, unit_price, total_price, quantity,
-          events (title, start_at, images)
+          events (
+            start_at, 
+            images,
+            event_translations (title)
+          )
         `
         )
         .eq('user', user.id)
@@ -68,8 +77,23 @@ export default function BookingsScreen() {
 
       // Combine and Sort
       const combined: Booking[] = [
-        ...(serviceBookings || []).map((b: any) => ({...b, type: 'service' as const, service: b.services})),
-        ...(eventBookings || []).map((b: any) => ({...b, type: 'event' as const, event: b.events})),
+        ...(serviceBookings || []).map((b: any) => ({
+          ...b,
+          type: 'service' as const,
+          service: {
+            images: b.services?.images,
+            title: b.services?.service_translations?.[0]?.title || 'Service',
+          },
+        })),
+        ...(eventBookings || []).map((b: any) => ({
+          ...b,
+          type: 'event' as const,
+          event: {
+            start_at: b.events?.start_at,
+            images: b.events?.images,
+            title: b.events?.event_translations?.[0]?.title || 'Event',
+          },
+        })),
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       setBookings(combined);
@@ -96,41 +120,47 @@ export default function BookingsScreen() {
     const price = item.type === 'service' ? item.price : item.total_price;
 
     return (
-      <View className="mb-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-        <View className="flex-row">
-          {image ? (
-            <Image source={{uri: supabase.storage.from('images').getPublicUrl(image).data.publicUrl}} className="h-20 w-20 rounded-lg bg-gray-200" />
-          ) : (
-            <View className="h-20 w-20 items-center justify-center rounded-lg bg-gray-200">
-              <Ionicons name="calendar" size={24} color="gray" />
-            </View>
-          )}
+      <Link href={`/(user)/receipt/${item.id}`} asChild>
+        <TouchableOpacity className="mb-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <View className="flex-row">
+            {image ? (
+              <Image
+                source={{uri: supabase.storage.from('images').getPublicUrl(image).data.publicUrl}}
+                className="h-20 w-20 rounded-lg bg-gray-200"
+              />
+            ) : (
+              <View className="h-20 w-20 items-center justify-center rounded-lg bg-gray-200">
+                <Ionicons name="calendar" size={24} color="gray" />
+              </View>
+            )}
 
-          <View className="ml-4 flex-1 justify-between">
-            <View>
-              <Text className="font-bold text-gray-900" numberOfLines={1}>
-                {title || 'Unknown Booking'}
-              </Text>
-              <Text className="text-xs text-gray-500">{date ? new Date(date).toLocaleDateString() : 'Date TBD'}</Text>
-            </View>
-            <View className="flex-row items-center justify-between">
-              <Text className="font-bold text-green-700">${price}</Text>
-              <View className={`rounded-full px-2 py-1 ${item.status === 'booked' || !item.status ? 'bg-green-100' : 'bg-gray-100'}`}>
-                <Text className={`text-xs ${item.status === 'booked' || !item.status ? 'text-green-700' : 'text-gray-500'}`}>
-                  {item.status || 'Booked'}
-                </Text>
+            <View className="ml-4 flex-1 justify-between">
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text className="font-nunito-bold text-gray-900" numberOfLines={1}>
+                    {title || 'Unknown Booking'}
+                  </Text>
+                  <Text className="font-nunito text-xs text-gray-500">{date ? new Date(date).toLocaleDateString() : 'Date TBD'}</Text>
+                </View>
+                <View className={`rounded-full px-2 py-1 ${item.status === 'booked' || !item.status ? 'bg-primary/10' : 'bg-gray-100'}`}>
+                  <Text className={`font-nunito-bold text-xs ${item.status === 'booked' || !item.status ? 'text-primary' : 'text-gray-500'}`}>
+                    {item.status || 'Booked'}
+                  </Text>
+                </View>
+              </View>
+              <View className="flex-row items-center justify-between">
+                <Text className="font-nunito-bold text-primary">${price}</Text>
+                <View className="flex-row justify-end">
+                  <TouchableOpacity onPress={() => handleContactSupport(item.id)} className="flex-row items-center">
+                    <Ionicons name="help-buoy-outline" size={16} color="#4B5563" />
+                    <Text className="ml-1 font-nunito text-sm font-medium text-gray-600">Contact Support</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
-        </View>
-
-        <View className="mt-4 flex-row justify-end border-t border-gray-100 pt-3">
-          <TouchableOpacity onPress={() => handleContactSupport(item.id)} className="flex-row items-center">
-            <Ionicons name="help-buoy-outline" size={16} color="#4B5563" />
-            <Text className="ml-1 text-sm font-medium text-gray-600">Contact Support</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </Link>
     );
   };
 

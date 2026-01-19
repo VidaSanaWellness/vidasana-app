@@ -2,7 +2,7 @@ import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import {useQuery} from '@tanstack/react-query';
 import {Link, useLocalSearchParams, useRouter} from 'expo-router';
-import {ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Platform} from 'react-native';
+import {ActivityIndicator, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -45,7 +45,7 @@ export default function EventDetailsScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#15803d" />
+        <ActivityIndicator size="large" color="#00594f" />
       </View>
     );
   }
@@ -53,7 +53,7 @@ export default function EventDetailsScreen() {
   if (!event) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-gray-500">Event not found</Text>
+        <Text className="font-nunito text-gray-500">Event not found</Text>
       </View>
     );
   }
@@ -84,23 +84,23 @@ export default function EventDetailsScreen() {
         <View className="p-5">
           {/* Category Badge */}
           {event.categories && (
-            <View className="mb-3 self-start rounded-full bg-green-100 px-3 py-1">
-              <Text className="text-xs font-semibold text-green-700">{event.categories.name}</Text>
+            <View className="bg-primary/10 mb-3 self-start rounded-full px-3 py-1">
+              <Text className="font-nunito-bold text-primary text-xs">{event.categories.name}</Text>
             </View>
           )}
 
           {/* Title */}
-          <Text className="mb-2 text-2xl font-bold text-gray-900">{event.title}</Text>
+          <Text className="font-nunito-bold mb-2 text-2xl text-gray-900">{event.title}</Text>
 
           {/* Date & Time */}
           <View className="mb-6 rounded-xl bg-gray-50 p-4">
             <View className="mb-3 flex-row items-center">
-              <View className="mr-3 rounded-full bg-green-100 p-2">
-                <Feather name="calendar" size={20} color="#15803d" />
+              <View className="bg-primary/10 mr-3 rounded-full p-2">
+                <Feather name="calendar" size={20} color="#00594f" />
               </View>
               <View>
-                <Text className="text-xs text-gray-500">{t('events.date')}</Text>
-                <Text className="font-semibold text-gray-900">
+                <Text className="font-nunito text-xs text-gray-500">{t('events.date')}</Text>
+                <Text className="font-nunito-bold text-gray-900">
                   {new Date(event.start_at).toLocaleDateString(undefined, {
                     weekday: 'long',
                     year: 'numeric',
@@ -112,12 +112,12 @@ export default function EventDetailsScreen() {
             </View>
 
             <View className="flex-row items-center">
-              <View className="mr-3 rounded-full bg-green-100 p-2">
-                <Feather name="clock" size={20} color="#15803d" />
+              <View className="bg-primary/10 mr-3 rounded-full p-2">
+                <Feather name="clock" size={20} color="#00594f" />
               </View>
               <View>
-                <Text className="text-xs text-gray-500">{t('events.time')}</Text>
-                <Text className="font-semibold text-gray-900">
+                <Text className="font-nunito text-xs text-gray-500">{t('events.time')}</Text>
+                <Text className="font-nunito-bold text-gray-900">
                   {new Date(event.start_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} -{' '}
                   {new Date(event.end_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
                 </Text>
@@ -126,7 +126,7 @@ export default function EventDetailsScreen() {
 
             {event.book_till && (
               <View className="mt-3 border-t border-gray-200 pt-3">
-                <Text className="text-xs font-medium text-red-500">
+                <Text className="font-nunito text-xs font-medium text-red-500">
                   {t('events.bookingDeadline')}: {new Date(event.book_till).toLocaleDateString()}
                 </Text>
               </View>
@@ -135,14 +135,14 @@ export default function EventDetailsScreen() {
 
           {/* Description */}
           <View className="mb-6">
-            <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.aboutEvent')}</Text>
-            <Text className="leading-6 text-gray-600">{event.description}</Text>
+            <Text className="font-nunito-bold mb-2 text-lg text-gray-900">{t('events.aboutEvent')}</Text>
+            <Text className="font-nunito leading-6 text-gray-600">{event.description}</Text>
           </View>
 
           {/* Location Map */}
           {event.lat && event.lng ? (
             <View className="mb-6">
-              <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.location')}</Text>
+              <Text className="font-nunito-bold mb-2 text-lg text-gray-900">{t('events.location')}</Text>
               <View className="h-48 w-full overflow-hidden rounded-xl border border-gray-200">
                 <MapView
                   style={{flex: 1}}
@@ -166,14 +166,14 @@ export default function EventDetailsScreen() {
           {/* Tickets */}
           {event.event_ticket_types && event.event_ticket_types.length > 0 && (
             <View className="mb-6">
-              <Text className="mb-3 text-lg font-bold text-gray-900">{t('events.tickets')}</Text>
+              <Text className="font-nunito-bold mb-3 text-lg text-gray-900">{t('events.tickets')}</Text>
               {event.event_ticket_types.map((ticket: any) => (
                 <View key={ticket.id} className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 p-4">
                   <View>
-                    <Text className="font-bold text-gray-900">{ticket.name}</Text>
-                    <Text className="text-xs text-gray-500">Capacity: {ticket.capacity}</Text>
+                    <Text className="font-nunito-bold text-gray-900">{ticket.name}</Text>
+                    <Text className="font-nunito text-xs text-gray-500">Capacity: {ticket.capacity}</Text>
                   </View>
-                  <Text className="text-lg font-bold text-green-700">${ticket.price}</Text>
+                  <Text className="font-nunito-bold text-primary text-lg">${ticket.price}</Text>
                 </View>
               ))}
             </View>

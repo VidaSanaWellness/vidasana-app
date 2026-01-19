@@ -1,15 +1,14 @@
-import {Link, router} from 'expo-router';
+import {Link, router,useLocalSearchParams} from 'expo-router';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useInfiniteQuery} from '@tanstack/react-query';
-import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, TextInput, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {useUserLocation} from '@/hooks';
-import {useState, useMemo, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import FilterModal, {FilterState} from '@/components/modals/FilterModal';
 import {useDebouncer} from '@/hooks/useDebounce';
 import {SearchHeader} from '@/components';
-import {useLocalSearchParams} from 'expo-router';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 // Mock / Types
@@ -73,14 +72,14 @@ export default function ServicesScreen() {
     setRadius(filters.radius || 10);
   };
 
-  const activeFilterCount = useMemo(() => {
+  const activeFilterCount = (() => {
     let count = 0;
     if (selectedCategories.length > 0) count++;
     if (selectedDays.length > 0) count++;
     if (sortBy !== 'relevance') count++;
     if (isNearMeEnabled) count++;
     return count;
-  }, [selectedCategories, selectedDays, sortBy, isNearMeEnabled]);
+  })();
 
   // -- Data Fetching --
   const {data, isLoading, refetch, hasNextPage, fetchNextPage, isFetchingNextPage} = useInfiniteQuery({
@@ -99,13 +98,13 @@ export default function ServicesScreen() {
     queryFn: async ({pageParam = 0}) => {
       const LIMIT = 10;
       const {data: rpcData, error} = await supabase.rpc('search_services', {
-        search_query: debouncedSearchQuery || null,
+        search_query: debouncedSearchQuery || undefined,
         target_lang: i18n.language,
-        category_filter: selectedCategories.length > 0 ? selectedCategories : null,
-        day_filter: selectedDays.length > 0 ? selectedDays : null,
-        user_lat: userLocation?.latitude || null,
-        user_lng: userLocation?.longitude || null,
-        radius_meters: isNearMeEnabled ? radius * 1000 : null, // Radius in meters
+        category_filter: selectedCategories.length > 0 ? selectedCategories : undefined,
+        day_filter: selectedDays.length > 0 ? selectedDays : undefined,
+        user_lat: userLocation?.latitude || undefined,
+        user_lng: userLocation?.longitude || undefined,
+        radius_meters: isNearMeEnabled ? radius * 1000 : undefined, // Radius in meters
         sort_by: sortBy,
         page_offset: pageParam,
         page_limit: LIMIT,
@@ -129,9 +128,7 @@ export default function ServicesScreen() {
     setIsRefreshing(false);
   };
 
-  const services = useMemo(() => {
-    return data?.pages.flatMap((page) => page) || [];
-  }, [data]);
+  const services = data?.pages.flatMap((page) => page) || [];
 
   // -- Renders --
   const formatDistance = (meters?: number) => {
@@ -161,27 +158,27 @@ export default function ServicesScreen() {
               <View>
                 <View className="mb-1 flex-row items-start justify-between">
                   {/* Title */}
-                  <Text className="flex-1 text-lg font-bold text-gray-900" numberOfLines={1}>
+                  <Text className="flex-1 font-nunito-bold text-lg text-gray-900" numberOfLines={1}>
                     {item.title}
                   </Text>
                   <View className="items-end">
-                    {item.price !== null && <Text className="text-sm font-semibold text-green-700">${item.price}</Text>}
+                    {item.price !== null && <Text className="font-nunito-bold text-sm text-primary">${item.price}</Text>}
                     {item.dist_meters !== undefined && item.dist_meters !== null && (
                       <View className="mt-1 flex-row items-center rounded bg-gray-100 px-1.5 py-0.5">
                         <Feather name="map-pin" size={10} color="#6B7280" />
-                        <Text className="ml-1 text-[10px] text-gray-500">{formatDistance(item.dist_meters)}</Text>
+                        <Text className="ml-1 font-nunito text-[10px] text-gray-500">{formatDistance(item.dist_meters)}</Text>
                       </View>
                     )}
                   </View>
                 </View>
-                <Text className="mb-2 text-xs text-gray-500" numberOfLines={2}>
+                <Text className="mb-2 font-nunito text-xs text-gray-500" numberOfLines={2}>
                   {item.description}
                 </Text>
               </View>
 
               <View className="flex-row items-center">
                 <Feather name="clock" size={12} color="gray" />
-                <Text className="ml-1 text-xs text-gray-500">{t('services.viewDetails')}</Text>
+                <Text className="ml-1 font-nunito text-xs text-gray-500">{t('services.viewDetails')}</Text>
               </View>
             </View>
           </View>
@@ -218,15 +215,15 @@ export default function ServicesScreen() {
             }
           }}
           onEndReachedThreshold={0.5}
-          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#15803d" />}
-          ListFooterComponent={isFetchingNextPage ? <ActivityIndicator size="small" color="#15803d" className="my-4" /> : null}
+          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#00594f" />}
+          ListFooterComponent={isFetchingNextPage ? <ActivityIndicator size="small" color="#00594f" className="my-4" /> : null}
           ListEmptyComponent={
             !isLoading ? (
               <View className="mt-20 items-center justify-center">
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-50">
                   <Feather name="search" size={40} color="#D1D5DB" />
                 </View>
-                <Text className="text-lg font-bold text-gray-900">{t('services.noServices')}</Text>
+                <Text className="font-nunito-bold text-lg text-gray-900">{t('services.noServices')}</Text>
               </View>
             ) : null
           }
@@ -244,6 +241,8 @@ export default function ServicesScreen() {
           sortBy,
           isNearMeEnabled,
           radius,
+          dateFrom: null,
+          dateTo: null,
         }}
         userLocation={userLocation}
       />

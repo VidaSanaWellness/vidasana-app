@@ -50,7 +50,7 @@ export default function ProviderProfileScreen() {
 
       if (error) throw error;
 
-      return data.map((s) => {
+      return data.map((s: any) => {
         const tr =
           s?.service_translations?.find((t: any) => t.lang_code === i18n.language) ||
           s?.service_translations?.find((t: any) => t.lang_code === 'en') ||
@@ -114,15 +114,15 @@ export default function ProviderProfileScreen() {
         </View>
         <View className="flex-1 justify-between p-3">
           <View>
-            <Text numberOfLines={1} className="mb-1 text-base font-bold text-gray-900">
+            <Text numberOfLines={1} className="mb-1 font-nunito-bold text-base text-gray-900">
               {item.title}
             </Text>
-            <Text numberOfLines={2} className="text-xs text-gray-500">
+            <Text numberOfLines={2} className="font-nunito text-xs text-gray-500">
               {item.description}
             </Text>
           </View>
           <View className="flex-row items-center justify-between">
-            <Text className="font-bold text-green-700">${item.price}</Text>
+            <Text className="font-nunito-bold text-primary">${item.price}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -148,16 +148,16 @@ export default function ProviderProfileScreen() {
         </View>
         <View className="flex-1 justify-between p-3">
           <View>
-            <Text numberOfLines={1} className="mb-1 text-base font-bold text-gray-900">
+            <Text numberOfLines={1} className="mb-1 font-nunito-bold text-base text-gray-900">
               {item.title}
             </Text>
             <View className="flex-row items-center">
               <Feather name="calendar" size={12} color="gray" />
-              <Text className="ml-1 text-xs text-gray-500">{date}</Text>
+              <Text className="ml-1 font-nunito text-xs text-gray-500">{date}</Text>
             </View>
           </View>
           <View className="flex-row items-center justify-between">
-            <Text className="text-xs font-medium text-green-700">View Details</Text>
+            <Text className="font-nunito-bold text-xs text-primary">View Details</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -167,7 +167,7 @@ export default function ProviderProfileScreen() {
   if (isLoadingProvider) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#15803d" />
+        <ActivityIndicator size="large" color="#00594f" />
       </View>
     );
   }
@@ -194,7 +194,7 @@ export default function ProviderProfileScreen() {
               </View>
             )}
           </View>
-          <Text className="text-xl font-bold text-gray-900">{provider?.name || 'Provider'}</Text>
+          <Text className="font-nunito-bold text-xl text-gray-900">{provider?.name || 'Provider'}</Text>
         </View>
       </View>
 
@@ -202,13 +202,13 @@ export default function ProviderProfileScreen() {
       <View className="flex-row border-b border-gray-200 bg-white">
         <TouchableOpacity
           onPress={() => setActiveTab('services')}
-          className={`flex-1 items-center border-b-2 py-4 ${activeTab === 'services' ? 'border-green-700' : 'border-transparent'}`}>
-          <Text className={`font-semibold ${activeTab === 'services' ? 'text-green-700' : 'text-gray-500'}`}>Services</Text>
+          className={`flex-1 items-center border-b-2 py-4 ${activeTab === 'services' ? 'border-primary' : 'border-transparent'}`}>
+          <Text className={`font-nunito-bold ${activeTab === 'services' ? 'text-primary' : 'text-gray-500'}`}>Services</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setActiveTab('events')}
-          className={`flex-1 items-center border-b-2 py-4 ${activeTab === 'events' ? 'border-green-700' : 'border-transparent'}`}>
-          <Text className={`font-semibold ${activeTab === 'events' ? 'text-green-700' : 'text-gray-500'}`}>Events</Text>
+          className={`flex-1 items-center border-b-2 py-4 ${activeTab === 'events' ? 'border-primary' : 'border-transparent'}`}>
+          <Text className={`font-nunito-bold ${activeTab === 'events' ? 'text-primary' : 'text-gray-500'}`}>Events</Text>
         </TouchableOpacity>
       </View>
 
@@ -216,25 +216,25 @@ export default function ProviderProfileScreen() {
       <View className="flex-1 px-4 pt-4">
         {activeTab === 'services' ? (
           isLoadingServices ? (
-            <ActivityIndicator className="mt-10" color="#15803d" />
+            <ActivityIndicator className="mt-10" color="#00594f" />
           ) : (
             <FlatList
               data={services || []}
               keyExtractor={(item) => item.id}
               renderItem={renderServiceItem}
-              ListEmptyComponent={<Text className="mt-10 text-center text-gray-500">No services found.</Text>}
+              ListEmptyComponent={<Text className="mt-10 text-center font-nunito text-gray-500">No services found.</Text>}
               contentContainerStyle={{paddingBottom: 20}}
               showsVerticalScrollIndicator={false}
             />
           )
         ) : isLoadingEvents ? (
-          <ActivityIndicator className="mt-10" color="#15803d" />
+          <ActivityIndicator className="mt-10" color="#00594f" />
         ) : (
           <FlatList
             data={events || []}
             keyExtractor={(item) => item.id}
             renderItem={renderEventItem}
-            ListEmptyComponent={<Text className="mt-10 text-center text-gray-500">No events found.</Text>}
+            ListEmptyComponent={<Text className="mt-10 text-center font-nunito text-gray-500">No events found.</Text>}
             contentContainerStyle={{paddingBottom: 20}}
             showsVerticalScrollIndicator={false}
           />

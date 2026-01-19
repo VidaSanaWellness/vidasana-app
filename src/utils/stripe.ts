@@ -74,6 +74,8 @@ export const stripe = {
         price = data.price || 0;
       }
 
+      if (!providerId) throw new Error('Provider ID missing');
+
       const {data: providerData} = await supabase.from('provider').select('stripe').eq('id', providerId).single();
       const stripeAccountId = providerData?.stripe;
 
@@ -90,7 +92,7 @@ export const stripe = {
       }
 
       // 3. Customer
-      let customerId = user.stripe_customer_id;
+      let customerId = user.user_metadata?.stripe_customer_id;
       if (!customerId) {
         const cust = await stripeFetch('customers', 'POST', {email: user.email});
         customerId = cust.id;

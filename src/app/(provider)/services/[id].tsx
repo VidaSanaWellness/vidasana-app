@@ -7,7 +7,6 @@ import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import Toast from 'react-native-toast-message';
 import {useTranslation} from 'react-i18next';
-import {Platform} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {ImageCarousel} from '@/components';
 
@@ -29,7 +28,7 @@ export default function ServiceDetailsScreen() {
     queryFn: async () => {
       const {data, error} = await supabase.from('services').select(`*, categories (name)`).eq('id', id).single();
       if (error) throw error;
-      return data;
+      return data as any;
     },
     enabled: !!id,
   });
@@ -96,7 +95,7 @@ export default function ServiceDetailsScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#15803d" />
+        <ActivityIndicator size="large" color="#00594f" />
       </View>
     );
   }
@@ -145,8 +144,8 @@ export default function ServiceDetailsScreen() {
               </Link>
 
               <Pressable onPress={handleToggleStatus} className="flex-row items-center px-4 py-3 active:bg-gray-50">
-                <Feather name={service.active ? 'slash' : 'check-circle'} size={16} color={service.active ? '#EF4444' : '#10B981'} />
-                <Text className={`ml-3 ${service.active ? 'text-red-600' : 'text-green-600'}`}>
+                <Feather name={service.active ? 'slash' : 'check-circle'} size={16} color={service.active ? '#EF4444' : '#00594f'} />
+                <Text className={`ml-3 font-nunito ${service.active ? 'text-red-600' : 'text-primary'}`}>
                   {service.active ? t('services.disabled') : t('services.active')}
                 </Text>
               </Pressable>
@@ -164,12 +163,12 @@ export default function ServiceDetailsScreen() {
         <View className="p-5 pb-20">
           {/* Category & Status */}
           <View className="mb-2 flex-row items-center justify-between">
-            <View className="rounded-full bg-green-100 px-3 py-1">
-              <Text className="text-xs font-bold uppercase text-green-700">{service.categories?.name || 'Service'}</Text>
+            <View className="rounded-full bg-primary/20 px-3 py-1">
+              <Text className="font-nunito-bold text-xs uppercase text-primary">{service.categories?.name || 'Service'}</Text>
             </View>
-            <View className={`flex-row items-center rounded-full px-2 py-1 ${service.active ? 'bg-green-100' : 'bg-red-100'}`}>
-              <View className={`mr-1.5 h-2 w-2 rounded-full ${service.active ? 'bg-green-500' : 'bg-red-500'}`} />
-              <Text className={`text-xs font-medium ${service.active ? 'text-green-700' : 'text-red-700'}`}>
+            <View className={`flex-row items-center rounded-full px-2 py-1 ${service.active ? 'bg-primary/20' : 'bg-red-100'}`}>
+              <View className={`mr-1.5 h-2 w-2 rounded-full ${service.active ? 'bg-primary' : 'bg-red-500'}`} />
+              <Text className={`font-nunito-bold text-xs ${service.active ? 'text-primary' : 'text-red-700'}`}>
                 {service.active ? t('services.active') : t('services.disabled')}
               </Text>
             </View>
@@ -178,37 +177,37 @@ export default function ServiceDetailsScreen() {
           {/* Title & Price */}
           <View className="mb-4 flex-row items-start justify-between">
             <View className="flex-1">
-              <Text className="mr-2 text-2xl font-bold text-gray-900">{service.title}</Text>
+              <Text className="mr-2 font-nunito-bold text-2xl text-gray-900">{service.title}</Text>
               {/* Rating Summary */}
               <View className="mt-1 flex-row items-center gap-1">
                 <Ionicons name="star" size={16} color="#F59E0B" />
-                <Text className="font-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Text>
-                <Text className="text-gray-500">({ratingSummary?.count || 0} reviews)</Text>
+                <Text className="font-nunito-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Text>
+                <Text className="font-nunito text-gray-500">({ratingSummary?.count || 0} reviews)</Text>
               </View>
             </View>
-            <Text className="text-2xl font-bold text-green-700">${service.price}</Text>
+            <Text className="font-nunito-bold text-2xl text-primary">${service.price}</Text>
           </View>
 
           {/* Details Row */}
           <View className="mb-6 flex-row justify-between rounded-xl bg-gray-50 p-4">
             <View className="flex-1 items-center border-r border-gray-200">
               <Feather name="clock" size={20} color="#4B5563" className="mb-1" />
-              <Text className="mb-1 text-xs text-gray-500">{t('services.duration')}</Text>
-              <Text className="font-semibold text-gray-900">
+              <Text className="mb-1 font-nunito text-xs text-gray-500">{t('services.duration')}</Text>
+              <Text className="font-nunito-bold text-gray-900">
                 {service.start_at?.slice(0, 5)} - {service.end_at?.slice(0, 5)}
               </Text>
             </View>
             <View className="flex-1 items-center">
               <Feather name="users" size={20} color="#4B5563" className="mb-1" />
-              <Text className="mb-1 text-xs text-gray-500">{t('events.capacity')}</Text>
-              <Text className="font-semibold text-gray-900">{service.capacity} People</Text>
+              <Text className="mb-1 font-nunito text-xs text-gray-500">{t('events.capacity')}</Text>
+              <Text className="font-nunito-bold text-gray-900">{service.capacity} People</Text>
             </View>
           </View>
 
           {/* Location Map */}
           {lat && lng && (
             <View className="mb-6 h-40 overflow-hidden rounded-xl bg-gray-100">
-              <MapComponent
+              <MapView
                 provider={PROVIDER_GOOGLE}
                 style={{flex: 1}}
                 initialRegion={{
@@ -222,7 +221,7 @@ export default function ServiceDetailsScreen() {
                 pitchEnabled={false}
                 rotateEnabled={false}>
                 <Marker coordinate={{latitude: lat, longitude: lng}} />
-              </MapComponent>
+              </MapView>
               <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center">
                 <View className="mb-4">
                   <Feather name="map-pin" size={32} color="#15803d" />
@@ -232,17 +231,17 @@ export default function ServiceDetailsScreen() {
           )}
 
           {/* Description */}
-          <Text className="mb-2 text-lg font-bold text-gray-900">{t('services.aboutService')}</Text>
-          <Text className="mb-6 leading-6 text-gray-600">{service.description || 'No description provided.'}</Text>
+          <Text className="mb-2 font-nunito-bold text-lg text-gray-900">{t('services.aboutService')}</Text>
+          <Text className="mb-6 font-nunito leading-6 text-gray-600">{service.description || 'No description provided.'}</Text>
 
           {/* Schedule */}
-          <Text className="mb-3 text-lg font-bold text-gray-900">{t('services.schedule')}</Text>
+          <Text className="mb-3 font-nunito-bold text-lg text-gray-900">{t('services.schedule')}</Text>
           <View className="mb-6 flex-row flex-wrap gap-2">
             {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => {
               const isActive = service.week_day?.includes(day as any);
               return (
-                <View key={day} className={`h-10 w-10 items-center justify-center rounded-full ${isActive ? 'bg-green-700' : 'bg-gray-100'}`}>
-                  <Text className={`text-xs font-bold uppercase ${isActive ? 'text-white' : 'text-gray-400'}`}>{day.slice(0, 3)}</Text>
+                <View key={day} className={`h-10 w-10 items-center justify-center rounded-full ${isActive ? 'bg-primary' : 'bg-gray-100'}`}>
+                  <Text className={`font-nunito-bold text-xs uppercase ${isActive ? 'text-white' : 'text-gray-400'}`}>{day.slice(0, 3)}</Text>
                 </View>
               );
             })}
@@ -250,7 +249,7 @@ export default function ServiceDetailsScreen() {
 
           {/* Reviews List */}
           <View className="mt-2">
-            <Text className="mb-2 text-lg font-bold text-gray-900">Reviews ({ratingSummary?.count || 0})</Text>
+            <Text className="mb-2 font-nunito-bold text-lg text-gray-900">Reviews ({ratingSummary?.count || 0})</Text>
             {reviews && reviews.length > 0 ? (
               reviews.map((review: any) => (
                 <View key={review.id} className="mb-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
@@ -266,14 +265,14 @@ export default function ServiceDetailsScreen() {
                           <Feather name="user" size={16} color="white" />
                         </View>
                       )}
-                      <Text className="font-semibold text-gray-900">{review.user_name || 'Anonymous'}</Text>
+                      <Text className="font-nunito-bold text-gray-900">{review.user_name || 'Anonymous'}</Text>
                     </View>
                     <View className="flex-row items-center">
                       <Ionicons name="star" size={14} color="#F59E0B" />
-                      <Text className="ml-1 text-xs font-bold text-gray-900">{review.rating}</Text>
+                      <Text className="ml-1 font-nunito-bold text-xs text-gray-900">{review.rating}</Text>
                     </View>
                   </View>
-                  {review.comment && <Text className="text-gray-600">{review.comment}</Text>}
+                  {review.comment && <Text className="font-nunito text-gray-600">{review.comment}</Text>}
                 </View>
               ))
             ) : (

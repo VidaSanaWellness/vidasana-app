@@ -2,7 +2,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAvoidingView, Platform, ScrollView, View, TextInput, Text, TouchableOpacity, Image, ActivityIndicator} from 'react-native';
 import {useState} from 'react';
 import {useForm, Controller} from 'react-hook-form';
-import PasswordStrengthBar from '@/components/PasswordStrengthBar';
+import {PasswordStrengthBar} from '@/components';
 import {supabase} from '@/utils';
 import Toast from 'react-native-toast-message';
 import {useRouter} from 'expo-router';
@@ -49,8 +49,8 @@ const ChangePassword = () => {
           </View>
 
           <Animated.View entering={FadeInDown.delay(200)} className="mb-8 mt-9 items-center">
-            <Text className="mb-2 text-3xl font-bold text-black">{t('auth.changePassword.title')}</Text>
-            <Text className="px-10 text-center text-base text-gray-500">{t('auth.changePassword.subtitle')}</Text>
+            <Text className="mb-2 font-nunito-bold text-3xl text-black">{t('auth.changePassword.title')}</Text>
+            <Text className="px-10 text-center font-nunito text-base text-gray-500">{t('auth.changePassword.subtitle')}</Text>
           </Animated.View>
           <Animated.View entering={FadeInUp.delay(400)} className="px-6">
             <Controller
@@ -126,11 +126,11 @@ const ChangePassword = () => {
             <TouchableOpacity
               onPress={handleSubmit(onSubmit)}
               disabled={!formState.isValid || formState.isSubmitting}
-              className="mt-4 h-14 items-center justify-center rounded-full bg-[#3E6065] shadow">
+              className="mt-4 h-14 items-center justify-center rounded-full bg-primary shadow">
               {formState.isSubmitting ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text className="text-lg font-semibold text-white">{t('auth.changePassword.updatePassword')}</Text>
+                <Text className="font-nunito-bold text-lg text-white">{t('auth.changePassword.updatePassword')}</Text>
               )}
             </TouchableOpacity>
           </Animated.View>

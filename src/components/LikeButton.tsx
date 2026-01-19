@@ -18,7 +18,7 @@ export const LikeButton: React.FC<LikeButtonProps> = ({isLiked, onToggle, isLoad
         <Ionicons
           name={isLiked ? 'heart' : 'heart-outline'}
           size={size}
-          color={isLiked ? '#ef4444' : 'white'} // Red-500
+          color={isLiked ? '#eb3300' : 'white'} // Secondary (Vital Orange)
         />
       )}
     </TouchableOpacity>

@@ -4,6 +4,7 @@ import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useQuery} from '@tanstack/react-query';
 import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
+import {useAppStore} from '@/store';
 import {useTranslation} from 'react-i18next';
 
 export default function EventsScreen() {
@@ -16,9 +17,7 @@ export default function EventsScreen() {
   } = useQuery({
     queryKey: ['events', i18n.language],
     queryFn: async () => {
-      const {
-        data: {user},
-      } = await supabase.auth.getUser();
+      const {user} = useAppStore.getState().session!;
       if (!user) throw new Error('Not authenticated');
 
       const {data, error} = await supabase

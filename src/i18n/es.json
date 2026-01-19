@@ -41,7 +41,8 @@
       "conditions": "Condiciones",
       "signUpButton": "Registrarse",
       "alreadyMember": "¿Ya eres miembro?",
-      "loginLink": "Iniciar sesión"
+      "loginLink": "Iniciar sesión",
+      "success": "¡Registro exitoso! Por favor completa la configuración de pagos."
     },
     "forgotPassword": {
       "title": "Restablecer contraseña",
@@ -165,7 +166,8 @@
     "passwordSpecial": "La contraseña debe contener al menos un carácter especial",
     "newPasswordRequired": "Nueva contraseña requerida",
     "confirmPasswordRequired": "Confirma tu contraseña",
-    "passwordMatch": "Las contraseñas no coinciden"
+    "passwordMatch": "Las contraseñas no coinciden",
+    "docRequired": "Documento requerido"
   },
   "role": {
     "howWillYouUse": "¿Cómo usarás VidaSana?",

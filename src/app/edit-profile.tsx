@@ -1,19 +1,38 @@
 import {useAppStore} from '@/store';
+import {supabase} from '@/utils';
 import {useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {Controller, useForm} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
-import {ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Button, H2, PhoneInputField} from '@/components';
+import {useState} from 'react';
 
 const Page = () => {
   const {back} = useRouter();
   const {t} = useTranslation();
   const {user} = useAppStore((s) => s.session!);
-  const {control, formState, handleSubmit} = useForm({defaultValues: {fullName: '', phone: user.phone}});
+  const [selectedCountry, setSelectedCountry] = useState<any>(null);
 
-  const submit = () => {};
+  const {control, formState, handleSubmit} = useForm({defaultValues: {fullName: user.user_metadata?.full_name || '', phone: user.phone || ''}});
+
+  const submit = async (data: {fullName: string; phone: string}) => {
+    try {
+      const fullPhoneNumber = selectedCountry ? `${selectedCountry?.callingCode} ${data.phone}` : data.phone;
+      const countryCode = selectedCountry?.cca2 || '';
+
+      const {error} = await supabase.from('profile').update({name: data.fullName, phone: fullPhoneNumber, country: countryCode}).eq('id', user.id);
+      if (error) throw error;
+
+      // Refresh session or handle success
+      Alert.alert(t('common.success'), t('profile.updateSuccess'));
+      back();
+    } catch (error: any) {
+      Alert.alert(t('common.error'), error.message);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -21,7 +40,7 @@ const Page = () => {
         <TouchableOpacity onPress={() => back()}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-[#1F1F1F]">{t('profile.editTitle')}</Text>
+        <H2 className="text-[#1F1F1F]">{t('profile.editTitle')}</H2>
         <View className="w-6" />
       </View>
 
@@ -38,17 +57,19 @@ const Page = () => {
             }}
             render={({field, fieldState}) => (
               <View className="mb-4">
-                <View className={`rounded-xl border bg-gray-100 ${fieldState.error ? 'border-red-300 bg-red-100' : 'border-transparent'}`}>
+                <View
+                  className={`rounded-lg border bg-gray-50 ${fieldState.error ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-primary'}`}>
                   <TextInput
                     {...field}
                     autoCapitalize="words"
                     placeholder={t('auth.register.fullNamePlaceholder')}
                     placeholderTextColor="#999"
                     onChangeText={field.onChange}
+                    style={{fontFamily: 'Nunito_400Regular'}}
                     className="m-0 h-14 px-4 text-base leading-5 text-black"
                   />
                 </View>
-                {fieldState.error && <Text className="ml-2 mt-1 text-sm text-red-500">{fieldState.error.message}</Text>}
+                {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
               </View>
             )}
           />
@@ -58,37 +79,22 @@ const Page = () => {
             control={control}
             rules={{
               required: t('validation.phoneRequired'),
-              pattern: {value: /^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, message: t('validation.phoneInvalid')},
             }}
             render={({field, fieldState}) => (
-              <View className="mb-4">
-                <View className={`rounded-xl border bg-gray-100 ${fieldState.error ? 'border-red-300 bg-red-100' : 'border-transparent'}`}>
-                  <TextInput
-                    {...field}
-                    keyboardType="phone-pad"
-                    placeholder={t('auth.register.phonePlaceholder')}
-                    placeholderTextColor="#999"
-                    onChangeText={field.onChange}
-                    className="m-0 h-14 px-4 text-base leading-5 text-black"
-                  />
-                </View>
-                {fieldState.error && <Text className="ml-2 mt-1 text-sm text-red-500">{fieldState.error.message}</Text>}
-              </View>
+              <PhoneInputField
+                value={field.value}
+                onChangePhoneNumber={field.onChange}
+                selectedCountry={selectedCountry}
+                onChangeSelectedCountry={setSelectedCountry}
+                error={fieldState.error}
+                placeholder={t('auth.register.phonePlaceholder')}
+              />
             )}
           />
 
-          <Text className="mb-5 px-2 text-sm text-[#6B6B6B]">{t('profile.updateDetails')}</Text>
+          <Text className="mb-5 px-2 font-nunito text-sm text-[#6B6B6B]">{t('profile.updateDetails')}</Text>
 
-          <TouchableOpacity
-            onPress={handleSubmit(submit)}
-            disabled={formState.isSubmitting}
-            className="mt-auto h-12 items-center justify-center rounded-full bg-[#3E6065] shadow">
-            {formState.isSubmitting ? (
-              <ActivityIndicator size="small" color="#FFF" />
-            ) : (
-              <Text className="text-base font-semibold text-white">{t('profile.save')}</Text>
-            )}
-          </TouchableOpacity>
+          <Button onPress={handleSubmit(submit)} loading={formState.isSubmitting} label={t('profile.save')} className="mt-auto" fullWidth />
         </Animated.View>
       </KeyboardAvoidingView>
     </SafeAreaView>

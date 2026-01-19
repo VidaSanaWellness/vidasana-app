@@ -1,9 +1,11 @@
 import React from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import {View, Image, TouchableOpacity} from 'react-native';
 import {Ionicons, Feather} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
 import {useAppStore} from '@/store';
 import {useTranslation} from 'react-i18next';
+
+import {H2, Caption} from '@/components/Typography';
 
 export const HomeHeader = () => {
   const router = useRouter();
@@ -22,7 +24,7 @@ export const HomeHeader = () => {
           </View>
         )}
         <View className="ml-3">
-          <Text className="text-sm text-gray-500">
+          <Caption color="gray">
             {(() => {
               const hour = new Date().getHours();
               if (hour < 12) return t('common.goodMorning');
@@ -31,8 +33,8 @@ export const HomeHeader = () => {
               return t('common.goodNight');
             })()}{' '}
             👋
-          </Text>
-          <Text className="text-lg font-bold text-black">{user?.user_metadata?.full_name || 'User'}</Text>
+          </Caption>
+          <H2 className="text-lg text-black">{user?.user_metadata?.full_name || 'User'}</H2>
         </View>
       </View>
 
@@ -44,7 +46,7 @@ export const HomeHeader = () => {
         </TouchableOpacity>
         <TouchableOpacity
           className="h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white"
-          onPress={() => router.push('/(settings)/liked-items' as any)}>
+          onPress={() => router.push('/liked-items' as any)}>
           <Feather name="heart" size={20} color="black" />
         </TouchableOpacity>
       </View>

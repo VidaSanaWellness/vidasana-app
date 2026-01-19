@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {supabase} from '@/utils';
 import {Link, useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
@@ -9,13 +9,15 @@ import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import {ActivityIndicator, Alert, Image, Platform, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {LanguagePicker} from '@/components/LanguagePicker';
 import {useTranslation} from 'react-i18next';
+import {useAppStore} from '@/store';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
-const useCurrentUser = () => ({});
-
 const Profile = () => {
   const router = useRouter();
+  const session = useAppStore((state) => state.session);
+  const currentUser = session?.user;
+
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<{fullName: string; email: string; phone: string; role: string}>({
@@ -26,68 +28,65 @@ const Profile = () => {
   });
   const [editedInfo, setEditedInfo] = useState({fullName: '', phone: ''});
   const [isSaving, setIsSaving] = useState(false);
-  const [isFetchingProfile, setIsFetchingProfile] = useState(false);
+  const [isFetchingProfile, setIsFetchingProfile] = useState(true);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isLanguagePickerVisible, setIsLanguagePickerVisible] = useState(false);
   const {t, i18n} = useTranslation();
 
-  const {user: currentUser, loading: isLoadingProfile, refresh} = useCurrentUser();
+  const isLoadingProfile = false; // We can improve this with a query later if needed
+  const refresh = async () => {}; // Placeholder for now
   const insets = useSafeAreaInsets();
   const keyboardVerticalOffset = Platform.OS === 'ios' ? Math.max(insets.bottom, 0) + 12 : 0;
   const _keyboardSpacerHeight = Math.max(0, keyboardHeight > 0 ? keyboardHeight - keyboardVerticalOffset : 0);
-  const isProvider = !!currentUser?.isProvider;
+  const isProvider = !!currentUser?.user_metadata?.isProvider;
   const isBusy = isLoadingProfile || isFetchingProfile;
   const roleLabel = userInfo.role ? String(userInfo.role).toUpperCase() : isProvider ? 'PROVIDER' : 'MEMBER';
 
-  //   useEffect(() => {
-  //     if (!currentUser) {
-  //       setUserInfo({
-  //         fullName: '',
-  //         email: '',
-  //         phone: '',
-  //         role: '',
-  //       });
-  //       setProfileImage(null);
-  //       return;
-  //     }
+  useEffect(() => {
+    if (!currentUser) {
+      setUserInfo({fullName: '', email: '', phone: '', role: ''});
+      setProfileImage(null);
+      setIsFetchingProfile(false);
+      return;
+    }
 
-  //     setUserInfo((prev) => ({
-  //       fullName: currentUser.fullName || prev.fullName,
-  //       email: currentUser.email || prev.email,
-  //       phone: prev.phone,
-  //       role: String(currentUser.role || prev.role || ''),
-  //     }));
+    // Set initial data from session
+    setUserInfo((prev) => ({
+      fullName: currentUser.user_metadata?.full_name || prev.fullName,
+      email: currentUser.email || prev.email,
+      phone: prev.phone,
+      role: String(currentUser.user_metadata?.role || prev.role || ''),
+    }));
 
-  //     const fetchProfile = async () => {
-  //       setIsFetchingProfile(true);
-  //       try {
-  //         const {data, error} = await supabase
-  //           .from('users')
-  //           .select('full_name, email, phone_number, role, profile_image_url')
-  //           .eq('id', currentUser.id)
-  //           .single();
+    const fetchProfile = async () => {
+      setIsFetchingProfile(true);
+      try {
+        const {data, error} = await supabase.from('profile').select('name, phone, role, image').eq('id', currentUser.id).single();
 
-  //         if (error) {
-  //           console.error('Error fetching profile:', error.message);
-  //           return;
-  //         }
+        if (error) {
+          console.error('Error fetching profile:', error.message);
+          return;
+        }
 
-  //         setUserInfo({
-  //           fullName: data?.full_name ?? currentUser.fullName ?? '',
-  //           email: data?.email ?? currentUser.email ?? '',
-  //           phone: data?.phone_number ?? '',
-  //           role: String(data?.role ?? currentUser.role ?? ''),
-  //         });
-  //         setProfileImage(data?.profile_image_url ? String(data.profile_image_url) : null);
-  //       } catch (fetchError) {
-  //         console.error('Error loading profile:', fetchError);
-  //       } finally {
-  //         setIsFetchingProfile(false);
-  //       }
-  //     };
+        setUserInfo({
+          fullName: data?.name ?? currentUser.user_metadata?.full_name ?? '',
+          email: currentUser.email ?? '',
+          phone: data?.phone ?? '',
+          role: String(data?.role ?? currentUser.user_metadata?.role ?? ''),
+        });
+        if (data?.image) {
+          const {data: imageData} = supabase.storage.from('avatars').getPublicUrl(data.image);
+          setProfileImage(imageData.publicUrl);
+        }
+      } catch (fetchError) {
+        console.error('Error loading profile:', fetchError);
+      } finally {
+        setIsFetchingProfile(false);
+      }
+    };
 
-  //     fetchProfile();
-  //   }, [currentUser]);
+    fetchProfile();
+  }, [currentUser]);
 
   //   useEffect(() => {
   //     if (!isEditing) {
@@ -164,18 +163,18 @@ const Profile = () => {
     setIsSaving(true);
     try {
       const {data, error} = await supabase
-        .from('users')
-        .update({full_name: trimmedName, phone_number: trimmedPhone || null})
+        .from('profile')
+        .update({name: trimmedName, phone: trimmedPhone || null})
         .eq('id', currentUser.id)
-        .select('full_name, email, phone_number, role')
+        .select('name, phone, role')
         .single();
 
       if (error) throw error;
 
       setUserInfo({
-        email: data?.email ?? userInfo.email,
-        fullName: data?.full_name ?? trimmedName,
-        phone: data?.phone_number ?? trimmedPhone,
+        email: userInfo.email, // Email is not in profile table, keep existing
+        fullName: data?.name ?? trimmedName,
+        phone: data?.phone ?? trimmedPhone,
         role: String(data?.role ?? userInfo.role ?? ''),
       });
       setIsEditing(false);
@@ -190,90 +189,83 @@ const Profile = () => {
     }
   };
 
+  if (isFetchingProfile && !userInfo.fullName) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#00594f" />
+        <Text className="mt-4 font-nunito text-gray-500">Loading profile...</Text>
+      </View>
+    );
+  }
+
   return (
     <Animated.View entering={FadeIn} exiting={FadeOut} className="flex-1 bg-white">
       <ScrollView className="flex-1" contentInsetAdjustmentBehavior="never" contentContainerStyle={{paddingBottom: insets.bottom + 32}}>
         {/* Profile Header */}
-        <View className="items-center rounded-b-3xl bg-[#F5F5F5] pb-8" style={{paddingTop: insets.top + 30}}>
+        <View className="items-center rounded-b-3xl bg-gray-50 pb-8" style={{paddingTop: insets.top + 30}}>
           <TouchableOpacity onPress={handleImagePick}>
             <View className="relative mb-4">
               {profileImage ? (
                 <Image source={{uri: profileImage}} className="h-[120px] w-[120px] rounded-full" />
               ) : (
-                <View className="h-[120px] w-[120px] items-center justify-center rounded-full bg-[#E5E5E5]">
+                <View className="h-[120px] w-[120px] items-center justify-center rounded-full bg-gray-200">
                   <Ionicons name="person" size={40} color="#666" />
                 </View>
               )}
-              <View className="absolute bottom-0 right-0 h-[30px] w-[30px] items-center justify-center rounded-full bg-[#3E6065]">
+              <View className="absolute bottom-0 right-0 h-[30px] w-[30px] items-center justify-center rounded-full bg-primary">
                 <Ionicons name="camera" size={14} color="#FFF" />
               </View>
             </View>
           </TouchableOpacity>
 
           <View className="flex-row items-center space-x-2">
-            <Text className="text-2xl font-semibold text-black">{userInfo.fullName || 'Your Name'}</Text>
+            <Text className="font-nunito-bold text-2xl text-black">{userInfo.fullName || 'Your Name'}</Text>
 
-            <View className={`rounded-full px-3 py-1 ${isProvider ? 'bg-[#3E6065]' : 'bg-gray-300'}`}>
-              <Text className="text-xs font-bold text-white">{roleLabel}</Text>
+            <View className={`rounded-full px-3 py-1 ${isProvider ? 'bg-primary' : 'bg-gray-300'}`}>
+              <Text className="font-nunito-bold text-xs text-white">{roleLabel}</Text>
             </View>
           </View>
 
-          <Text className="mt-1 text-base text-[#666]">{userInfo.email}</Text>
+          <Text className="mt-1 font-nunito text-base text-[#666]">{userInfo.email}</Text>
         </View>
 
         {/* Loading State */}
         {isBusy && (
           <View className="flex-row items-center justify-center space-x-2 px-5 py-3">
-            <ActivityIndicator size="small" color="#3E6065" />
-            <Text className="text-sm text-[#4A4A4A]">{isLoadingProfile ? 'Loading your profile...' : 'Refreshing profile...'}</Text>
+            <ActivityIndicator size="small" color="#00594f" />
+            <Text className="font-nunito text-sm text-[#4A4A4A]">{isLoadingProfile ? 'Loading your profile...' : 'Refreshing profile...'}</Text>
           </View>
         )}
 
         {/* Account Settings */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 text-lg font-semibold text-black">{t('settings.accountSettings')}</Text>
+          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.accountSettings')}</Text>
 
           <Link asChild href="/edit-profile">
-            <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3">
-              <Ionicons name="person-outline" size={24} color="#3E6065" />
-              <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('profile.editTitle')}</Text>
-              <Ionicons name="chevron-forward" size={24} color="#3E6065" />
+            <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3">
+              <Ionicons name="person-outline" size={24} color="#00594f" />
+              <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('profile.editTitle')}</Text>
+              <Ionicons name="chevron-forward" size={24} color="#00594f" />
             </TouchableOpacity>
           </Link>
 
-          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={handlePasswordChange}>
-            <Ionicons name="key-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.changePassword')}</Text>
-            <Ionicons name="chevron-forward" size={24} color="#3E6065" />
+          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={handlePasswordChange}>
+            <Ionicons name="key-outline" size={24} color="#00594f" />
+            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.changePassword')}</Text>
+            <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
 
         {/* Preferences */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 text-lg font-semibold text-black">{t('settings.preferences')}</Text>
+          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.preferences')}</Text>
 
-          {/* <TouchableOpacity
-            className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
-            onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
-            <Ionicons name="notifications-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.notifications')}</Text>
-            <Ionicons name="chevron-forward" size={24} color="#3E6065" />
-          </TouchableOpacity> */}
-
-          {/* <TouchableOpacity
-            className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
-            onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
-            <Ionicons name="moon-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.darkMode')}</Text>
-            <Ionicons name="chevron-forward" size={24} color="#3E6065" />
-          </TouchableOpacity> */}
-
-          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => setIsLanguagePickerVisible(true)}>
-            <Ionicons name="globe-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">
+          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={() => setIsLanguagePickerVisible(true)}>
+            <Ionicons name="globe-outline" size={24} color="#00594f" />
+            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">
               {t('settings.language')} ({t(`languages.${i18n.language}`)})
             </Text>
-            <Ionicons name="chevron-forward" size={24} color="#3E6065" />
+            <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
 
@@ -281,28 +273,26 @@ const Profile = () => {
 
         {/* Support */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 text-lg font-semibold text-black">{t('settings.support')}</Text>
+          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.support')}</Text>
 
           <TouchableOpacity
-            className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
+            className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
             onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
-            <Ionicons name="help-circle-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.helpCenter')}</Text>
-            <Ionicons name="chevron-forward" size={24} color="#3E6065" />
+            <Ionicons name="help-circle-outline" size={24} color="#00594f" />
+            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.helpCenter')}</Text>
+            <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3"
-            onPress={() => router.push('/TermsAndConditions')}>
-            <Ionicons name="document-text-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.termsAndConditions')}</Text>
-            <Ionicons name="chevron-forward" size={24} color="#3E6065" />
+          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={() => router.push('/TermsAndConditions')}>
+            <Ionicons name="document-text-outline" size={24} color="#00594f" />
+            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.termsAndConditions')}</Text>
+            <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-[#F5F5F5] px-4 py-3" onPress={() => router.push('/PrivacyPolicy')}>
-            <Ionicons name="shield-checkmark-outline" size={24} color="#3E6065" />
-            <Text className="ml-3 flex-1 text-base text-[#3E6065]">{t('settings.privacyPolicy')}</Text>
-            <Ionicons name="chevron-forward" size={24} color="#3E6065" />
+          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={() => router.push('/PrivacyPolicy')}>
+            <Ionicons name="shield-checkmark-outline" size={24} color="#00594f" />
+            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.privacyPolicy')}</Text>
+            <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
 
@@ -311,9 +301,9 @@ const Profile = () => {
           entering={FadeIn}
           exiting={FadeOut}
           onPress={handleLogout}
-          className="mx-5 mb-8 mt-10 flex-row items-center justify-center rounded-xl bg-[#FFE8E8] py-4">
-          <Ionicons name="log-out-outline" size={24} color="#E03C31" />
-          <Text className="ml-2 text-base font-semibold text-[#E03C31]">{t('settings.logOut')}</Text>
+          className="mx-5 mb-8 mt-10 flex-row items-center justify-center rounded-xl bg-red-50 py-4">
+          <Ionicons name="log-out-outline" size={24} color="#dc2626" />
+          <Text className="ml-2 font-nunito-bold text-base text-red-600">{t('settings.logOut')}</Text>
         </AnimatedTouchableOpacity>
       </ScrollView>
     </Animated.View>

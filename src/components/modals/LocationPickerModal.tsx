@@ -96,7 +96,7 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
         <View className="relative flex-1">
           {isLoading || !initialRegion ? (
             <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color="#15803d" />
+              <ActivityIndicator size="large" color="#00594f" />
             </View>
           ) : (
             <>
@@ -113,7 +113,7 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
               {/* Center Marker Overlay */}
               <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center">
                 <View className="mb-8">
-                  <Feather name="map-pin" size={40} color="#15803d" />
+                  <Feather name="map-pin" size={40} color="#00594f" />
                 </View>
               </View>
             </>
@@ -137,9 +137,9 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
 
         {/* Footer Info */}
         <View className="mb-safe border-t border-gray-100 bg-white px-6 py-4">
-          <Text className="mb-4 text-center text-xs text-gray-500">Move the map to place the pin at the service location.</Text>
-          <TouchableOpacity onPress={handleConfirm} className="w-full items-center rounded-xl bg-green-700 py-4 shadow-lg shadow-green-200">
-            <Text className="text-lg font-bold text-white">Set Location</Text>
+          <Text className="font-nunito mb-4 text-center text-xs text-gray-500">Move the map to place the pin at the service location.</Text>
+          <TouchableOpacity onPress={handleConfirm} className="bg-primary w-full items-center rounded-2xl py-4 shadow-lg shadow-green-100">
+            <Text className="font-nunito-bold text-lg text-white">Set Location</Text>
           </TouchableOpacity>
         </View>
       </View>
