@@ -66,8 +66,8 @@ const Register = () => {
         id: userId,
         role: role,
         name: fullName,
-        country: countryValue,
         phone: fullPhoneNumber,
+        country_code: countryValue,
         status: role === 'provider' ? 'onboarding' : 'active',
       });
 
