@@ -24,7 +24,9 @@ export const CategoryGrid = () => {
 
   const data = (() => {
     if (!categories) return [];
-    const items: any[] = categories.slice(0, 7);
+    // Show all categories in horizontal list
+    const items: any[] = [...categories];
+    // Add "See All" at the end
     items.push({id: 'see-all', isSeeAll: true, name: t('common.seeAll'), icon: 'more-horizontal'});
     return items;
   })();
@@ -37,19 +39,17 @@ export const CategoryGrid = () => {
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={() => (isSeeAll ? router.push('/(user)/(tabs)/home/services') : handleCategoryPress(item.id))}
-        className="mb-6 w-1/4 items-center px-1">
-        <View className={`mb-2 h-16 w-16 items-center justify-center rounded-2xl ${isSeeAll ? 'bg-gray-100' : 'bg-primary/5'}`}>
+        className="mr-3 flex-row items-center rounded-full border border-gray-200 bg-white px-4 py-2.5">
+        <View className="mr-2 h-5 w-5 items-center justify-center">
           {isSeeAll ? (
-            <Feather name="more-horizontal" size={24} color="#4B5563" />
+            <Feather name="grid" size={16} color="#4B5563" />
           ) : iconUrl ? (
-            <Image source={{uri: iconUrl}} className="h-10 w-10" resizeMode="contain" />
+            <Image source={{uri: iconUrl}} className="h-full w-full" resizeMode="contain" />
           ) : (
-            <Feather name="grid" size={24} />
+            <Feather name="grid" size={16} color="#4B5563" />
           )}
         </View>
-        <Text numberOfLines={2} className="text-center font-nunito-bold text-sm text-gray-700">
-          {item.name}
-        </Text>
+        <Text className="font-nunito-bold text-sm text-gray-700">{item.name}</Text>
       </TouchableOpacity>
     );
   };
@@ -62,19 +62,13 @@ export const CategoryGrid = () => {
     );
 
   return (
-    <View className="mt-6 px-4">
-      <View className="mb-4 flex-row items-center justify-between">
-        <Text className="font-nunito-bold text-lg text-black">{t('services.categories')}</Text>
-      </View>
-
-      <FlatList
-        data={data}
-        numColumns={4}
-        scrollEnabled={false}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        columnWrapperStyle={{justifyContent: 'flex-start'}}
-      />
-    </View>
+    <FlatList
+      horizontal
+      data={data}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id.toString()}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{paddingHorizontal: 16}}
+    />
   );
 };

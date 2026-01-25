@@ -7,7 +7,7 @@ import React from 'react';
 import {HomeHeader} from '@/components/home/HomeHeader';
 import {CategoryGrid} from '@/components/home/CategoryGrid';
 import {TopServicesList} from '@/components/home/TopServicesList';
-import {TopEventsList} from '@/components/home/TopEventsList';
+// import {TopEventsList} from '@/components/home/TopEventsList'; // Hidden for now - events will have dedicated page
 
 export default function HomeScreen() {
   const {t} = useTranslation();
@@ -20,14 +20,14 @@ export default function HomeScreen() {
       <HomeHeader />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 100}}>
-        <View className="mb-6 mt-2 px-4">
+        <View className="mb-3 mt-2 px-4">
           <TouchableOpacity
             activeOpacity={1}
             onPress={handleSearchPress}
             className="h-14 flex-row items-center rounded-xl border border-gray-100 bg-gray-50 px-4">
             <Feather name="search" size={20} color="#9CA3AF" />
-            <Text className="font-nunito ml-3 flex-1 text-base text-gray-400">{t('services.searchPlaceholder')}</Text>
-            <View className="bg-primary rounded-lg p-2">
+            <Text className="ml-3 flex-1 font-nunito text-base text-gray-400">{t('services.searchPlaceholder')}</Text>
+            <View className="rounded-lg bg-primary p-2">
               <Feather name="sliders" size={16} color="white" />
             </View>
           </TouchableOpacity>
@@ -37,7 +37,8 @@ export default function HomeScreen() {
 
         <TopServicesList />
 
-        <TopEventsList />
+        {/* <TopEventsList /> */}
+        {/* Events hidden - will have dedicated page */}
       </ScrollView>
     </SafeAreaView>
   );

@@ -10,3 +10,4 @@ export {default as ImageCarousel} from './ImageCarousel';
 export * from './Button';
 export * from './Typography';
 export * from './PhoneInputField';
+export * from './ServiceCard';

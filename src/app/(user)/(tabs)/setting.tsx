@@ -7,7 +7,7 @@ import {useTranslation} from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import {LanguagePicker} from '@/components/LanguagePicker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import PhoneInput from 'react-native-international-phone-number';
+import {PhoneInputField} from '@/components';
 import Animated, {FadeIn, FadeOut, SlideInDown, SlideOutDown} from 'react-native-reanimated';
 import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {useAppStore} from '@/store';
@@ -346,88 +346,13 @@ const Profile = () => {
                   {/* Phone */}
                   <View className="mb-5">
                     <Text className="mb-2 font-nunito text-sm text-gray-700">Phone Number</Text>
-                    <View className="w-full">
-                      <PhoneInput
-                        value={editedInfo.phone}
-                        onChangePhoneNumber={(text) => setEditedInfo((p) => ({...p, phone: text}))}
-                        selectedCountry={selectedCountry}
-                        onChangeSelectedCountry={setSelectedCountry}
-                        defaultCountry="US"
-                        language="eng"
-                        placeholder="Add a phone number"
-                        phoneInputStyles={{
-                          container: {
-                            backgroundColor: '#FFF',
-                            borderColor: '#E5E7EB',
-                            borderWidth: 1,
-                            borderRadius: 12,
-                            height: 56,
-                          },
-                          input: {
-                            color: '#000',
-                            fontSize: 16,
-                            fontFamily: 'Nunito_400Regular',
-                          },
-                          flagContainer: {
-                            backgroundColor: 'transparent',
-                            borderTopLeftRadius: 12,
-                            borderBottomLeftRadius: 12,
-                          },
-                          callingCode: {
-                            fontSize: 16,
-                            fontFamily: 'Nunito_400Regular',
-                            color: '#374151',
-                          },
-                          divider: {
-                            backgroundColor: '#E5E7EB',
-                          },
-                          caret: {
-                            color: '#374151',
-                            fontSize: 16,
-                          },
-                        }}
-                        modalStyles={{
-                          container: {
-                            backgroundColor: '#FFF',
-                          },
-                          backdrop: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                          },
-                          list: {
-                            backgroundColor: '#FFF',
-                          },
-                          searchInput: {
-                            borderRadius: 12,
-                            borderWidth: 1,
-                            borderColor: '#E5E7EB',
-                            color: '#000',
-                            backgroundColor: '#F9FAFB',
-                            height: 48,
-                            paddingHorizontal: 16,
-                            fontSize: 16,
-                            fontFamily: 'Nunito_400Regular',
-                          },
-                          countryItem: {
-                            borderWidth: 1,
-                            borderColor: '#F3F4F6',
-                            backgroundColor: '#FFF',
-                            marginVertical: 4,
-                            paddingVertical: 12,
-                            borderRadius: 12,
-                          },
-                          flag: {
-                            fontSize: 24,
-                          },
-                          callingCode: {
-                            color: '#374151',
-                          },
-                          countryName: {
-                            color: '#000',
-                            fontFamily: 'Nunito_400Regular',
-                          },
-                        }}
-                      />
-                    </View>
+                    <PhoneInputField
+                      value={editedInfo.phone}
+                      onChangePhoneNumber={(text) => setEditedInfo((p) => ({...p, phone: text}))}
+                      selectedCountry={selectedCountry}
+                      onChangeSelectedCountry={setSelectedCountry}
+                      placeholder="Add a phone number"
+                    />
                   </View>
 
                   {/* Email */}

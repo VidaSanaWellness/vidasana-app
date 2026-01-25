@@ -1,15 +1,17 @@
-import {Link, router,useLocalSearchParams} from 'expo-router';
+import {router, useLocalSearchParams} from 'expo-router';
 import {supabase} from '@/utils/supabase';
-import {Feather} from '@expo/vector-icons';
-import {useInfiniteQuery} from '@tanstack/react-query';
-import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, TextInput, View} from 'react-native';
+import {useInfiniteQuery, useMutation, useQueryClient} from '@tanstack/react-query';
+import {ActivityIndicator, FlatList, RefreshControl, Text, TextInput, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {useUserLocation} from '@/hooks';
 import {useState, useEffect} from 'react';
 import FilterModal, {FilterState} from '@/components/modals/FilterModal';
 import {useDebouncer} from '@/hooks/useDebounce';
-import {SearchHeader} from '@/components';
+import {SearchHeader, ServiceCard} from '@/components';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useAppStore} from '@/store';
+import Toast from 'react-native-toast-message';
+import {Feather} from '@expo/vector-icons';
 
 // Mock / Types
 type Service = {
@@ -27,6 +29,8 @@ type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
 export default function ServicesScreen() {
   const {t, i18n} = useTranslation();
+  const {user} = useAppStore((s) => s.session!);
+  const queryClient = useQueryClient();
   const params = useLocalSearchParams();
   const initialFocus = params.focus === 'true';
   const initialCategoryId = params.categoryId ? Number(params.categoryId) : undefined;
@@ -130,62 +134,56 @@ export default function ServicesScreen() {
 
   const services = data?.pages.flatMap((page) => page) || [];
 
-  // -- Renders --
-  const formatDistance = (meters?: number) => {
-    if (!meters) return null;
-    if (meters < 1000) return `${Math.round(meters)}m`;
-    return `${(meters / 1000).toFixed(1)}km`;
-  };
+  // Bookmark mutation
+  const toggleBookmarkMutation = useMutation({
+    mutationFn: async ({serviceId, isBookmarked}: {serviceId: string; isBookmarked: boolean}) => {
+      if (isBookmarked) {
+        const {error} = await supabase.from('bookmark').delete().eq('service', serviceId).eq('user', user.id);
+        if (error) throw error;
+      } else {
+        const {error} = await supabase.from('bookmark').insert({service: serviceId, user: user.id});
+        if (error) throw error;
+      }
+    },
+    onMutate: async ({serviceId, isBookmarked}) => {
+      await queryClient.cancelQueries({queryKey: ['services_search', i18n.language]});
+      const previousData = queryClient.getQueryData(['services_search', i18n.language]);
 
-  const renderItem = ({item}: {item: Service}) => {
-    const imageUrl = item.images && item.images.length > 0 ? supabase.storage.from('images').getPublicUrl(item.images[0]).data.publicUrl : null;
+      queryClient.setQueryData(['services_search', i18n.language], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: any[]) =>
+            page.map((service: any) => (service.id === serviceId ? {...service, is_bookmarked: !isBookmarked} : service))
+          ),
+        };
+      });
 
-    return (
-      <Link href={`/(user)/services/${item.id}`} asChild>
-        <Pressable className="mb-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <View className="flex-row">
-            <View className="h-32 w-32 bg-gray-200">
-              {imageUrl ? (
-                <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
-              ) : (
-                <View className="h-full w-full items-center justify-center">
-                  <Feather name="image" size={24} color="#9CA3AF" />
-                </View>
-              )}
-            </View>
+      return {previousData};
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(['services_search', i18n.language], context.previousData);
+      }
+      Toast.show({type: 'error', text1: 'Failed to update bookmark'});
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({queryKey: ['services_search', i18n.language]});
+    },
+  });
 
-            <View className="flex-1 justify-between p-3">
-              <View>
-                <View className="mb-1 flex-row items-start justify-between">
-                  {/* Title */}
-                  <Text className="flex-1 font-nunito-bold text-lg text-gray-900" numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <View className="items-end">
-                    {item.price !== null && <Text className="font-nunito-bold text-sm text-primary">${item.price}</Text>}
-                    {item.dist_meters !== undefined && item.dist_meters !== null && (
-                      <View className="mt-1 flex-row items-center rounded bg-gray-100 px-1.5 py-0.5">
-                        <Feather name="map-pin" size={10} color="#6B7280" />
-                        <Text className="ml-1 font-nunito text-[10px] text-gray-500">{formatDistance(item.dist_meters)}</Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-                <Text className="mb-2 font-nunito text-xs text-gray-500" numberOfLines={2}>
-                  {item.description}
-                </Text>
-              </View>
-
-              <View className="flex-row items-center">
-                <Feather name="clock" size={12} color="gray" />
-                <Text className="ml-1 font-nunito text-xs text-gray-500">{t('services.viewDetails')}</Text>
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      </Link>
-    );
-  };
+  const renderItem = ({item}: {item: any}) => (
+    <ServiceCard
+      id={item.id}
+      title={item.title}
+      description={item.description}
+      price={item.price}
+      images={item.images || []}
+      distance={item.dist_meters}
+      isBookmarked={item.is_bookmarked || false}
+      onBookmarkToggle={() => toggleBookmarkMutation.mutate({serviceId: item.id, isBookmarked: item.is_bookmarked || false})}
+    />
+  );
 
   const renderHeader = () => (
     <SearchHeader

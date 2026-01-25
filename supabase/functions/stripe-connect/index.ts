@@ -81,6 +81,60 @@ serve(async (req) => {
       });
     }
 
+    if (action === 'create-ephemeral-key') {
+      const {customerId} = await req.json();
+      if (!customerId) throw new Error('Customer ID required');
+
+      const ephemeralKey = await stripe.ephemeralKeys.create({customer: customerId}, {apiVersion: '2022-11-15'});
+
+      return new Response(JSON.stringify(ephemeralKey), {
+        headers: {...corsHeaders, 'Content-Type': 'application/json'},
+      });
+    }
+
+    if (action === 'create-payment-intent') {
+      const {amount, customerId, providerId} = await req.json();
+
+      if (!amount || !customerId || !providerId) throw new Error('Missing required params');
+
+      // Get Provider Stripe ID
+      let {data: providerData} = await supabaseClient.from('provider').select('stripe').eq('id', providerId).single();
+      const stripeAccountId = providerData?.stripe;
+
+      let destinationValid = false;
+      if (stripeAccountId) {
+        try {
+          const account = await stripe.accounts.retrieve(stripeAccountId);
+          if (account.capabilities?.transfers === 'active' || account.capabilities?.card_payments === 'active') {
+            destinationValid = true;
+          }
+        } catch (e) {
+          console.error('Account validation failed', e);
+        }
+      }
+
+      let piParams: any = {
+        amount: amount,
+        currency: 'usd',
+        customer: customerId,
+        automatic_payment_methods: {enabled: true},
+      };
+
+      if (destinationValid) {
+        // Platform fee 20%
+        piParams['application_fee_amount'] = Math.round(amount * 0.2);
+        piParams['transfer_data'] = {destination: stripeAccountId};
+      } else {
+        piParams['metadata'] = {manual_payout: 'true'};
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create(piParams);
+
+      return new Response(JSON.stringify({clientSecret: paymentIntent.client_secret}), {
+        headers: {...corsHeaders, 'Content-Type': 'application/json'},
+      });
+    }
+
     if (action === 'check_status') {
       let {data: provider} = await supabaseClient.from('provider').select('stripe').eq('id', user.id).single();
 

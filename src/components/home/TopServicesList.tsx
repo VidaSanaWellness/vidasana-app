@@ -1,17 +1,21 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, Image, FlatList, ActivityIndicator} from 'react-native';
-import {useQuery} from '@tanstack/react-query';
+import {View, Text, TouchableOpacity, FlatList, ActivityIndicator} from 'react-native';
+import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
-import {Feather} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
+import {ServiceCard} from '@/components';
+import {useAppStore} from '@/store';
+import Toast from 'react-native-toast-message';
 
 export const TopServicesList = () => {
   const router = useRouter();
   const {t, i18n} = useTranslation();
+  const {user} = useAppStore((s) => s.session!);
+  const queryClient = useQueryClient();
 
   const {data: services, isLoading} = useQuery({
-    queryKey: ['top-services', i18n.language],
+    queryKey: ['top-services', i18n.language, user?.id],
     queryFn: async () => {
       const {data, error} = await supabase.rpc('search_services', {
         search_query: undefined,
@@ -23,7 +27,7 @@ export const TopServicesList = () => {
         radius_meters: undefined,
         sort_by: 'relevance',
         page_offset: 0,
-        page_limit: 5,
+        page_limit: 10,
       });
       if (error) throw error;
       if (!data || data.length === 0) return [];
@@ -43,76 +47,76 @@ export const TopServicesList = () => {
     },
   });
 
-  const renderItem = ({item}: {item: any}) => {
-    const imageUrl = item.images && item.images.length > 0 ? supabase.storage.from('images').getPublicUrl(item.images[0]).data.publicUrl : null;
+  const toggleBookmarkMutation = useMutation({
+    mutationFn: async ({serviceId, isBookmarked}: {serviceId: string; isBookmarked: boolean}) => {
+      if (isBookmarked) {
+        const {error} = await supabase.from('bookmark').delete().eq('service', serviceId).eq('user', user.id);
+        if (error) throw error;
+      } else {
+        const {error} = await supabase.from('bookmark').insert({service: serviceId, user: user.id});
+        if (error) throw error;
+      }
+    },
+    onMutate: async ({serviceId, isBookmarked}) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({queryKey: ['top-services', i18n.language, user?.id]});
 
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => router.push(`/(user)/services/${item.id}`)}
-        className="mr-4 w-60 rounded-3xl border border-gray-100 bg-white shadow-sm">
-        <View className="aspect-square w-full overflow-hidden rounded-t-3xl bg-gray-100">
-          {imageUrl ? (
-            <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
-          ) : (
-            <View className="h-full w-full items-center justify-center">
-              <Feather name="image" size={24} color="#9CA3AF" />
-            </View>
-          )}
-        </View>
+      // Snapshot previous value
+      const previousServices = queryClient.getQueryData(['top-services', i18n.language, user?.id]);
 
-        <View className="p-3">
-          <View className="flex-row items-start justify-between">
-            <Text numberOfLines={1} className="mr-2 flex-1 font-nunito-bold text-base text-gray-900">
-              {item.title}
-            </Text>
-            <Text className="font-nunito-bold text-sm text-primary">${item.price}</Text>
-          </View>
+      // Optimistically update
+      queryClient.setQueryData(['top-services', i18n.language, user?.id], (old: any) => {
+        if (!old) return old;
+        return old.map((service: any) => (service.id === serviceId ? {...service, is_bookmarked: !isBookmarked} : service));
+      });
 
-          <Text numberOfLines={1} className="mt-1 font-nunito text-xs text-gray-500">
-            {item.description}
-          </Text>
+      return {previousServices};
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousServices) {
+        queryClient.setQueryData(['top-services', i18n.language, user?.id], context.previousServices);
+      }
+      Toast.show({type: 'error', text1: 'Failed to update bookmark'});
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency
+      queryClient.invalidateQueries({queryKey: ['top-services', i18n.language, user?.id]});
+    },
+  });
 
-          <View className="mt-2 flex-row flex-wrap gap-1">
-            {item.week_day && item.week_day.length === 7 ? (
-              <View className="h-5 items-center justify-center rounded-full bg-green-100 px-2">
-                <Text className="font-nunito-bold text-[10px] uppercase text-green-800">All Days</Text>
-              </View>
-            ) : (
-              ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => {
-                const isActive = item.week_day && item.week_day.includes(day);
-                if (!isActive) return null;
-                return (
-                  <View key={day} className="h-5 w-10 items-center justify-center rounded-full bg-green-100">
-                    <Text className="font-nunito-bold text-[10px] uppercase text-green-800">{day}</Text>
-                  </View>
-                );
-              })
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const renderItem = ({item}: {item: any}) => (
+    <ServiceCard
+      id={item.id}
+      title={item.title}
+      description={item.description}
+      price={item.price}
+      images={item.images || []}
+      weekDays={item.week_day || []}
+      distance={item.dist_meters}
+      isBookmarked={item.is_bookmarked || false}
+      onBookmarkToggle={() => toggleBookmarkMutation.mutate({serviceId: item.id, isBookmarked: item.is_bookmarked || false})}
+    />
+  );
 
-  if (isLoading) return <ActivityIndicator size="small" color="#00594f" />;
+  if (isLoading) return <ActivityIndicator size="small" color="#00594f" className="my-4" />;
 
   return (
-    <View className="mt-6">
-      <View className="mb-4 flex-row items-center justify-between px-4">
+    <View className="mt-3">
+      {/* <View className="mb-4 flex-row items-center justify-between px-4">
         <Text className="font-nunito-bold text-lg text-black">{t('services.popular')}</Text>
         <TouchableOpacity onPress={() => router.push('/(user)/(tabs)/home/services')}>
           <Text className="font-nunito-bold text-sm text-primary">{t('common.seeAll')}</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <FlatList
-        horizontal
         data={services || []}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{paddingHorizontal: 16}}
+        scrollEnabled={false}
       />
     </View>
   );
