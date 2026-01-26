@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, RefreshControl} from 'react-native';
 import {Stack, Link} from 'expo-router';
-import {supabase} from '@/utils/supabase';
+import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
 import {Ionicons} from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';

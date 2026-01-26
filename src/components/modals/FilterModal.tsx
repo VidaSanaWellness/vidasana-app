@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {Modal, View, Text, TouchableOpacity, ScrollView, Switch} from 'react-native';
+import {Modal, View, Text, TouchableOpacity, ScrollView, Image} from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {useQuery} from '@tanstack/react-query';
-import {supabase} from '@/utils/supabase'; // Adjust path if needed
+import {supabase} from '@/utils'; // Adjust path if needed
 
 import Slider from '@react-native-community/slider';
 
@@ -83,8 +83,8 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
       days: [],
       categories: [],
       sortBy: 'relevance',
-      isNearMeEnabled: false,
-      radius: 10,
+      isNearMeEnabled: true, // Reset should ideally keep it enabled based on screen logic, or true by default
+      radius: 50,
       dateFrom: null,
       dateTo: null,
     });
@@ -107,99 +107,83 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
           </View>
 
           <ScrollView className="flex-1 px-6">
-            {/* Near Me Switch */}
-            <View className="mt-6 flex-row items-center justify-between">
-              <View className="flex-row items-center">
-                <View className="bg-primary/10 mr-3 h-10 w-10 items-center justify-center rounded-full">
-                  <Feather name="map-pin" size={20} color="#00594f" />
-                </View>
-                <View>
-                  <Text className="font-nunito-bold text-base text-gray-900">{t('services.nearMe', 'Show Near Me')}</Text>
-                  <Text className="font-nunito text-xs text-gray-500">
-                    {localFilters.isNearMeEnabled
-                      ? t('services.withinRadius', {val: localFilters.radius, defaultValue: `Within ${localFilters.radius}km`})
-                      : t('services.enableLocation', 'Enable location filter')}
-                  </Text>
-                </View>
+            {/* Radius Slider (Always Visible) */}
+            <View className="mt-4 rounded-2xl bg-gray-50 p-4">
+              <View className="mb-1 flex-row items-center justify-between">
+                <Text className="font-nunito text-lg font-medium text-gray-900">Distance</Text>
+                <Text className="text-sm font-bold text-primary">{localFilters.radius} km</Text>
               </View>
-              <Switch
-                trackColor={{false: '#767577', true: '#00594f'}}
-                thumbColor={'#f4f3f4'}
-                ios_backgroundColor="#3e3e3e"
-                onValueChange={(val) => {
-                  setLocalFilters((prev) => ({...prev, isNearMeEnabled: val}));
-                }}
-                value={localFilters.isNearMeEnabled}
-              />
-            </View>
 
-            {/* Radius Slider (Visible only if Near Me is Enabled) */}
-            {localFilters.isNearMeEnabled && (
-              <View className="mt-4 rounded-2xl bg-gray-50 p-4">
-                <View className="mb-2 flex-row justify-between">
-                  <Text className="font-nunito text-sm font-medium text-gray-600">Search Radius</Text>
-                  <Text className="text-primary text-sm font-bold">{localFilters.radius} km</Text>
+              <View className="flex-row items-center">
+                <View className="mr-3 h-8 w-8 items-center justify-center rounded-full bg-white">
+                  <Feather name="map-pin" size={16} color="#00594f" />
                 </View>
                 <Slider
-                  style={{width: '100%', height: 40}}
-                  minimumValue={5}
-                  maximumValue={50}
                   step={5}
+                  minimumValue={5}
+                  maximumValue={100}
+                  thumbTintColor="#00594f"
                   value={localFilters.radius}
-                  onValueChange={(val) => setLocalFilters((prev) => ({...prev, radius: val}))}
                   minimumTrackTintColor="#00594f"
                   maximumTrackTintColor="#d1d5db"
-                  thumbTintColor="#00594f"
+                  style={{flex: 1, height: 30}}
+                  onValueChange={(val) => setLocalFilters((prev) => ({...prev, radius: val, isNearMeEnabled: true}))}
                 />
-                <View className="flex-row justify-between px-1">
-                  <Text className="font-nunito text-xs text-gray-400">5km</Text>
-                  <Text className="font-nunito text-xs text-gray-400">50km</Text>
-                </View>
               </View>
-            )}
+
+              <View className="ml-11 flex-row justify-between">
+                <Text className="font-nunito text-xs text-gray-400">5km</Text>
+                <Text className="font-nunito text-xs text-gray-400">100km</Text>
+              </View>
+            </View>
 
             {/* Sort By */}
             <View className="mt-6">
-              <Text className="font-nunito mb-3 text-base font-bold text-gray-900">{t('services.sortBy', 'Sort By')}</Text>
+              <Text className="mb-3 font-nunito text-base font-bold text-gray-900">{t('services.sortBy', 'Sort By')}</Text>
               <View className="flex-row flex-wrap gap-2">
                 {[
-                  {id: 'relevance', label: t('services.relevance', 'Relevance')},
-                  {id: 'price_asc', label: t('services.priceLow', 'Price: Low to High')},
-                  {id: 'price_desc', label: t('services.priceHigh', 'Price: High to Low')},
-                  {id: 'newest', label: t('services.newest', 'Newest')},
-                ].map((option) => (
-                  <TouchableOpacity
-                    key={option.id}
-                    onPress={() => setLocalFilters((prev) => ({...prev, sortBy: option.id as SortOption}))}
-                    className={`rounded-full border px-4 py-2 ${
-                      localFilters.sortBy === option.id ? 'border-primary bg-primary' : 'border-gray-200 bg-white'
-                    }`}>
-                    <Text className={`font-medium ${localFilters.sortBy === option.id ? 'text-white' : 'text-gray-700'} font-nunito`}>
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                  {id: 'relevance', label: t('services.relevance', 'Relevance'), icon: 'list'},
+                  {id: 'price_asc', label: t('services.priceLow', 'Price: Low to High'), icon: 'trending-up'},
+                  {id: 'price_desc', label: t('services.priceHigh', 'Price: High to Low'), icon: 'trending-down'},
+                  {id: 'newest', label: t('services.newest', 'Newest'), icon: 'clock'},
+                ].map((option) => {
+                  const isSelected = localFilters.sortBy === option.id;
+                  return (
+                    <TouchableOpacity
+                      key={option.id}
+                      onPress={() => setLocalFilters((prev) => ({...prev, sortBy: option.id as SortOption}))}
+                      className={`flex-row items-center rounded-full border px-4 py-2.5 ${
+                        isSelected ? 'border-primary bg-primary' : 'border-gray-200 bg-white'
+                      }`}>
+                      <Feather name={option.icon as any} size={16} color={isSelected ? 'white' : '#4B5563'} className="mr-2" />
+                      <Text className={`font-nunito-bold text-sm ${isSelected ? 'text-white' : 'text-gray-700'}`}>{option.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
 
             {/* Day Filter (Service Only) */}
             {mode === 'service' && (
               <View className="mt-6">
-                <Text className="font-nunito mb-3 text-base font-bold text-gray-900">{t('services.filterByDay', 'Day of Week')}</Text>
+                <Text className="mb-3 font-nunito text-base font-bold text-gray-900">{t('services.filterByDay', 'Day of Week')}</Text>
                 <View className="flex-row flex-wrap gap-2">
-                  {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => (
-                    <TouchableOpacity
-                      key={day}
-                      onPress={() => toggleDay(day)}
-                      className={`rounded-full border px-4 py-2 ${
-                        localFilters.days.includes(day) ? 'border-primary bg-primary' : 'border-gray-200 bg-white'
-                      }`}>
-                      <Text
-                        className={`text-center text-xs font-semibold capitalize ${localFilters.days.includes(day) ? 'text-white' : 'text-gray-700'} font-nunito`}>
-                        {day.substring(0, 3)}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => {
+                    const isSelected = localFilters.days.includes(day);
+                    return (
+                      <TouchableOpacity
+                        key={day}
+                        onPress={() => toggleDay(day)}
+                        className={`flex-row items-center rounded-full border px-4 py-2.5 ${
+                          isSelected ? 'border-primary bg-primary' : 'border-gray-200 bg-white'
+                        }`}>
+                        <Feather name="calendar" size={16} color={isSelected ? 'white' : '#4B5563'} className="mr-2" />
+                        <Text className={`font-nunito-bold text-sm  capitalize ${isSelected ? 'text-white' : 'text-gray-700'}`}>
+                          {day.substring(0, 3)}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
             )}
@@ -207,7 +191,7 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
             {/* Date Range Filter (Event Only) */}
             {mode === 'event' && (
               <View className="mt-6">
-                <Text className="font-nunito mb-3 text-base font-bold text-gray-900">{t('events.dateRange', 'Date Range')}</Text>
+                <Text className="mb-3 font-nunito text-base font-bold text-gray-900">{t('events.dateRange', 'Date Range')}</Text>
                 <View className="flex-row gap-4">
                   <TouchableOpacity
                     className="flex-1 rounded-2xl border border-gray-200 bg-white p-3"
@@ -234,7 +218,7 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
                 </View>
                 {(localFilters.dateFrom || localFilters.dateTo) && (
                   <TouchableOpacity onPress={() => setLocalFilters((prev) => ({...prev, dateFrom: null, dateTo: null}))} className="mt-2 self-end">
-                    <Text className="text-secondary font-nunito-bold text-xs">Clear Dates</Text>
+                    <Text className="font-nunito-bold text-xs text-secondary">Clear Dates</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -242,29 +226,45 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
 
             {/* Categories */}
             <View className="mb-10 mt-6">
-              <Text className="font-nunito mb-3 text-base font-bold text-gray-900">{t('services.categories', 'Categories')}</Text>
+              <Text className="mb-3 font-nunito text-base font-bold text-gray-900">{t('services.categories', 'Categories')}</Text>
               <View className="flex-row flex-wrap gap-2">
                 <TouchableOpacity
                   onPress={() => setLocalFilters((prev) => ({...prev, categories: []}))}
-                  className={`rounded-full border px-4 py-2 ${
+                  className={`flex-row items-center rounded-full border px-4 py-2.5 ${
                     localFilters.categories.length === 0 ? 'border-primary bg-primary' : 'border-gray-200 bg-white'
                   }`}>
-                  <Text className={`font-medium ${localFilters.categories.length === 0 ? 'text-white' : 'text-gray-700'} font-nunito`}>
+                  <View className="mr-2 h-5 w-5 items-center justify-center">
+                    <Feather name="grid" size={16} color={localFilters.categories.length === 0 ? 'white' : '#4B5563'} />
+                  </View>
+                  <Text className={`font-nunito-bold text-sm ${localFilters.categories.length === 0 ? 'text-white' : 'text-gray-700'}`}>
                     {t('common.all', 'All')}
                   </Text>
                 </TouchableOpacity>
-                {categories?.map((cat: any) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    onPress={() => toggleCategory(cat.id)}
-                    className={`rounded-full border px-4 py-2 ${
-                      localFilters.categories.includes(cat.id) ? 'border-primary bg-primary' : 'border-gray-200 bg-white'
-                    }`}>
-                    <Text className={`font-medium ${localFilters.categories.includes(cat.id) ? 'text-white' : 'text-gray-700'} font-nunito`}>
-                      {cat.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {categories?.map((cat: any) => {
+                  const isSelected = localFilters.categories.includes(cat.id);
+                  return (
+                    <TouchableOpacity
+                      key={cat.id}
+                      onPress={() => toggleCategory(cat.id)}
+                      className={`flex-row items-center rounded-full border px-4 py-2.5 ${
+                        isSelected ? 'border-primary bg-primary' : 'border-gray-200 bg-white'
+                      }`}>
+                      <View className="mr-2 h-5 w-5 items-center justify-center">
+                        {cat.icon ? (
+                          <Image
+                            source={{uri: cat.icon}}
+                            className="h-full w-full"
+                            resizeMode="contain"
+                            tintColor={isSelected ? 'white' : undefined}
+                          />
+                        ) : (
+                          <Feather name="circle" size={16} color={isSelected ? 'white' : '#4B5563'} />
+                        )}
+                      </View>
+                      <Text className={`font-nunito-bold text-sm ${isSelected ? 'text-white' : 'text-gray-700'}`}>{cat.name}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
           </ScrollView>
@@ -277,7 +277,7 @@ export default function FilterModal({visible, onClose, onApply, initialFilters, 
 
             <TouchableOpacity
               onPress={handleApply}
-              className="bg-primary flex-1 items-center justify-center rounded-2xl py-4 shadow-lg shadow-green-200">
+              className="flex-1 items-center justify-center rounded-2xl bg-primary py-4 shadow-lg shadow-green-200">
               <Text className="font-nunito text-lg font-bold text-white">{t('common.showResults', 'Show Results')}</Text>
             </TouchableOpacity>
           </View>

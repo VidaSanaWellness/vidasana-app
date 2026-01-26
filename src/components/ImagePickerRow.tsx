@@ -5,7 +5,7 @@ import {ScrollView, TouchableOpacity, Image} from 'react-native';
 
 type Props = {images?: string[]; onChange: (images: string[]) => void};
 
-export default function ImagePickerRow({images, onChange}: Props) {
+export function ImagePickerRow({images, onChange}: Props) {
   const pickImage = async (index: number) => {
     const result = await ImagePicker.launchImageLibraryAsync({quality: 0.7, allowsEditing: true, mediaTypes: ImagePicker.MediaTypeOptions.Images});
 

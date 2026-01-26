@@ -1,185 +1,210 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, FlatList, TouchableOpacity, Image, Linking, RefreshControl} from 'react-native';
+import {useQuery} from '@tanstack/react-query';
+import React, {useMemo, useState} from 'react';
+import {View, Text, SectionList, TouchableOpacity, RefreshControl, StatusBar} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {supabase} from '@/utils/supabase';
-import {Ionicons} from '@expo/vector-icons';
-import {useTranslation} from 'react-i18next';
+import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
-import {useRouter, Link} from 'expo-router';
+import {useRouter} from 'expo-router';
+import {BookingCard} from '@/components/BookingCard';
+import {Feather} from '@expo/vector-icons';
+import dayjs from 'dayjs';
 
 type Booking = {
   id: string;
   created_at: string;
   status: string;
-  total_price?: number;
-  price?: number;
-  unit_price?: number;
-  quantity?: number;
-  appointed?: string;
-  service?: {
-    title: string;
-    images: string[];
-  };
-  event?: {
-    title: string;
-    start_at: string;
-    images: string[];
-  };
+  appointed?: string; // Service date
+  event_start_at?: string; // Event date
+  title: string;
+  description?: string;
+  location?: string;
+  images: string[];
   type: 'service' | 'event';
+  price: number;
+};
+
+type GroupedBooking = {
+  title: string;
+  data: Booking[];
 };
 
 export default function BookingsScreen() {
   const {user} = useAppStore((s) => s.session!);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const {t} = useTranslation();
-  const router = useRouter(); // Added useRouter hook
+  const [activeTab, setActiveTab] = useState<'service' | 'event'>('service');
+  const router = useRouter();
 
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-      if (!user) return;
+  const {
+    data: allBookings = [],
+    isLoading: loading,
+    refetch,
+  } = useQuery({
+    queryKey: ['bookings', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
 
-      // Fetch Service Bookings
+      // 1. Fetch Service Bookings
       const {data: serviceBookings, error: serviceError} = await supabase
         .from('services_booking')
         .select(
           `
           id, created_at, status, price, appointed,
           services (
+            location,
             images,
-            service_translations (title)
+            service_translations (title, description)
           )
         `
         )
-        .eq('user', user.id)
-        .order('created_at', {ascending: false});
+        .eq('user', user.id);
 
       if (serviceError) throw serviceError;
 
-      // Fetch Event Bookings
+      // 2. Fetch Event Bookings
       const {data: eventBookings, error: eventError} = await supabase
         .from('event_booking')
         .select(
           `
-          id, created_at, unit_price, total_price, quantity,
+          id, created_at, total_price,
           events (
-            start_at, 
+            start_at,
+            location, 
             images,
-            event_translations (title)
+            event_translations (title, description)
           )
         `
         )
-        .eq('user', user.id)
-        .order('created_at', {ascending: false});
+        .eq('user', user.id);
 
       if (eventError) throw eventError;
 
-      // Combine and Sort
+      // 3. Normalize Data
       const combined: Booking[] = [
         ...(serviceBookings || []).map((b: any) => ({
-          ...b,
+          id: b.id,
+          created_at: b.created_at,
+          status: b.status,
+          appointed: b.appointed,
+          title: b.services?.service_translations?.[0]?.title || 'Service',
+          description: b.services?.service_translations?.[0]?.description,
+          location: b.services?.location,
+          images: b.services?.images || [],
           type: 'service' as const,
-          service: {
-            images: b.services?.images,
-            title: b.services?.service_translations?.[0]?.title || 'Service',
-          },
+          price: b.price,
         })),
         ...(eventBookings || []).map((b: any) => ({
-          ...b,
+          id: b.id,
+          created_at: b.created_at,
+          status: 'booked',
+          event_start_at: b.events?.start_at,
+          title: b.events?.event_translations?.[0]?.title || 'Event',
+          description: b.events?.event_translations?.[0]?.description,
+          location: b.events?.location,
+          images: b.events?.images || [],
           type: 'event' as const,
-          event: {
-            start_at: b.events?.start_at,
-            images: b.events?.images,
-            title: b.events?.event_translations?.[0]?.title || 'Event',
-          },
+          price: b.total_price,
         })),
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      ];
 
-      setBookings(combined);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return combined;
+    },
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    fetchBookings();
-  }, [user]);
+  const sections = useMemo(() => {
+    // Filter and Group locally
+    const filtered = allBookings.filter((b) => b.type === activeTab);
 
-  const handleContactSupport = (bookingId: string) => {
-    const subject = `Support Request for Booking #${bookingId.substring(0, 8)}`;
-    Linking.openURL(`mailto:support@vidasana.com?subject=${encodeURIComponent(subject)}`);
-  };
+    // Sort by Date Descending
+    filtered.sort((a, b) => {
+      const dateA = dayjs(a.appointed || a.event_start_at || a.created_at);
+      const dateB = dayjs(b.appointed || b.event_start_at || b.created_at);
+      return dateB.diff(dateA);
+    });
+
+    // Group by Date String
+    const grouped: GroupedBooking[] = [];
+    filtered.forEach((b) => {
+      const dateStr = dayjs(b.appointed || b.event_start_at).format('dddd, MMMM D');
+      const existing = grouped.find((g) => g.title === dateStr);
+      if (existing) {
+        existing.data.push(b);
+      } else {
+        grouped.push({title: dateStr, data: [b]});
+      }
+    });
+
+    return grouped;
+  }, [allBookings, activeTab]);
+
+  const renderSectionHeader = ({section: {title}}: {section: {title: string}}) => (
+    <View className="bg-gray-50 pb-4 pt-6">
+      <Text className="font-nunito-bold text-lg text-black">{title}</Text>
+    </View>
+  );
 
   const renderItem = ({item}: {item: Booking}) => {
-    const title = item.type === 'service' ? item.service?.title : item.event?.title;
-    const image = item.type === 'service' ? item.service?.images?.[0] : item.event?.images?.[0];
-    const date = item.type === 'service' ? item.appointed : item.event?.start_at;
-    const price = item.type === 'service' ? item.price : item.total_price;
+    const startTime = dayjs(item.appointed || item.event_start_at).format('h:mm a');
+    const endTime = dayjs(item.appointed || item.event_start_at)
+      .add(1, 'hour')
+      .format('h:mm a'); // Mock duration for now
+
+    // Resolve Image URL
+    let imageUrl = item.images?.[0];
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      imageUrl = supabase.storage.from('images').getPublicUrl(imageUrl).data.publicUrl;
+    }
 
     return (
-      <Link href={`/(user)/receipt/${item.id}`} asChild>
-        <TouchableOpacity className="mb-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-          <View className="flex-row">
-            {image ? (
-              <Image
-                source={{uri: supabase.storage.from('images').getPublicUrl(image).data.publicUrl}}
-                className="h-20 w-20 rounded-lg bg-gray-200"
-              />
-            ) : (
-              <View className="h-20 w-20 items-center justify-center rounded-lg bg-gray-200">
-                <Ionicons name="calendar" size={24} color="gray" />
-              </View>
-            )}
-
-            <View className="ml-4 flex-1 justify-between">
-              <View className="flex-row items-center justify-between">
-                <View>
-                  <Text className="font-nunito-bold text-gray-900" numberOfLines={1}>
-                    {title || 'Unknown Booking'}
-                  </Text>
-                  <Text className="font-nunito text-xs text-gray-500">{date ? new Date(date).toLocaleDateString() : 'Date TBD'}</Text>
-                </View>
-                <View className={`rounded-full px-2 py-1 ${item.status === 'booked' || !item.status ? 'bg-primary/10' : 'bg-gray-100'}`}>
-                  <Text className={`font-nunito-bold text-xs ${item.status === 'booked' || !item.status ? 'text-primary' : 'text-gray-500'}`}>
-                    {item.status || 'Booked'}
-                  </Text>
-                </View>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="font-nunito-bold text-primary">${price}</Text>
-                <View className="flex-row justify-end">
-                  <TouchableOpacity onPress={() => handleContactSupport(item.id)} className="flex-row items-center">
-                    <Ionicons name="help-buoy-outline" size={16} color="#4B5563" />
-                    <Text className="ml-1 font-nunito text-sm font-medium text-gray-600">Contact Support</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Link>
+      <BookingCard
+        title={item.title}
+        description={item.description}
+        startTime={startTime}
+        endTime={endTime}
+        // location={item.location} // Removed from BookingCard props
+        image={imageUrl}
+        price={item.price}
+        onPress={() => router.push(`/(user)/receipt/${item.id}` as any)}
+      />
     );
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <View className="border-b border-gray-50 px-6 py-4">
-        <Text className="text-2xl font-bold text-gray-900">My Bookings</Text>
+    <SafeAreaView className="flex-1 bg-gray-50 px-6" edges={['top']}>
+      <StatusBar barStyle="dark-content" />
+
+      {/* Header */}
+      <View className="mb-4 mt-1 flex-row items-center justify-between">
+        <Text className="font-nunito-bold text-3xl text-gray-900">My Bookings</Text>
       </View>
-      <FlatList
-        data={bookings}
+
+      {/* Tabs */}
+      <View className="flex-row rounded-full bg-white">
+        <TouchableOpacity
+          onPress={() => setActiveTab('service')}
+          className={`flex-1 items-center rounded-full py-2 ${activeTab === 'service' ? 'bg-primary shadow-sm' : 'shadow-none'}`}>
+          <Text className={`font-nunito-bold ${activeTab === 'service' ? 'text-white' : 'text-gray-400'}`}>Services</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setActiveTab('event')}
+          className={`flex-1 items-center rounded-full py-2 ${activeTab === 'event' ? 'bg-primary shadow-sm' : 'shadow-none'}`}>
+          <Text className={`font-nunito-bold ${activeTab === 'event' ? 'text-white' : 'text-gray-400'}`}>Events</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
+      <SectionList
+        sections={sections}
         renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{padding: 20}}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchBookings} />}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} />}
+        contentContainerStyle={{paddingBottom: 40}}
         ListEmptyComponent={
           !loading ? (
             <View className="mt-20 items-center">
-              <Ionicons name="calendar-outline" size={64} color="#E5E7EB" />
-              <Text className="mt-4 text-gray-500">No bookings yet.</Text>
+              <Feather name="calendar" size={48} color="#D4C3B7" />
+              <Text className="mt-4 font-nunito text-gray-500">No {activeTab} bookings found</Text>
             </View>
           ) : null
         }

@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {View, Text, BackHandler} from 'react-native';
+import {View, BackHandler} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 import {Display, Subtitle, Button} from '@/components';

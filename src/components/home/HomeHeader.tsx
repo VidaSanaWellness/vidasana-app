@@ -1,13 +1,15 @@
 import React from 'react';
-import {View, Image, TouchableOpacity} from 'react-native';
-import {Ionicons, Feather} from '@expo/vector-icons';
+import {View, TouchableOpacity} from 'react-native';
+import { Feather} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
 import {useAppStore} from '@/store';
 import {useTranslation} from 'react-i18next';
 
 import {H2, Caption} from '@/components/Typography';
 
-export const HomeHeader = () => {
+import {Avatar} from '@/components/Avatar';
+
+export const HomeHeader = ({onMoodPress}: {onMoodPress?: () => void}) => {
   const router = useRouter();
   const {t} = useTranslation();
   const {user} = useAppStore((s) => s.session!);
@@ -16,13 +18,9 @@ export const HomeHeader = () => {
   return (
     <View className="flex-row items-center justify-between bg-white px-4 py-4">
       <View className="flex-row items-center">
-        {profileImage ? (
-          <Image source={{uri: profileImage}} className="h-12 w-12 rounded-full" />
-        ) : (
-          <View className="h-12 w-12 items-center justify-center rounded-full bg-gray-200">
-            <Ionicons name="person" size={24} color="#666" />
-          </View>
-        )}
+        <TouchableOpacity onPress={() => router.push('/(user)/(tabs)/setting' as any)} activeOpacity={0.8}>
+          <Avatar uri={profileImage} name={user?.user_metadata?.full_name} size={48} />
+        </TouchableOpacity>
         <View className="ml-3">
           <Caption color="gray">
             {(() => {
@@ -39,6 +37,9 @@ export const HomeHeader = () => {
       </View>
 
       <View className="flex-row items-center gap-3">
+        <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white" onPress={onMoodPress}>
+          <Feather name="smile" size={20} color="black" />
+        </TouchableOpacity>
         <TouchableOpacity
           className="h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white"
           onPress={() => router.push('/(user)/notifications' as any)}>
