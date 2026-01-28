@@ -1,6 +1,6 @@
 import {AntDesign, Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {supabase, uploadFile} from '@/utils/supabase';
+import {supabase, uploadFile} from '@/utils';
 import {Tables} from '@/types';
 import {useAppStore} from '@/store';
 import {useForm, Controller} from 'react-hook-form';
@@ -14,7 +14,6 @@ import {ImagePickerAsset, launchImageLibraryAsync, MediaTypeOptions} from 'expo-
 import {useTranslation} from 'react-i18next';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {H2, Body, Caption, LocationPickerModal} from '@/components';
-
 import {EventFormValues, EventUnifiedImage, LanguageCode} from '@/types/events';
 import {LANGUAGES} from '@/constants';
 

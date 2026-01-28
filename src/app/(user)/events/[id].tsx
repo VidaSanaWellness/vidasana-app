@@ -37,17 +37,6 @@ export default function UserEventDetailsScreen() {
   const [ratingInput, setRatingInput] = useState(0);
   const [commentInput, setCommentInput] = useState('');
 
-  // Helper to validate UUID
-  const isValidUUID = (uuid: any) => {
-    return typeof uuid === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
-  };
-
-  useEffect(() => {
-    if (id) {
-      console.log('[EventDetails] ID:', id, 'Valid:', isValidUUID(id));
-    }
-  }, [id]);
-
   const {
     data: event,
     isLoading,
@@ -87,7 +76,7 @@ export default function UserEventDetailsScreen() {
         is_liked: count ? count > 0 : false,
       };
     },
-    enabled: !!id && isValidUUID(id),
+    enabled: !!id,
   });
 
   // Fetch Rating Summary
@@ -109,7 +98,7 @@ export default function UserEventDetailsScreen() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!id && id !== 'undefined',
+    enabled: !!id,
   });
 
   const toggleLikeMutation = useMutation({

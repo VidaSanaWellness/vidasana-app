@@ -79,7 +79,7 @@ export type Database = {
           created_at: string
           event_id: string
           id: string
-          payment_id: string | null
+          payment_id: string
           quantity: number
           ticket_type_id: string
           total_price: number
@@ -91,7 +91,7 @@ export type Database = {
           created_at?: string
           event_id: string
           id?: string
-          payment_id?: string | null
+          payment_id: string
           quantity: number
           ticket_type_id: string
           total_price: number
@@ -103,7 +103,7 @@ export type Database = {
           created_at?: string
           event_id?: string
           id?: string
-          payment_id?: string | null
+          payment_id?: string
           quantity?: number
           ticket_type_id?: string
           total_price?: number
@@ -134,7 +134,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "event_booking_user_fkey"
+            foreignKeyName: "event_booking_user_fkey1"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "profile"
@@ -170,7 +170,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "event_bookmarks_user_fkey"
+            foreignKeyName: "event_bookmarks_user_fkey1"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "profile"
@@ -215,7 +215,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "event_reviews_user_id_fkey"
+            foreignKeyName: "event_reviews_user_id_fkey1"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profile"
@@ -239,7 +239,7 @@ export type Database = {
           event_id: string
           id?: string
           name: string
-          price: number
+          price?: number
           updated_at?: string
         }
         Update: {
@@ -291,7 +291,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "event_translations_event_fkey"
+            foreignKeyName: "event_translations_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
@@ -322,7 +322,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           location?: unknown
-          provider: string
+          provider?: string
           start_at: string
           updated_at?: string
         }
@@ -345,6 +345,13 @@ export type Database = {
             columns: ["category"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_provider_fkey1"
+            columns: ["provider"]
+            isOneToOne: false
+            referencedRelation: "profile"
             referencedColumns: ["id"]
           },
         ]
