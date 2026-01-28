@@ -8,9 +8,9 @@ import Toast from 'react-native-toast-message';
 import {useForm, Controller} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
-import {View, Text, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
-import {Display, Subtitle} from '@/components/Typography';
-import {Button} from '@/components/Button';
+import {View, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
+import {Display, Subtitle, Caption, Body} from '@/components';
+import {Button} from '@/components';
 
 type LoginFormData = {email: string; password: string};
 
@@ -68,7 +68,7 @@ const Page = () => {
                       style={{fontFamily: 'Nunito_400Regular'}}
                       className={`m-0 h-14 rounded-lg border bg-gray-50 px-4 text-base leading-5 text-black ${fieldState.error ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-primary'}`}
                     />
-                    {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
+                    {fieldState.error && <Caption className="ml-2 mt-1 text-red-500">{fieldState.error.message}</Caption>}
                   </>
                 )}
               />
@@ -97,7 +97,7 @@ const Page = () => {
                         <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
                       </TouchableOpacity>
                     </View>
-                    {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
+                    {fieldState.error && <Caption className="ml-2 mt-1 text-red-500">{fieldState.error.message}</Caption>}
                   </>
                 )}
               />
@@ -105,7 +105,7 @@ const Page = () => {
 
             <View className="mb-6 mt-2 flex-row items-center justify-end">
               <Link href="/auth/forget-password">
-                <Text className="font-nunito-bold text-sm font-semibold text-secondary">{t('auth.login.forgotPassword')}</Text>
+                <Body className="font-semibold text-secondary">{t('auth.login.forgotPassword')}</Body>
               </Link>
             </View>
 
@@ -116,9 +116,9 @@ const Page = () => {
 
             {/* SIGN UP LINK */}
             <View className="mt-8 flex-row items-center justify-center">
-              <Text className="font-nunito text-sm text-gray-600">{t('auth.login.noAccount')} </Text>
+              <Body className="text-gray-600">{t('auth.login.noAccount')} </Body>
               <Link replace href="/auth/register">
-                <Text className="font-nunito-bold text-sm font-semibold text-secondary">{t('auth.login.signUp')}</Text>
+                <Body className="font-semibold text-secondary">{t('auth.login.signUp')}</Body>
               </Link>
             </View>
           </Animated.View>

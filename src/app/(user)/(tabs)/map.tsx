@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, ActivityIndicator, TouchableOpacity, Platform} from 'react-native';
+import {View, ActivityIndicator, TouchableOpacity, Platform} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useQuery} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
@@ -7,9 +7,10 @@ import {router} from 'expo-router';
 import MapView, {Marker, PROVIDER_GOOGLE, Region} from 'react-native-maps';
 import Supercluster from 'supercluster';
 import {Feature, Point} from 'geojson';
-import {useDebouncer} from '@/hooks/useDebounce';
-import {useUserLocation} from '@/hooks/useUserLocation';
+import {useDebouncer} from '@/hooks';
+import {useUserLocation} from '@/hooks';
 import {Feather} from '@expo/vector-icons';
+import {Body, Caption} from '@/components';
 
 // Helper to convert zoom level to radius (approximate)
 const getRadiusFromZoom = (zoom: number) => {
@@ -204,7 +205,7 @@ export default function MapScreen() {
             return (
               <Marker key={`cluster-${feature.id}`} coordinate={coordinate} onPress={() => handleClusterPress(feature.id as number, coordinate)}>
                 <View className="h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-orange-500">
-                  <Text className="font-bold text-white">{feature.properties.point_count}</Text>
+                  <Body className="font-bold text-white">{feature.properties.point_count}</Body>
                 </View>
               </Marker>
             );
@@ -257,15 +258,15 @@ export default function MapScreen() {
       <View className="absolute bottom-8 left-4 rounded-lg bg-white/90 p-3 shadow-lg">
         <View className="mb-2 flex-row items-center gap-2">
           <View className="h-3 w-3 rounded-full bg-primary" />
-          <Text className="font-nunito text-xs font-medium text-gray-700">Services</Text>
+          <Caption className="font-medium text-gray-700">Services</Caption>
         </View>
         <View className="mb-2 flex-row items-center gap-2">
           <View className="h-3 w-3 rounded-full bg-sage" />
-          <Text className="font-nunito text-xs font-medium text-gray-700">Events</Text>
+          <Caption className="font-medium text-gray-700">Events</Caption>
         </View>
         <View className="flex-row items-center gap-2">
           <View className="h-3 w-3 rounded-full bg-orange-500" />
-          <Text className="font-nunito text-xs font-medium text-gray-700">Cluster</Text>
+          <Caption className="font-medium text-gray-700">Cluster</Caption>
         </View>
       </View>
     </SafeAreaView>

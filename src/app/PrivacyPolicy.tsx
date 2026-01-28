@@ -1,9 +1,10 @@
 import React from 'react';
-import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
+import {View, ScrollView, TouchableOpacity} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Stack, useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
+import {H3, Body} from '@/components';
 
 export default function PrivacyPolicy() {
   const {back} = useRouter();
@@ -16,13 +17,13 @@ export default function PrivacyPolicy() {
         <TouchableOpacity onPress={back} className="mr-4 rounded-full bg-gray-50 p-2">
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text className="font-nunito-bold text-xl text-black">Privacy Policy</Text>
+        <H3 className="text-xl text-black">Privacy Policy</H3>
       </View>
       <ScrollView className="flex-1 p-6">
-        <Text className="font-nunito mb-4 text-base leading-6 text-gray-700">
+        <Body className="mb-4 text-base leading-6 text-gray-700">
           Your privacy is important to us. This policy explains how we handle your data...
-        </Text>
-        <Text className="font-nunito text-base italic text-gray-400">(Content to be populated)</Text>
+        </Body>
+        <Body className="text-base italic text-gray-400">(Content to be populated)</Body>
       </ScrollView>
     </SafeAreaView>
   );

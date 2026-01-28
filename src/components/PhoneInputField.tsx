@@ -1,7 +1,8 @@
 import React from 'react';
-import {View, Text, ViewStyle} from 'react-native';
+import {View, ViewStyle} from 'react-native';
 import PhoneInput from 'react-native-international-phone-number';
 import {FieldError} from 'react-hook-form';
+import {Caption} from './Typography';
 
 interface PhoneInputFieldProps {
   value: string;
@@ -108,7 +109,7 @@ export const PhoneInputField = ({
           }}
         />
       </View>
-      {error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{error.message}</Text>}
+      {error && <Caption className="ml-2 mt-1 text-red-500">{error.message}</Caption>}
     </View>
   );
 };

@@ -1,4 +1,4 @@
-import {View, Text, SectionList, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Linking} from 'react-native';
+import {View, SectionList, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Linking} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
@@ -6,6 +6,7 @@ import {useAppStore} from '@/store';
 import dayjs from 'dayjs';
 import {Ionicons, Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
+import {H2, Body, Caption} from '@/components';
 
 export default function ProviderBookingsScreen() {
   const {user} = useAppStore((s) => s.session!);
@@ -90,7 +91,7 @@ export default function ProviderBookingsScreen() {
 
     return (
       <View className="mt-2 bg-gray-100 px-5 py-3">
-        <Text className="font-nunito-bold text-sm uppercase tracking-wide text-gray-500">{headerText}</Text>
+        <Body className="font-nunito-bold text-sm uppercase tracking-wide text-gray-500">{headerText}</Body>
       </View>
     );
   };
@@ -109,8 +110,8 @@ export default function ProviderBookingsScreen() {
       <View className="flex-row items-center border-b border-gray-100 bg-white p-4">
         {/* Time Column */}
         <View className="mr-3 w-16 items-center justify-center border-r border-gray-100 pr-3">
-          <Text className="font-nunito-bold text-lg text-gray-900">{dayjs(item.appointed).format('h:mm')}</Text>
-          <Text className="font-nunito text-xs font-semibold text-gray-500">{dayjs(item.appointed).format('A')}</Text>
+          <Body className="font-nunito-bold text-lg text-gray-900">{dayjs(item.appointed).format('h:mm')}</Body>
+          <Caption className="font-nunito font-semibold text-gray-500">{dayjs(item.appointed).format('A')}</Caption>
         </View>
 
         {/* User Avatar */}
@@ -126,23 +127,23 @@ export default function ProviderBookingsScreen() {
 
         {/* Content */}
         <View className="flex-1">
-          <Text className="font-nunito-bold text-base text-gray-900" numberOfLines={1}>
+          <Body className="font-nunito-bold text-base text-gray-900" numberOfLines={1}>
             {item.user?.name || 'Unknown User'}
-          </Text>
-          <Text className="mt-0.5 font-nunito text-sm text-gray-500" numberOfLines={1}>
+          </Body>
+          <Caption className="mt-0.5 text-gray-500" numberOfLines={1}>
             {serviceTitle}
-          </Text>
+          </Caption>
           <View className="mt-1 flex-row items-center">
             <View className={`rounded-full px-2 py-0.5 ${item.status === 'booked' ? 'bg-sage/20' : 'bg-gray-100'}`}>
-              <Text className={`font-nunito-bold text-xs capitalize ${item.status === 'booked' ? 'text-sage' : 'text-gray-600'}`}>{item.status}</Text>
+              <Caption className={`font-nunito-bold capitalize ${item.status === 'booked' ? 'text-sage' : 'text-gray-600'}`}>{item.status}</Caption>
             </View>
-            <Text className="ml-3 font-nunito text-xs font-medium text-gray-400">ID: {item.id.substring(0, 6)}</Text>
+            <Caption className="ml-3 font-medium text-gray-400">ID: {item.id.substring(0, 6)}</Caption>
           </View>
         </View>
 
         {/* Price/Action */}
         <View className="items-end">
-          <Text className="font-nunito-bold text-base text-gray-900">${item.price}</Text>
+          <Body className="font-nunito-bold text-base text-gray-900">${item.price}</Body>
           <TouchableOpacity
             className="mt-2 rounded-full bg-gray-50 p-2"
             onPress={() => {
@@ -171,7 +172,7 @@ export default function ProviderBookingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
-        <Text className="font-nunito-bold text-2xl text-gray-900">Bookings</Text>
+        <H2 className="text-gray-900">Bookings</H2>
       </View>
 
       {bookings && bookings.length > 0 ? (
@@ -189,10 +190,10 @@ export default function ProviderBookingsScreen() {
           <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-100">
             <Feather name="calendar" size={32} color="gray" />
           </View>
-          <Text className="text-center font-nunito-bold text-lg text-gray-900">No Bookings Yet</Text>
-          <Text className="mt-2 text-center font-nunito text-gray-500">Your future bookings will appear here grouped by date.</Text>
+          <Body className="text-center font-nunito-bold text-lg text-gray-900">No Bookings Yet</Body>
+          <Body className="mt-2 text-center text-gray-500">Your future bookings will appear here grouped by date.</Body>
           <TouchableOpacity onPress={() => refetch()} className="mt-6 rounded-full bg-primary px-6 py-3">
-            <Text className="font-nunito-bold text-white">Refresh</Text>
+            <Body className="font-nunito-bold text-white">Refresh</Body>
           </TouchableOpacity>
         </View>
       )}

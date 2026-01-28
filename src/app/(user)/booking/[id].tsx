@@ -8,7 +8,8 @@ import {useAppStore} from '@/store';
 import {useStripe} from '@stripe/stripe-react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import {View, Text, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView} from 'react-native';
+import {View, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView} from 'react-native';
+import {H3, Body} from '@/components';
 
 dayjs.extend(customParseFormat);
 
@@ -227,22 +228,22 @@ export default function BookingScreen() {
         <TouchableOpacity onPress={() => router.back()} className="mr-4 rounded-full bg-gray-100 p-2">
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text className="font-nunito-bold text-xl">Booking Details</Text>
+        <H3>Booking Details</H3>
       </View>
 
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         {/* Service Info Summary */}
         <View className="mb-6 rounded-2xl bg-gray-50 p-4">
-          <Text className="font-nunito-bold text-lg text-gray-900">{(service as any)?.translations?.[0]?.title || 'Service'}</Text>
-          <Text className="font-nunito text-gray-500">{(service as any)?.provider?.name || 'Provider'}</Text>
+          <Body className="font-nunito-bold text-lg text-gray-900">{(service as any)?.translations?.[0]?.title || 'Service'}</Body>
+          <Body className="text-gray-500">{(service as any)?.provider?.name || 'Provider'}</Body>
         </View>
 
         {/* Custom Full Month Calendar */}
-        <Text className="mb-3 font-nunito-bold text-lg">Select Date</Text>
+        <H3 className="mb-3">Select Date</H3>
         <View className="mb-6 rounded-3xl bg-primary/5 p-4">
           {/* Month Header */}
           <View className="mb-4 flex-row items-center justify-between">
-            <Text className="font-nunito-bold text-lg text-gray-900">{currentMonth.format('MMMM YYYY')}</Text>
+            <Body className="font-nunito-bold text-lg text-gray-900">{currentMonth.format('MMMM YYYY')}</Body>
             <View className="flex-row gap-4">
               <TouchableOpacity onPress={() => setCurrentMonth(currentMonth.subtract(1, 'month'))}>
                 <Ionicons name="chevron-back" size={24} color="#00594f" />
@@ -256,9 +257,9 @@ export default function BookingScreen() {
           {/* Days Header */}
           <View className="mb-2 flex-row justify-between">
             {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-              <Text key={day} className="w-[13.5%] text-center font-nunito font-semibold text-gray-500">
+              <Body key={day} className="w-[13.5%] text-center font-semibold text-gray-500">
                 {day}
-              </Text>
+              </Body>
             ))}
           </View>
 
@@ -275,8 +276,8 @@ export default function BookingScreen() {
                   disabled={!isSelectable}
                   className={`mb-2 h-9 w-[13.5%] items-center justify-center rounded-full  
                                 ${isSelected ? 'bg-primary' : ''}`}>
-                  <Text
-                    className={`font-nunito font-medium
+                  <Body
+                    className={`font-medium
                                 ${
                                   isSelected
                                     ? 'text-white'
@@ -289,7 +290,7 @@ export default function BookingScreen() {
                                 ${!item.isCurrentMonth ? 'opacity-0' : ''} 
                             `}>
                     {item.date.format('D')}
-                  </Text>
+                  </Body>
                 </TouchableOpacity>
               );
             })}
@@ -297,7 +298,7 @@ export default function BookingScreen() {
         </View>
 
         {/* Time Slots */}
-        <Text className="mb-3 font-nunito-bold text-lg">Choose Start Time</Text>
+        <H3 className="mb-3">Choose Start Time</H3>
         <View className="mb-8 flex-row flex-wrap gap-3">
           {timeSlots.map((time, index) => {
             const isSelected = selectedTime === time;
@@ -306,11 +307,11 @@ export default function BookingScreen() {
                 key={index}
                 onPress={() => setSelectedTime(time)}
                 className={`rounded-full border px-4 py-2 ${isSelected ? 'border-primary bg-primary' : 'border-primary bg-white'}`}>
-                <Text className={`font-nunito-bold ${isSelected ? 'text-white' : 'text-primary'}`}>{time}</Text>
+                <Body className={`font-nunito-bold ${isSelected ? 'text-white' : 'text-primary'}`}>{time}</Body>
               </TouchableOpacity>
             );
           })}
-          {timeSlots.length === 0 && <Text className="font-nunito text-gray-500">No slots available.</Text>}
+          {timeSlots.length === 0 && <Body className="text-gray-500">No slots available.</Body>}
         </View>
       </ScrollView>
 
@@ -323,7 +324,7 @@ export default function BookingScreen() {
           {isProcessing ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="font-nunito-bold text-lg text-white">Continue - ${service?.price || 0}</Text>
+            <Body className="font-nunito-bold text-lg text-white">Continue - ${service?.price || 0}</Body>
           )}
         </TouchableOpacity>
       </View>

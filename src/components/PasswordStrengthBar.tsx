@@ -1,6 +1,7 @@
 import React from 'react';
-import {View, Text} from 'react-native';
+import {View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {Caption} from './Typography';
 
 type PasswordStrengthBarProps = {password: string; visible: boolean};
 
@@ -35,10 +36,10 @@ export const PasswordStrengthBar = ({password, visible}: PasswordStrengthBarProp
   return !visible ? null : (
     <View className="mb-2 px-2">
       <View className="mb-1 flex-row items-center justify-between">
-        <Text className="font-nunito text-[14px] text-[#666]">{t('passwordStrength.label')}</Text>
-        <Text className="font-nunito-bold text-[14px]" style={{color: getStrengthColor()}}>
+        <Caption className="text-[14px] text-[#666]">{t('passwordStrength.label')}</Caption>
+        <Caption className="font-nunito-bold text-[14px]" style={{color: getStrengthColor()}}>
           {getStrengthLabel()}
-        </Text>
+        </Caption>
       </View>
 
       <View className="h-[6px] overflow-hidden rounded-[3px] bg-[#E5E5E5]">

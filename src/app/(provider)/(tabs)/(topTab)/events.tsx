@@ -3,9 +3,10 @@ import {Link} from 'expo-router';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useQuery} from '@tanstack/react-query';
-import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
+import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, View} from 'react-native';
 import {useAppStore} from '@/store';
 import {useTranslation} from 'react-i18next';
+import {H3, Body, Caption} from '@/components';
 
 export default function EventsScreen() {
   const {t, i18n} = useTranslation();
@@ -66,15 +67,15 @@ export default function EventsScreen() {
             <View className="flex-1 justify-between p-3">
               <View>
                 <View className="mb-1 flex-row items-start justify-between">
-                  <Text className="flex-1 text-lg font-bold text-gray-900" numberOfLines={1}>
+                  <Body className="flex-1 text-lg font-bold text-gray-900" numberOfLines={1}>
                     {item.title}
-                  </Text>
+                  </Body>
                   {/* Events might have price or be free */}
                   {/* <Text className="text-sm font-semibold text-green-700">${item.price || 0}</Text> */}
                 </View>
-                <Text className="mb-2 text-xs text-gray-500" numberOfLines={2}>
+                <Caption className="mb-2 text-gray-500" numberOfLines={2}>
                   {item.description}
-                </Text>
+                </Caption>
               </View>
 
               <View>
@@ -84,22 +85,22 @@ export default function EventsScreen() {
                   {/* Start Time */}
                   <View className="mb-1 flex-row items-center">
                     <Feather name="clock" size={12} color="#6B7280" />
-                    <Text className="ml-1 text-xs text-gray-600">
+                    <Caption className="ml-1 text-gray-600">
                       {t('events.startTime')}:{' '}
                       {item.start_at
                         ? `${new Date(item.start_at).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${new Date(item.start_at).getDate().toString().padStart(2, '0')}/${(new Date(item.start_at).getMonth() + 1).toString().padStart(2, '0')}/${new Date(item.start_at).getFullYear().toString().slice(-2)}`
                         : ''}
-                    </Text>
+                    </Caption>
                   </View>
                   {/* End Time */}
                   <View className="flex-row items-center">
                     <Feather name="clock" size={12} color="#6B7280" />
-                    <Text className="ml-1 text-xs text-gray-600">
+                    <Caption className="ml-1 text-gray-600">
                       {t('events.endTime')}:{' '}
                       {item.end_at
                         ? `${new Date(item.end_at).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${new Date(item.end_at).getDate().toString().padStart(2, '0')}/${(new Date(item.end_at).getMonth() + 1).toString().padStart(2, '0')}/${new Date(item.end_at).getFullYear().toString().slice(-2)}`
                         : ''}
-                    </Text>
+                    </Caption>
                   </View>
                 </View>
                 {/* We could add Date here if available in your schema */}
@@ -129,8 +130,8 @@ export default function EventsScreen() {
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-50">
                   <Feather name="calendar" size={40} color="#D1D5DB" />
                 </View>
-                <Text className="mb-2 text-lg font-bold text-gray-900">{t('events.noEvents')}</Text>
-                <Text className="mb-6 text-center text-gray-500">{t('events.noEventsSubtitle')}</Text>
+                <H3 className="mb-2 text-lg text-gray-900">{t('events.noEvents')}</H3>
+                <Body className="mb-6 text-center text-gray-500">{t('events.noEventsSubtitle')}</Body>
               </View>
             )}
           />

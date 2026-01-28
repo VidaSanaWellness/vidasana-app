@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {Modal, View, Text, TouchableOpacity, ActivityIndicator, Platform} from 'react-native';
+import {Modal, View, TouchableOpacity, ActivityIndicator, Platform} from 'react-native';
 import MapView, {Region, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useUserLocation} from '@/hooks';
 import {Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
+import {H3, Caption, Body} from '../Typography';
 
 interface LocationPickerModalProps {
   visible: boolean;
@@ -89,7 +90,7 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
           <TouchableOpacity onPress={onClose} className="p-2">
             <Feather name="x" size={24} color="#374151" />
           </TouchableOpacity>
-          <Text className="text-lg font-bold text-gray-900">Pick Location</Text>
+          <H3 className="text-lg font-bold text-gray-900">Pick Location</H3>
           <View style={{width: 40}} />
         </View>
 
@@ -137,9 +138,9 @@ export default function LocationPickerModal({visible, onClose, onConfirm, initia
 
         {/* Footer Info */}
         <View className="mb-safe border-t border-gray-100 bg-white px-6 py-4">
-          <Text className="font-nunito mb-4 text-center text-xs text-gray-500">Move the map to place the pin at the service location.</Text>
-          <TouchableOpacity onPress={handleConfirm} className="bg-primary w-full items-center rounded-2xl py-4 shadow-lg shadow-green-100">
-            <Text className="font-nunito-bold text-lg text-white">Set Location</Text>
+          <Caption className="mb-4 text-center text-xs text-gray-500">Move the map to place the pin at the service location.</Caption>
+          <TouchableOpacity onPress={handleConfirm} className="w-full items-center rounded-2xl bg-primary py-4 shadow-lg shadow-green-100">
+            <Body className="font-nunito-bold text-lg text-white">Set Location</Body>
           </TouchableOpacity>
         </View>
       </View>

@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Image,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
   Platform,
@@ -21,6 +20,7 @@ import {useTranslation} from 'react-i18next';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useAppStore} from '@/store';
 import {LikeButton, ImageCarousel} from '@/components';
+import {H2, H3, Body, Caption} from '@/components';
 import {Rating} from 'react-native-ratings';
 import Toast from 'react-native-toast-message';
 import {useState} from 'react';
@@ -155,7 +155,7 @@ export default function UserEventDetailsScreen() {
   if (!event) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <Text className="font-nunito text-gray-500">Event not found</Text>
+        <Body className="font-nunito text-gray-500">Event not found</Body>
       </View>
     );
   }
@@ -203,65 +203,65 @@ export default function UserEventDetailsScreen() {
           {/* Title & Rating */}
           <View className="mb-4">
             {event.categories && (
-              <View className="bg-primary/10 mb-2 self-start rounded-full px-3 py-1">
-                <Text className="font-nunito-bold text-primary text-xs">{event.categories.name}</Text>
+              <View className="mb-2 self-start rounded-full bg-primary/10 px-3 py-1">
+                <Caption className="font-nunito-bold text-xs text-primary">{event.categories.name}</Caption>
               </View>
             )}
-            <Text className="font-nunito-bold mb-1 text-2xl text-gray-900">{event.title}</Text>
+            <H2 className="mb-1 font-nunito-bold text-2xl text-gray-900">{event.title}</H2>
 
             <View className="flex-row items-center gap-1">
               <Ionicons name="star" size={16} color="#F59E0B" />
-              <Text className="font-nunito-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Text>
-              <Text className="font-nunito text-gray-500">({ratingSummary?.count || 0} reviews)</Text>
+              <Body className="font-nunito-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Body>
+              <Body className="font-nunito text-gray-500">({ratingSummary?.count || 0} reviews)</Body>
             </View>
           </View>
 
           {/* Date & Time */}
           <View className="mb-6 rounded-xl bg-gray-50 p-4">
             <View className="mb-3 flex-row items-center">
-              <View className="bg-primary/10 mr-3 rounded-full p-2">
+              <View className="mr-3 rounded-full bg-primary/10 p-2">
                 <Feather name="calendar" size={20} color="#00594f" />
               </View>
               <View>
-                <Text className="font-nunito text-xs text-gray-500">{t('events.date')}</Text>
-                <Text className="font-nunito-bold text-gray-900">
+                <Caption className="font-nunito text-xs text-gray-500">{t('events.date')}</Caption>
+                <Body className="font-nunito-bold text-gray-900">
                   {new Date(event.start_at).toLocaleDateString(undefined, {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
-                </Text>
+                </Body>
               </View>
             </View>
 
             <View className="flex-row items-center">
-              <View className="bg-primary/10 mr-3 rounded-full p-2">
+              <View className="mr-3 rounded-full bg-primary/10 p-2">
                 <Feather name="clock" size={20} color="#00594f" />
               </View>
               <View>
-                <Text className="font-nunito text-xs text-gray-500">{t('events.time')}</Text>
-                <Text className="font-nunito-bold text-gray-900">
+                <Caption className="font-nunito text-xs text-gray-500">{t('events.time')}</Caption>
+                <Body className="font-nunito-bold text-gray-900">
                   {new Date(event.start_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} -{' '}
                   {new Date(event.end_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-                </Text>
+                </Body>
               </View>
             </View>
 
             {event.book_till && (
               <View className="mt-3 border-t border-gray-200 pt-3">
-                <Text className="font-nunito text-xs font-medium text-red-500">
+                <Caption className="font-nunito text-xs font-medium text-red-500">
                   {t('events.bookingDeadline')}: {new Date(event.book_till).toLocaleDateString()}
-                </Text>
+                </Caption>
               </View>
             )}
           </View>
 
           {/* Description */}
           <View className="mb-6">
-            <Text className="font-nunito-bold mb-2 text-lg text-gray-900">{t('events.aboutEvent')}</Text>
-            <Text className="font-nunito leading-6 text-gray-600">{event.description}</Text>
+            <H3 className="mb-2 font-nunito-bold text-lg text-gray-900">{t('events.aboutEvent')}</H3>
+            <Body className="font-nunito leading-6 text-gray-600">{event.description}</Body>
           </View>
 
           {/* Location Map */}
           {event.lat && event.lng ? (
             <View className="mb-6">
-              <Text className="font-nunito-bold mb-2 text-lg text-gray-900">{t('events.location')}</Text>
+              <H3 className="mb-2 font-nunito-bold text-lg text-gray-900">{t('events.location')}</H3>
               <View className="h-48 w-full overflow-hidden rounded-xl border border-gray-200">
                 <MapView
                   style={{flex: 1}}
@@ -284,7 +284,7 @@ export default function UserEventDetailsScreen() {
               </View>
               <TouchableOpacity onPress={openAddressOnMap} className="mt-2 flex-row items-center">
                 <Feather name="external-link" size={14} color="#00594f" />
-                <Text className="font-nunito-bold text-primary ml-1 text-sm">Open in Maps</Text>
+                <Body className="ml-1 font-nunito-bold text-sm text-primary">Open in Maps</Body>
               </TouchableOpacity>
             </View>
           ) : null}
@@ -292,14 +292,14 @@ export default function UserEventDetailsScreen() {
           {/* Tickets */}
           {event.event_ticket_types && event.event_ticket_types.length > 0 && (
             <View className="mb-6">
-              <Text className="mb-3 text-lg font-bold text-gray-900">{t('events.tickets')}</Text>
+              <H3 className="mb-3 text-lg font-bold text-gray-900">{t('events.tickets')}</H3>
               {event.event_ticket_types.map((ticket: any) => (
                 <View key={ticket.id} className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 p-4">
                   <View>
-                    <Text className="font-bold text-gray-900">{ticket.name}</Text>
-                    <Text className="text-xs text-gray-500">Capacity: {ticket.capacity}</Text>
+                    <Body className="font-bold text-gray-900">{ticket.name}</Body>
+                    <Caption className="text-xs text-gray-500">Capacity: {ticket.capacity}</Caption>
                   </View>
-                  <Text className="text-lg font-bold text-green-700">${ticket.price}</Text>
+                  <Body className="text-lg font-bold text-green-700">${ticket.price}</Body>
                 </View>
               ))}
             </View>
@@ -308,9 +308,9 @@ export default function UserEventDetailsScreen() {
           {/* Reviews Section */}
           <View className="mt-4">
             <View className="mb-4 flex-row items-center justify-between">
-              <Text className="text-lg font-bold text-gray-900">Reviews</Text>
+              <H3 className="text-lg font-bold text-gray-900">Reviews</H3>
               <TouchableOpacity onPress={() => setReviewModalVisible(true)}>
-                <Text className="font-semibold text-green-700">Write a Review</Text>
+                <Body className="font-semibold text-green-700">Write a Review</Body>
               </TouchableOpacity>
             </View>
 
@@ -330,18 +330,18 @@ export default function UserEventDetailsScreen() {
                           <Feather name="user" size={16} color="white" />
                         </View>
                       )}
-                      <Text className="font-semibold text-gray-900">{review.user_name || 'Anonymous'}</Text>
+                      <Body className="font-semibold text-gray-900">{review.user_name || 'Anonymous'}</Body>
                     </View>
                     <View className="flex-row items-center">
                       <Ionicons name="star" size={14} color="#F59E0B" />
-                      <Text className="ml-1 text-xs font-bold text-gray-900">{review.rating}</Text>
+                      <Caption className="ml-1 text-xs font-bold text-gray-900">{review.rating}</Caption>
                     </View>
                   </View>
-                  {review.comment && <Text className="text-gray-600">{review.comment}</Text>}
+                  {review.comment && <Body className="text-gray-600">{review.comment}</Body>}
                 </View>
               ))
             ) : (
-              <Text className="italic text-gray-500">No reviews yet. Be the first!</Text>
+              <Body className="italic text-gray-500">No reviews yet. Be the first!</Body>
             )}
           </View>
         </View>
@@ -349,8 +349,8 @@ export default function UserEventDetailsScreen() {
 
       {/* Book Button (Placeholder until flow is implemented) */}
       <View className="border-t border-gray-100 p-4">
-        <TouchableOpacity className="bg-primary items-center rounded-xl py-4 shadow-sm active:opacity-90">
-          <Text className="font-nunito-bold text-lg text-white">{t('events.bookNow')}</Text>
+        <TouchableOpacity className="items-center rounded-xl bg-primary py-4 shadow-sm active:opacity-90">
+          <Body className="font-nunito-bold text-lg text-white">{t('events.bookNow')}</Body>
         </TouchableOpacity>
       </View>
 
@@ -359,7 +359,7 @@ export default function UserEventDetailsScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 justify-end bg-black/50">
           <View className="rounded-t-3xl bg-white p-6 pb-12">
             <View className="mb-6 flex-row items-center justify-between">
-              <Text className="font-nunito-bold text-xl">Write a Review</Text>
+              <H3 className="font-nunito-bold text-xl">Write a Review</H3>
               <TouchableOpacity onPress={() => setReviewModalVisible(false)}>
                 <Feather name="x" size={24} color="black" />
               </TouchableOpacity>
@@ -376,9 +376,9 @@ export default function UserEventDetailsScreen() {
               />
             </View>
 
-            <Text className="font-nunito-bold mb-2 text-gray-700">Comment</Text>
+            <Body className="mb-2 font-nunito-bold text-gray-700">Comment</Body>
             <TextInput
-              className="font-nunito mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 text-gray-900"
+              className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 font-nunito text-gray-900"
               multiline
               numberOfLines={4}
               placeholder="Share your experience..."
@@ -394,7 +394,7 @@ export default function UserEventDetailsScreen() {
               {submitReviewMutation.isPending ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className="font-nunito-bold text-lg text-white">Submit Review</Text>
+                <Body className="font-nunito-bold text-lg text-white">Submit Review</Body>
               )}
             </TouchableOpacity>
           </View>

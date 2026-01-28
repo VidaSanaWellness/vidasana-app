@@ -1,18 +1,14 @@
 import React from 'react';
+import {H3, Body} from './Typography';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback} from 'react-native';
-
-// ... imports
-import {H3, Body} from '@/components/Typography';
+import {Modal, View, TouchableOpacity, TouchableWithoutFeedback} from 'react-native';
 
 interface LanguagePickerProps {
   visible: boolean;
   onClose: () => void;
 }
-
-// ... interface
 
 export const LanguagePicker: React.FC<LanguagePickerProps> = ({visible, onClose}) => {
   const insets = useSafeAreaInsets();
@@ -54,7 +50,7 @@ export const LanguagePicker: React.FC<LanguagePickerProps> = ({visible, onClose}
                         isSelected ? 'border-primary bg-primary/5' : 'border-gray-100 bg-gray-50'
                       }`}>
                       <View className="flex-row items-center space-x-3">
-                        <Text className="text-2xl">{lang.icon}</Text>
+                        <Body className="text-2xl">{lang.icon}</Body>
                         <Body className={`${isSelected ? 'font-nunito-bold text-primary' : 'text-gray-700'}`}>{lang.label}</Body>
                       </View>
                       {isSelected && <Ionicons name="checkmark-circle" size={24} color="#00594f" />}

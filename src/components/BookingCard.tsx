@@ -1,6 +1,7 @@
 import React from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
 import {Feather} from '@expo/vector-icons';
+import {H3, Caption, H2} from './Typography';
+import {View, Image, TouchableOpacity} from 'react-native';
 
 type BookingCardProps = {
   title: string;
@@ -23,25 +24,25 @@ export const BookingCard = ({title, startTime, endTime, description, image, pric
         className="flex-1 flex-row justify-between rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
         <View className="flex-1 pr-4">
           {/* Time */}
-          <Text className="font-nunito text-sm text-gray-500">
+          <Caption className="text-gray-500">
             {startTime} {endTime ? `- ${endTime}` : ''}
-          </Text>
+          </Caption>
 
           {/* Title */}
-          <Text className="font-nunito-bold text-lg text-gray-900" numberOfLines={1}>
+          <H3 className="text-gray-900" numberOfLines={1}>
             {title}
-          </Text>
+          </H3>
 
           {/* Description */}
           <View className="mb-1 flex-1 flex-row">
-            <Text className="font-nunito text-xs leading-4 text-gray-500" numberOfLines={2}>
+            <Caption className="text-xs leading-4 text-gray-500" numberOfLines={2}>
               {description || 'No description available'}
-            </Text>
+            </Caption>
           </View>
 
           {/* Price / Relevant Info */}
           <View className="flex-row items-center">
-            <Text className="font-nunito-bold text-sm text-primary">{price ? `$${price}` : 'Free'}</Text>
+            <H2 className="font-nunito-bold text-sm text-primary">{price ? `$${price}` : 'Free'}</H2>
           </View>
         </View>
 

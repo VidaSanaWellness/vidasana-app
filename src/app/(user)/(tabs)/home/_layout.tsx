@@ -4,7 +4,6 @@ export default function HomeLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{headerShown: false}} />
-      <Stack.Screen name="services" options={{headerShown: false}} />
       <Stack.Screen name="events" options={{headerShown: false}} />
     </Stack>
   );

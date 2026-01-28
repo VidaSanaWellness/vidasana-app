@@ -6,8 +6,8 @@ import {useTranslation} from 'react-i18next';
 import {Controller, useForm} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
-import {Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {Button, H2, PhoneInputField} from '@/components';
+import {Alert, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, View} from 'react-native';
+import {Button, H2, PhoneInputField, Body, Caption} from '@/components';
 import {useState} from 'react';
 
 const Page = () => {
@@ -69,7 +69,7 @@ const Page = () => {
                     className="m-0 h-14 px-4 text-base leading-5 text-black"
                   />
                 </View>
-                {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
+                {fieldState.error && <Caption className="ml-2 mt-1 text-sm text-red-500">{fieldState.error.message}</Caption>}
               </View>
             )}
           />
@@ -92,7 +92,7 @@ const Page = () => {
             )}
           />
 
-          <Text className="mb-5 px-2 font-nunito text-sm text-[#6B6B6B]">{t('profile.updateDetails')}</Text>
+          <Body className="mb-5 px-2 text-sm text-[#6B6B6B]">{t('profile.updateDetails')}</Body>
 
           <Button onPress={handleSubmit(submit)} loading={formState.isSubmitting} label={t('profile.save')} className="mt-auto" fullWidth />
         </Animated.View>

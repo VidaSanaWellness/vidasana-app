@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, ScrollView, TouchableOpacity, TextInput, Image} from 'react-native';
+import {View, ScrollView, TouchableOpacity, TextInput, Image} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {useForm, Controller, type FieldErrors} from 'react-hook-form';
@@ -14,9 +14,10 @@ import {useAppStore} from '@/store';
 import {Enums} from '@/types';
 import {useTranslation} from 'react-i18next';
 import {ServiceFormValues, LanguageCode, UnifiedImage} from '@/types/service';
-import {LANGUAGES, getDays} from '@/constants/service';
-import LocationPickerModal from '@/components/modals/LocationPickerModal';
+import {LANGUAGES, getDays} from '@/constants';
+import LocationPickerModal from '@/components';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import {H2, Body, Caption} from '@/components';
 
 // Types
 
@@ -265,13 +266,13 @@ export default function EditServiceScreen() {
         <TouchableOpacity onPress={() => router.back()} className="mr-4 rounded-full bg-gray-100 p-2">
           <Feather name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
-        <Text className="font-nunito-bold text-2xl text-gray-900">{t('services.updateTitle')}</Text>
+        <H2 className="text-gray-900">{t('services.updateTitle')}</H2>
       </View>
 
       <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
         {/* Images */}
         <View className="mb-4">
-          <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.images')}</Text>
+          <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.images')}</Body>
           <Controller
             control={control}
             name="images"
@@ -293,10 +294,10 @@ export default function EditServiceScreen() {
                     onPress={() => pickImages(onChange)}
                     className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
                     <Feather name="camera" size={24} color="gray" />
-                    <Text className="mt-1 font-nunito text-xs text-gray-500">{t('events.addPhotos')}</Text>
+                    <Caption className="mt-1 text-gray-500">{t('events.addPhotos')}</Caption>
                   </TouchableOpacity>
                 </ScrollView>
-                {error?.message && <Text className="mt-1 text-xs text-red-500">{error.message}</Text>}
+                {error?.message && <Caption className="mt-1 text-red-500">{error.message}</Caption>}
               </>
             )}
           />
@@ -309,7 +310,7 @@ export default function EditServiceScreen() {
               key={i}
               onPress={() => setActiveLanguage(lang.code)}
               className={`flex-1 items-center rounded-md py-2 ${activeLanguage === lang.code ? 'bg-white shadow-sm' : 'shadow-none'}`}>
-              <Text className={`font-nunito-bold ${activeLanguage === lang.code ? 'text-primary' : 'text-gray-500'}`}>{lang.label}</Text>
+              <Body className={`font-nunito-bold ${activeLanguage === lang.code ? 'text-primary' : 'text-gray-500'}`}>{lang.label}</Body>
             </TouchableOpacity>
           ))}
         </View>
@@ -318,9 +319,9 @@ export default function EditServiceScreen() {
           <View key={lang.code} style={{display: activeLanguage === lang.code ? 'flex' : 'none'}}>
             {/* Title (Multi-lang) */}
             <View className="mb-4">
-              <Text className="mb-1 font-nunito-bold text-sm text-gray-700">
+              <Body className="mb-1 font-nunito-bold text-sm text-gray-700">
                 {t('services.serviceTitle')} ({lang.label})
-              </Text>
+              </Body>
               <Controller
                 control={control}
                 rules={{required: t('validation.required')}}
@@ -333,10 +334,10 @@ export default function EditServiceScreen() {
                       value={value}
                       onChangeText={onChange}
                     />
-                    { }
+                    {}
                     {/* @ts-ignore */}
                     {errors.translations?.[lang.code]?.title && (
-                      <Text className="mt-1 font-nunito text-xs text-red-500">{errors.translations[lang.code]?.title?.message}</Text>
+                      <Caption className="mt-1 text-red-500">{errors.translations[lang.code]?.title?.message}</Caption>
                     )}
                   </View>
                 )}
@@ -345,9 +346,9 @@ export default function EditServiceScreen() {
 
             {/* Description (Multi-lang) */}
             <View className="mb-4">
-              <Text className="mb-1 font-nunito-bold text-sm text-gray-700">
+              <Body className="mb-1 font-nunito-bold text-sm text-gray-700">
                 {t('events.description')} ({lang.label})
-              </Text>
+              </Body>
               <Controller
                 control={control}
                 rules={{required: t('validation.required')}}
@@ -362,10 +363,10 @@ export default function EditServiceScreen() {
                       textAlignVertical="top"
                       onChangeText={onChange}
                     />
-                    { }
+                    {}
                     {/* @ts-ignore */}
                     {errors.translations?.[lang.code]?.description && (
-                      <Text className="mt-1 font-nunito text-xs text-red-500">{errors.translations[lang.code]?.description?.message}</Text>
+                      <Caption className="mt-1 text-red-500">{errors.translations[lang.code]?.description?.message}</Caption>
                     )}
                   </View>
                 )}
@@ -376,7 +377,7 @@ export default function EditServiceScreen() {
 
         {/* Category */}
         <View className="mb-4">
-          <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.category')}</Text>
+          <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.category')}</Body>
           <Controller
             control={control}
             name="category"
@@ -391,12 +392,12 @@ export default function EditServiceScreen() {
                         key={cat.id}
                         onPress={() => onChange(cat.id)}
                         className={`rounded-full border px-4 py-2 ${isSelected ? 'border-primary bg-primary' : 'border-gray-300 bg-white'}`}>
-                        <Text className={`font-nunito-bold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{cat.name}</Text>
+                        <Body className={`font-nunito-bold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{cat.name}</Body>
                       </TouchableOpacity>
                     );
                   })}
                 </View>
-                {error?.message && <Text className="mt-1 font-nunito text-xs text-red-500">{error.message}</Text>}
+                {error?.message && <Caption className="mt-1 text-red-500">{error.message}</Caption>}
               </>
             )}
           />
@@ -405,7 +406,7 @@ export default function EditServiceScreen() {
         {/* Price & Capacity */}
         <View className="mb-4 flex-row justify-between gap-4">
           <View className="flex-1">
-            <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.price')}</Text>
+            <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.price')}</Body>
             <Controller
               control={control}
               rules={{required: t('validation.required')}}
@@ -413,16 +414,16 @@ export default function EditServiceScreen() {
               render={({field: {onChange, value}, fieldState: {error}}) => (
                 <>
                   <View className="flex-row items-center rounded-lg border border-gray-300 bg-white px-3">
-                    <Text className="mr-1 font-nunito text-gray-500">$</Text>
+                    <Body className="mr-1 text-gray-500">$</Body>
                     <TextInput className="flex-1 py-3 font-nunito" keyboardType="numeric" value={value} onChangeText={onChange} />
                   </View>
-                  {error?.message && <Text className="mt-1 font-nunito text-xs text-red-500">{error.message}</Text>}
+                  {error?.message && <Caption className="mt-1 text-red-500">{error.message}</Caption>}
                 </>
               )}
             />
           </View>
           <View className="flex-1">
-            <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.capacity')}</Text>
+            <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.capacity')}</Body>
             <Controller
               control={control}
               rules={{required: t('validation.required')}}
@@ -435,7 +436,7 @@ export default function EditServiceScreen() {
                     onChangeText={onChange}
                     className="rounded-lg border border-gray-300 bg-white p-3 font-nunito"
                   />
-                  {error?.message && <Text className="mt-1 font-nunito text-xs text-red-500">{error.message}</Text>}
+                  {error?.message && <Caption className="mt-1 text-red-500">{error.message}</Caption>}
                 </>
               )}
             />
@@ -446,7 +447,7 @@ export default function EditServiceScreen() {
         <View className="mb-4 flex-row justify-between gap-4">
           {['start_at', 'end_at'].map((key) => (
             <View key={key} className="flex-1">
-              <Text className="mb-1 font-nunito-bold text-sm text-gray-700">{key === 'start_at' ? t('events.startTime') : t('events.endTime')}</Text>
+              <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{key === 'start_at' ? t('events.startTime') : t('events.endTime')}</Body>
               <Controller
                 control={control}
                 name={key as any}
@@ -458,13 +459,13 @@ export default function EditServiceScreen() {
                       setTimePickerVisible(true);
                     }}
                     className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
-                    <Text className={`font-nunito ${value ? 'text-gray-900' : 'text-gray-400'}`}>
+                    <Body className={`${value ? 'text-gray-900' : 'text-gray-400'}`}>
                       {value instanceof Date
                         ? value.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
                         : key === 'start_at'
                           ? t('events.selectStart')
                           : t('events.selectEnd')}
-                    </Text>
+                    </Body>
                     <Feather name="clock" size={18} color="gray" />
                   </TouchableOpacity>
                 )}
@@ -475,7 +476,7 @@ export default function EditServiceScreen() {
 
         {/* Days */}
         <View className="mb-6">
-          <Text className="mb-2 font-nunito-bold text-sm text-gray-700">{t('services.availableDays')}</Text>
+          <Body className="mb-2 font-nunito-bold text-sm text-gray-700">{t('services.availableDays')}</Body>
           <Controller
             name="week_day"
             control={control}
@@ -490,12 +491,12 @@ export default function EditServiceScreen() {
                         key={day.value}
                         onPress={() => toggleWeekDay(day.value)}
                         className={`mb-2 h-10 w-10 items-center justify-center rounded-full ${isSelected ? 'bg-primary' : 'bg-gray-100'}`}>
-                        <Text className={`font-nunito-bold text-xs ${isSelected ? 'text-white' : 'text-gray-600'}`}>{day.label}</Text>
+                        <Body className={`font-nunito-bold text-xs ${isSelected ? 'text-white' : 'text-gray-600'}`}>{day.label}</Body>
                       </TouchableOpacity>
                     );
                   })}
                 </View>
-                {error?.message && <Text className="mt-1 font-nunito text-xs text-red-500">{error?.message}</Text>}
+                {error?.message && <Caption className="mt-1 text-red-500">{error?.message}</Caption>}
               </>
             )}
           />
@@ -503,7 +504,7 @@ export default function EditServiceScreen() {
 
         {/* Location Section */}
         <View className="mb-6">
-          <Text className="mb-2 font-nunito-bold text-sm text-gray-700">{t('events.location')}</Text>
+          <Body className="mb-2 font-nunito-bold text-sm text-gray-700">{t('events.location')}</Body>
           <Controller
             control={control}
             name="lat"
@@ -543,9 +544,9 @@ export default function EditServiceScreen() {
                     onPress={() => setLocationPickerVisible(true)}
                     className={`flex-row items-center justify-center rounded-xl border border-dashed p-4 ${lat ? 'border-primary/30 bg-primary/5' : 'border-gray-300 bg-gray-50'}`}>
                     <Feather name="map-pin" size={20} color={lat ? '#00594f' : '#9CA3AF'} />
-                    <Text className={`ml-2 font-nunito font-bold ${lat ? 'text-primary' : 'text-gray-500'}`}>
+                    <Body className={`ml-2 font-nunito font-bold ${lat ? 'text-primary' : 'text-gray-500'}`}>
                       {lat ? 'Change Location' : 'Select Location on Map'}
-                    </Text>
+                    </Body>
                   </TouchableOpacity>
                 </View>
               );
@@ -557,7 +558,7 @@ export default function EditServiceScreen() {
           disabled={isPending}
           onPress={handleSubmit((data) => mutate(data), onInvalid)}
           className="mb-10 items-center rounded-lg bg-primary p-4">
-          <Text className="font-nunito-bold text-lg text-white">{t('services.updateButton')}</Text>
+          <Body className="font-nunito-bold text-lg text-white">{t('services.updateButton')}</Body>
         </TouchableOpacity>
       </ScrollView>
       <DateTimePickerModal mode="time" isVisible={isTimePickerVisible} onConfirm={handleConfirmTime} onCancel={() => setTimePickerVisible(false)} />

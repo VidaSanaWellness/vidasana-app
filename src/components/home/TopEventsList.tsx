@@ -1,10 +1,11 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, Image, FlatList, ActivityIndicator} from 'react-native';
+import {View, TouchableOpacity, Image, FlatList, ActivityIndicator} from 'react-native';
 import {useQuery} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
+import {H3, Subtitle, Caption, Body} from '../Typography';
 
 export const TopEventsList = () => {
   const router = useRouter();
@@ -51,19 +52,19 @@ export const TopEventsList = () => {
 
         <View className="p-3">
           <View className="flex-row items-start justify-between">
-            <Text numberOfLines={1} className="mr-2 flex-1 font-nunito-bold text-base text-gray-900">
+            <Subtitle numberOfLines={1} className="mr-2 flex-1 font-nunito-bold text-gray-900">
               {item.title}
-            </Text>
+            </Subtitle>
             {/* Events might not have price or we show location */}
           </View>
 
-          <Text numberOfLines={1} className="mt-1 font-nunito text-xs text-gray-500">
+          <Caption numberOfLines={1} className="mt-1 text-xs text-gray-500">
             {item.description}
-          </Text>
+          </Caption>
 
           <View className="mt-2 flex-row items-center">
             <Feather name="clock" size={12} color="gray" />
-            <Text className="ml-1 font-nunito text-xs text-gray-500">{item.start_at ? new Date(item.start_at).toLocaleDateString() : ''}</Text>
+            <Caption className="ml-1 text-xs text-gray-500">{item.start_at ? new Date(item.start_at).toLocaleDateString() : ''}</Caption>
           </View>
         </View>
       </TouchableOpacity>
@@ -75,9 +76,9 @@ export const TopEventsList = () => {
   return (
     <View className="mb-8 mt-6">
       <View className="mb-4 flex-row items-center justify-between px-4">
-        <Text className="font-nunito-bold text-lg text-black">{t('events.popular')}</Text>
+        <H3 className="text-black">{t('events.popular')}</H3>
         <TouchableOpacity onPress={() => router.push('/(user)/(tabs)/home/events')}>
-          <Text className="font-nunito-bold text-sm text-primary">{t('common.seeAll')}</Text>
+          <Body className="font-nunito-bold text-sm text-primary">{t('common.seeAll')}</Body>
         </TouchableOpacity>
       </View>
 

@@ -5,12 +5,13 @@ import {useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
-import {LanguagePicker} from '@/components/LanguagePicker';
+import {LanguagePicker} from '@/components';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {PhoneInputField} from '@/components';
 import Animated, {FadeIn, FadeOut, SlideInDown, SlideOutDown} from 'react-native-reanimated';
-import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, TextInput, TouchableOpacity, View} from 'react-native';
 import {useAppStore} from '@/store';
+import {H2, H3, Body, Caption} from '@/components';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -217,53 +218,53 @@ const Profile = () => {
           </TouchableOpacity>
 
           <View className="flex-row items-center space-x-2">
-            <Text className="font-nunito-bold text-2xl text-black">{currentUser?.user_metadata?.full_name || 'User'}</Text>
+            <H2 className="font-nunito-bold text-2xl text-black">{currentUser?.user_metadata?.full_name || 'User'}</H2>
 
             <View className={`rounded-full px-3 py-1 ${currentUser?.user_metadata?.role === 'provider' ? 'bg-primary' : 'bg-gray-300'}`}>
-              <Text className="text-xs font-bold uppercase text-white">{currentUser?.user_metadata?.role || 'Member'}</Text>
+              <Caption className="text-xs font-bold uppercase text-white">{currentUser?.user_metadata?.role || 'Member'}</Caption>
             </View>
           </View>
 
-          <Text className="mt-1 font-nunito text-base text-gray-500">{currentUser?.email}</Text>
+          <Body className="mt-1 font-nunito text-base text-gray-500">{currentUser?.email}</Body>
         </View>
 
         {/* Loading State */}
         {isBusy && (
           <View className="flex-row items-center justify-center space-x-2 px-5 py-3">
             <ActivityIndicator size="small" color="#00594f" />
-            <Text className="font-nunito text-sm text-gray-700">{isLoadingProfile ? 'Loading your profile...' : 'Refreshing profile...'}</Text>
+            <Body className="font-nunito text-sm text-gray-700">{isLoadingProfile ? 'Loading your profile...' : 'Refreshing profile...'}</Body>
           </View>
         )}
 
         {/* Account Settings */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.accountSettings')}</Text>
+          <H3 className="mb-4 font-nunito-bold text-lg text-black">{t('settings.accountSettings')}</H3>
 
           <TouchableOpacity
             className={`mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3 ${isBusy || isEditing ? 'opacity-60' : ''}`}
             disabled={isBusy || isEditing}
             onPress={handleEditPress}>
             <Ionicons name="person-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('profile.editTitle')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('profile.editTitle')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={handlePasswordChange}>
             <Ionicons name="key-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.changePassword')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.changePassword')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
 
         {/* Preferences */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.preferences')}</Text>
+          <H3 className="mb-4 font-nunito-bold text-lg text-black">{t('settings.preferences')}</H3>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={() => setIsLanguagePickerVisible(true)}>
             <Ionicons name="globe-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">
               {t('settings.language')} ({t(`languages.${i18n.language}`)})
-            </Text>
+            </Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
@@ -272,13 +273,13 @@ const Profile = () => {
 
         {/* Support */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.support')}</Text>
+          <H3 className="mb-4 font-nunito-bold text-lg text-black">{t('settings.support')}</H3>
 
           <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
             onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
             <Ionicons name="help-circle-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.helpCenter')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.helpCenter')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
 
@@ -286,7 +287,7 @@ const Profile = () => {
             className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
             onPress={() => router.push('/TermsAndConditions' as any)}>
             <Ionicons name="document-text-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.termsAndConditions')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.termsAndConditions')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
 
@@ -294,7 +295,7 @@ const Profile = () => {
             className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
             onPress={() => router.push('/PrivacyPolicy' as any)}>
             <Ionicons name="shield-checkmark-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.privacyPolicy')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.privacyPolicy')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
@@ -306,7 +307,7 @@ const Profile = () => {
           onPress={handleLogout}
           className="mx-5 mb-8 mt-10 flex-row items-center justify-center rounded-xl bg-red-50 py-4">
           <Ionicons name="log-out-outline" size={24} color="#E03C31" />
-          <Text className="ml-2 font-nunito-bold text-base text-[#E03C31]">{t('settings.logOut')}</Text>
+          <Body className="ml-2 font-nunito-bold text-base text-[#E03C31]">{t('settings.logOut')}</Body>
         </AnimatedTouchableOpacity>
       </ScrollView>
 
@@ -326,13 +327,13 @@ const Profile = () => {
               className="max-h-[90%] w-full rounded-t-3xl bg-white px-6 pb-12 pt-6 shadow-lg">
               <KeyboardAvoidingView className="w-full flex-grow-0">
                 <View className="w-full">
-                  <Text className="mb-2 text-xl font-bold text-[#1F1F1F]">Edit Profile</Text>
+                  <H3 className="mb-2 text-xl font-bold text-[#1F1F1F]">Edit Profile</H3>
 
-                  <Text className="mb-5 text-sm text-[#6B6B6B]">Update your personal details so providers and companions can stay in touch.</Text>
+                  <Body className="mb-5 text-sm text-[#6B6B6B]">Update your personal details so providers and companions can stay in touch.</Body>
 
                   {/* Full Name */}
                   <View className="mb-5">
-                    <Text className="mb-2 font-nunito text-sm text-gray-700">Full Name</Text>
+                    <Body className="mb-2 font-nunito text-sm text-gray-700">Full Name</Body>
                     <TextInput
                       editable={!isSaving}
                       returnKeyType="done"
@@ -345,7 +346,7 @@ const Profile = () => {
 
                   {/* Phone */}
                   <View className="mb-5">
-                    <Text className="mb-2 font-nunito text-sm text-gray-700">Phone Number</Text>
+                    <Body className="mb-2 font-nunito text-sm text-gray-700">Phone Number</Body>
                     <PhoneInputField
                       value={editedInfo.phone}
                       onChangePhoneNumber={(text) => setEditedInfo((p) => ({...p, phone: text}))}
@@ -357,7 +358,7 @@ const Profile = () => {
 
                   {/* Email */}
                   <View className="mb-5">
-                    <Text className="mb-2 text-sm text-[#4A4A4A]">Email</Text>
+                    <Body className="mb-2 text-sm text-[#4A4A4A]">Email</Body>
                     <TextInput
                       editable={false}
                       value={userInfo.email}
@@ -372,7 +373,7 @@ const Profile = () => {
                       disabled={isSaving}
                       onPress={handleCancelEdit}
                       className={`rounded-xl bg-gray-100 px-5 py-3 ${isSaving ? 'opacity-60' : ''}`}>
-                      <Text className="font-nunito-bold text-base text-gray-700">Cancel</Text>
+                      <Body className="font-nunito-bold text-base text-gray-700">Cancel</Body>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -382,7 +383,7 @@ const Profile = () => {
                       {isSaving ? (
                         <ActivityIndicator size="small" color="#FFF" />
                       ) : (
-                        <Text className="font-nunito-bold text-base text-white">Save Changes</Text>
+                        <Body className="font-nunito-bold text-base text-white">Save Changes</Body>
                       )}
                     </TouchableOpacity>
                   </View>

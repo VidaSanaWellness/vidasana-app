@@ -33,7 +33,7 @@ export function Avatar({name = '', uri = null, size = 60, className}: AvatarProp
       {uri ? (
         <Image source={{uri}} style={{width: size, height: size, borderRadius: size / 2}} />
       ) : (
-        <Text className="font-semibold" style={{fontSize: size * 0.4, color: initialsColor}}>
+        <Text className="font-nunito-bold" style={{fontSize: size * 0.4, color: initialsColor}}>
           {initials}
         </Text>
       )}

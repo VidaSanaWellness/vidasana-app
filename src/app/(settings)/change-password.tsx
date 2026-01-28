@@ -1,5 +1,5 @@
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {KeyboardAvoidingView, Platform, ScrollView, View, TextInput, Text, TouchableOpacity, Image, ActivityIndicator} from 'react-native';
+import {KeyboardAvoidingView, Platform, ScrollView, View, TextInput, TouchableOpacity, Image, ActivityIndicator} from 'react-native';
 import {useState} from 'react';
 import {useForm, Controller} from 'react-hook-form';
 import {PasswordStrengthBar} from '@/components';
@@ -10,6 +10,7 @@ import {Ionicons} from '@expo/vector-icons';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 import {IMAGES} from '@/assets';
+import {H2, Body, Caption} from '@/components';
 
 type FormValues = {
   newPassword: string;
@@ -49,8 +50,8 @@ const ChangePassword = () => {
           </View>
 
           <Animated.View entering={FadeInDown.delay(200)} className="mb-8 mt-9 items-center">
-            <Text className="mb-2 font-nunito-bold text-3xl text-black">{t('auth.changePassword.title')}</Text>
-            <Text className="px-10 text-center font-nunito text-base text-gray-500">{t('auth.changePassword.subtitle')}</Text>
+            <H2 className="mb-2 text-black">{t('auth.changePassword.title')}</H2>
+            <Body className="px-10 text-center text-gray-500">{t('auth.changePassword.subtitle')}</Body>
           </Animated.View>
           <Animated.View entering={FadeInUp.delay(400)} className="px-6">
             <Controller
@@ -80,7 +81,7 @@ const ChangePassword = () => {
                         placeholder={t('auth.changePassword.newPasswordPlaceholder')}
                         placeholderTextColor="#999"
                         secureTextEntry={!showNewPassword}
-                        className="m-0 h-14 flex-1 px-4 text-base leading-5 text-black"
+                        className="m-0 h-14 flex-1 px-4 font-nunito text-base leading-5 text-black"
                       />
                       <TouchableOpacity className="mr-2 p-2" onPress={() => setShowNewPassword(!showNewPassword)}>
                         <Ionicons name={showNewPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
@@ -88,7 +89,7 @@ const ChangePassword = () => {
                     </View>
                     {Boolean(value) && <PasswordStrengthBar password={value} visible />}
                   </View>
-                  {error && <Text className="ml-2 mt-1 text-sm text-red-500">{error.message}</Text>}
+                  {error && <Caption className="ml-2 mt-1 text-red-500">{error.message}</Caption>}
                 </View>
               )}
             />
@@ -111,14 +112,14 @@ const ChangePassword = () => {
                         placeholderTextColor="#999"
                         placeholder={t('auth.changePassword.confirmPasswordPlaceholder')}
                         secureTextEntry={!showConfirmPassword}
-                        className="m-0 h-14 flex-1 px-4 text-base leading-5 text-black"
+                        className="m-0 h-14 flex-1 px-4 font-nunito text-base leading-5 text-black"
                       />
                       <TouchableOpacity className="mr-2 p-2" onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
                         <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
                       </TouchableOpacity>
                     </View>
                   </View>
-                  {error && <Text className="ml-2 mt-1 text-sm text-red-500">{error.message}</Text>}
+                  {error && <Caption className="ml-2 mt-1 text-red-500">{error.message}</Caption>}
                 </View>
               )}
             />
@@ -130,7 +131,7 @@ const ChangePassword = () => {
               {formState.isSubmitting ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text className="font-nunito-bold text-lg text-white">{t('auth.changePassword.updatePassword')}</Text>
+                <Body className="font-nunito-bold text-lg text-white">{t('auth.changePassword.updatePassword')}</Body>
               )}
             </TouchableOpacity>
           </Animated.View>

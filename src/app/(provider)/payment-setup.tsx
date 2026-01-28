@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, RefreshControl} from 'react-native';
+import {View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, RefreshControl} from 'react-native';
 import {Stack, Link} from 'expo-router';
 import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
 import {Ionicons} from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
+import {H2, Body, Caption} from '@/components';
 
 export default function PaymentSetupScreen() {
   const {user} = useAppStore((s) => s.session!);
@@ -108,10 +109,8 @@ export default function PaymentSetupScreen() {
           <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-primary/10">
             <Ionicons name="card-outline" size={40} color="#00594f" />
           </View>
-          <Text className="font-nunito-bold text-2xl text-gray-900">Get Paid with Stripe</Text>
-          <Text className="mt-2 text-center font-nunito text-gray-500">
-            Connect your bank account to receive payouts from your bookings instantly.
-          </Text>
+          <H2 className="text-gray-900">Get Paid with Stripe</H2>
+          <Body className="mt-2 text-center text-gray-500">Connect your bank account to receive payouts from your bookings instantly.</Body>
         </View>
 
         {checkingStatus ? (
@@ -129,14 +128,12 @@ export default function PaymentSetupScreen() {
                     <ActivityIndicator color="white" />
                   ) : (
                     <>
-                      <Text className="mr-2 font-nunito-bold text-lg text-white">Connect Stripe</Text>
+                      <Body className="mr-2 font-nunito-bold text-lg text-white">Connect Stripe</Body>
                       <Ionicons name="arrow-forward" size={20} color="white" />
                     </>
                   )}
                 </TouchableOpacity>
-                <Text className="mt-4 text-center font-nunito text-xs text-gray-400">
-                  You will be redirected to completely secure onboarding hosted by Stripe.
-                </Text>
+                <Caption className="mt-4 text-center text-gray-400">You will be redirected to completely secure onboarding hosted by Stripe.</Caption>
               </View>
             )}
 
@@ -146,15 +143,15 @@ export default function PaymentSetupScreen() {
                 <View className="mb-4 flex-row items-center rounded-xl border border-yellow-200 bg-yellow-50 p-4">
                   <Ionicons name="warning-outline" size={24} color="#ca8a04" />
                   <View className="ml-3 flex-1">
-                    <Text className="font-nunito-bold text-yellow-800">Setup Incomplete</Text>
-                    <Text className="font-nunito text-xs text-yellow-700">You need to provide more information to start receiving payouts.</Text>
+                    <Body className="font-nunito-bold text-yellow-800">Setup Incomplete</Body>
+                    <Caption className="text-yellow-700">You need to provide more information to start receiving payouts.</Caption>
                   </View>
                 </View>
                 <TouchableOpacity
                   onPress={handleConnect}
                   disabled={loading}
                   className="w-full flex-row items-center justify-center rounded-xl bg-primary py-3 shadow-sm">
-                  {loading ? <ActivityIndicator color="white" /> : <Text className="font-nunito-bold text-white">Complete Setup</Text>}
+                  {loading ? <ActivityIndicator color="white" /> : <Body className="font-nunito-bold text-white">Complete Setup</Body>}
                 </TouchableOpacity>
               </View>
             )}
@@ -165,8 +162,8 @@ export default function PaymentSetupScreen() {
                 <View className="mb-6 flex-row items-center rounded-xl border border-sage/30 bg-sage/20 p-4">
                   <Ionicons name="checkmark-circle" size={24} color="#00594f" />
                   <View className="ml-3">
-                    <Text className="font-nunito-bold text-gray-800">Stripe Connected</Text>
-                    <Text className="font-nunito text-xs text-gray-600">Your account is ready to receive payouts.</Text>
+                    <Body className="font-nunito-bold text-gray-800">Stripe Connected</Body>
+                    <Caption className="text-gray-600">Your account is ready to receive payouts.</Caption>
                   </View>
                 </View>
 
@@ -178,7 +175,7 @@ export default function PaymentSetupScreen() {
                     <ActivityIndicator color="black" />
                   ) : (
                     <>
-                      <Text className="mr-2 font-nunito-bold text-gray-800">Manage Payouts</Text>
+                      <Body className="mr-2 font-nunito-bold text-gray-800">Manage Payouts</Body>
                       <Ionicons name="open-outline" size={18} color="black" />
                     </>
                   )}
@@ -186,11 +183,11 @@ export default function PaymentSetupScreen() {
 
                 <Link href="/" replace asChild>
                   <TouchableOpacity className="mb-4 w-full flex-row items-center justify-center rounded-xl bg-primary py-3 shadow-sm">
-                    <Text className="mr-2 font-nunito-bold text-white">Go Home</Text>
+                    <Body className="mr-2 font-nunito-bold text-white">Go Home</Body>
                     <Ionicons name="home-outline" size={18} color="white" />
                   </TouchableOpacity>
                 </Link>
-                <Text className="text-center font-nunito text-xs text-gray-400">View your balance and edit bank details on Stripe.</Text>
+                <Caption className="text-center text-gray-400">View your balance and edit bank details on Stripe.</Caption>
               </View>
             )}
           </View>

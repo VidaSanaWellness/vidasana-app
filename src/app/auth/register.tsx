@@ -10,7 +10,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {getDocumentAsync, DocumentPickerAsset} from 'expo-document-picker';
 import {Display, Subtitle, Button, PasswordStrengthBar, PhoneInputField} from '@/components';
-import {View, Text, Alert, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Pressable} from 'react-native';
+import {View, Alert, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Pressable} from 'react-native';
+import {Body, Caption} from '@/components';
 
 type FormData = {email: string; phone: string; fullName: string; password: string};
 type Role = 'user' | 'provider';
@@ -113,16 +114,16 @@ const Register = () => {
             <TouchableOpacity
               onPress={() => setRole('user')}
               className={`flex-1 rounded-lg py-3 ${role === 'user' ? 'bg-white shadow-sm' : 'shadow-none'}`}>
-              <Text className={`text-center font-nunito-bold text-sm ${role === 'user' ? 'text-primary' : 'text-gray-500'}`}>
+              <Body className={`text-center font-nunito-bold text-sm ${role === 'user' ? 'text-primary' : 'text-gray-500'}`}>
                 {t('role.joinEvents')}
-              </Text>
+              </Body>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setRole('provider')}
               className={`flex-1 rounded-lg py-3 ${role === 'provider' ? 'bg-white shadow-sm' : 'shadow-none'}`}>
-              <Text className={`text-center font-nunito-bold text-sm ${role === 'provider' ? 'text-primary' : 'text-gray-500'}`}>
+              <Body className={`text-center font-nunito-bold text-sm ${role === 'provider' ? 'text-primary' : 'text-gray-500'}`}>
                 {t('role.hostEvents')}
-              </Text>
+              </Body>
             </TouchableOpacity>
           </View>
 
@@ -154,7 +155,7 @@ const Register = () => {
                       className="m-0 h-14 px-4 text-base leading-5 text-black"
                     />
                   </View>
-                  {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
+                  {fieldState.error && <Caption className="ml-2 mt-1 text-red-500">{fieldState.error.message}</Caption>}
                 </View>
               )}
             />
@@ -179,7 +180,7 @@ const Register = () => {
                       className="m-0 h-14 px-4 text-base leading-5 text-black"
                     />
                   </View>
-                  {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
+                  {fieldState.error && <Caption className="ml-2 mt-1 text-red-500">{fieldState.error.message}</Caption>}
                 </View>
               )}
             />
@@ -209,11 +210,11 @@ const Register = () => {
                   onPress={pickPdf}
                   className={`h-32 w-full items-center justify-center overflow-hidden rounded-lg border border-dashed bg-gray-50 ${docError ? 'border-red-300 bg-red-50' : !document ? 'border-gray-300' : 'border-primary bg-primary/5'}`}>
                   <Ionicons size={32} color={document ? '#00594f' : '#9CA3AF'} name={document ? 'document-text-outline' : 'cloud-upload-outline'} />
-                  <Text className={`mt-2 px-4 text-center font-nunito text-sm ${document ? 'font-bold text-primary' : 'text-gray-500'}`}>
+                  <Body className={`mt-2 px-4 text-center text-sm ${document ? 'font-bold text-primary' : 'text-gray-500'}`}>
                     {document ? document.name : t('role.uploadFileNote')}
-                  </Text>
+                  </Body>
                 </Pressable>
-                {docError ? <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{docError}</Text> : null}
+                {docError ? <Caption className="ml-2 mt-1 text-red-500">{docError}</Caption> : null}
 
                 {/* US Resident Checkbox */}
                 <Pressable onPress={() => setIsUSResident(!isUSResident)} className="mt-4 flex-row items-center">
@@ -221,7 +222,7 @@ const Register = () => {
                     className={`mr-3 h-6 w-6 items-center justify-center rounded-lg border-2 ${isUSResident ? 'border-primary bg-primary' : 'border-gray-300 bg-white'}`}>
                     {isUSResident && <Ionicons name="checkmark" size={16} color="white" />}
                   </View>
-                  <Text className="font-nunito text-gray-700">{t('role.checkUS')}</Text>
+                  <Body className="text-gray-700">{t('role.checkUS')}</Body>
                 </Pressable>
               </Animated.View>
             )}
@@ -261,7 +262,7 @@ const Register = () => {
                     </View>
                     <PasswordStrengthBar password={field?.value} visible={!fieldState.error?.message} />
                   </View>
-                  {fieldState.error && <Text className="ml-2 mt-1 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
+                  {fieldState.error && <Caption className="ml-2 mt-1 text-red-500">{fieldState.error.message}</Caption>}
                 </View>
               )}
             />
@@ -274,10 +275,10 @@ const Register = () => {
                 <View className={`h-2.5 w-2.5 rounded-sm ${agreeToTerms ? 'bg-secondary' : ''}`} />
               </TouchableOpacity>
 
-              <Text className="flex-1 font-nunito text-sm text-gray-600">
-                {t('auth.register.agreeTo')} <Text className="font-nunito-bold text-secondary">{t('auth.register.terms')}</Text> {t('common.and')}{' '}
-                <Text className="font-nunito-bold text-secondary">{t('auth.register.conditions')}</Text>
-              </Text>
+              <Body className="flex-1 text-sm text-gray-600">
+                {t('auth.register.agreeTo')} <Body className="font-nunito-bold text-secondary">{t('auth.register.terms')}</Body> {t('common.and')}{' '}
+                <Body className="font-nunito-bold text-secondary">{t('auth.register.conditions')}</Body>
+              </Body>
             </View>
 
             {/* SUBMIT */}
@@ -293,9 +294,9 @@ const Register = () => {
 
             {/* LOGIN LINK */}
             <View className="my-5 flex-row items-center justify-center">
-              <Text className="font-nunito text-sm text-gray-600">{t('auth.register.alreadyMember')} </Text>
+              <Body className="text-sm text-gray-600">{t('auth.register.alreadyMember')} </Body>
               <Link replace href="/auth">
-                <Text className="font-nunito-bold text-sm font-semibold text-secondary">{t('auth.register.loginLink')}</Text>
+                <Body className="font-nunito-bold text-sm font-semibold text-secondary">{t('auth.register.loginLink')}</Body>
               </Link>
             </View>
           </Animated.View>

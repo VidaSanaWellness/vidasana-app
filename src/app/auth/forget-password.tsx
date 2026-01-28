@@ -7,11 +7,11 @@ import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import Toast from 'react-native-toast-message';
 import {useForm, Controller} from 'react-hook-form';
-import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image} from 'react-native';
+import {View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
-import {Display, Body} from '@/components/Typography';
-import {Button} from '@/components/Button';
+import {Display, Body, Caption} from '@/components';
+import {Button} from '@/components';
 
 const Page = () => {
   const {t} = useTranslation();
@@ -93,7 +93,7 @@ const Page = () => {
                       className="m-0 h-14 px-4 text-base leading-5 text-black"
                     />
                   </View>
-                  {fieldState.error && <Text className="mb-2 ml-2 font-nunito text-sm text-red-500">{fieldState.error.message}</Text>}
+                  {fieldState.error && <Caption className="mb-2 ml-2 text-red-500">{fieldState.error.message}</Caption>}
                 </>
               )}
             />
@@ -109,9 +109,9 @@ const Page = () => {
 
             {/* Back to Login Link */}
             <View className="mt-5 flex-row items-center justify-center">
-              <Text className="font-nunito text-sm text-gray-600">{t('auth.forgotPassword.rememberPassword')} </Text>
+              <Body className="text-sm text-gray-600">{t('auth.forgotPassword.rememberPassword')} </Body>
               <TouchableOpacity onPress={() => back()}>
-                <Text className="font-nunito-bold text-sm text-secondary">{t('auth.forgotPassword.loginLink')}</Text>
+                <Body className="font-nunito-bold text-sm text-secondary">{t('auth.forgotPassword.loginLink')}</Body>
               </TouchableOpacity>
             </View>
           </Animated.View>

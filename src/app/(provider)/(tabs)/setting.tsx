@@ -6,8 +6,9 @@ import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
-import {ActivityIndicator, Alert, Image, Platform, ScrollView, Text, TouchableOpacity, View} from 'react-native';
-import {LanguagePicker} from '@/components/LanguagePicker';
+import {ActivityIndicator, Alert, Image, Platform, ScrollView, TouchableOpacity, View} from 'react-native';
+import {LanguagePicker} from '@/components';
+import {H2, H3, Body, Caption} from '@/components';
 import {useTranslation} from 'react-i18next';
 import {useAppStore} from '@/store';
 
@@ -193,7 +194,7 @@ const Profile = () => {
     return (
       <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator size="large" color="#00594f" />
-        <Text className="mt-4 font-nunito text-gray-500">Loading profile...</Text>
+        <Body className="mt-4 text-gray-500">Loading profile...</Body>
       </View>
     );
   }
@@ -219,52 +220,52 @@ const Profile = () => {
           </TouchableOpacity>
 
           <View className="flex-row items-center space-x-2">
-            <Text className="font-nunito-bold text-2xl text-black">{userInfo.fullName || 'Your Name'}</Text>
+            <H2 className="text-black">{userInfo.fullName || 'Your Name'}</H2>
 
             <View className={`rounded-full px-3 py-1 ${isProvider ? 'bg-primary' : 'bg-gray-300'}`}>
-              <Text className="font-nunito-bold text-xs text-white">{roleLabel}</Text>
+              <Caption className="font-nunito-bold text-white">{roleLabel}</Caption>
             </View>
           </View>
 
-          <Text className="mt-1 font-nunito text-base text-[#666]">{userInfo.email}</Text>
+          <Body className="mt-1 text-base text-[#666]">{userInfo.email}</Body>
         </View>
 
         {/* Loading State */}
         {isBusy && (
           <View className="flex-row items-center justify-center space-x-2 px-5 py-3">
             <ActivityIndicator size="small" color="#00594f" />
-            <Text className="font-nunito text-sm text-[#4A4A4A]">{isLoadingProfile ? 'Loading your profile...' : 'Refreshing profile...'}</Text>
+            <Body className="text-sm text-[#4A4A4A]">{isLoadingProfile ? 'Loading your profile...' : 'Refreshing profile...'}</Body>
           </View>
         )}
 
         {/* Account Settings */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.accountSettings')}</Text>
+          <H3 className="mb-4 text-black">{t('settings.accountSettings')}</H3>
 
           <Link asChild href="/edit-profile">
             <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3">
               <Ionicons name="person-outline" size={24} color="#00594f" />
-              <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('profile.editTitle')}</Text>
+              <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('profile.editTitle')}</Body>
               <Ionicons name="chevron-forward" size={24} color="#00594f" />
             </TouchableOpacity>
           </Link>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={handlePasswordChange}>
             <Ionicons name="key-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.changePassword')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.changePassword')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
 
         {/* Preferences */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.preferences')}</Text>
+          <H3 className="mb-4 text-black">{t('settings.preferences')}</H3>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={() => setIsLanguagePickerVisible(true)}>
             <Ionicons name="globe-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">
               {t('settings.language')} ({t(`languages.${i18n.language}`)})
-            </Text>
+            </Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
@@ -273,25 +274,25 @@ const Profile = () => {
 
         {/* Support */}
         <View className="mt-6 px-5">
-          <Text className="mb-4 font-nunito-bold text-lg text-black">{t('settings.support')}</Text>
+          <H3 className="mb-4 text-black">{t('settings.support')}</H3>
 
           <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
             onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
             <Ionicons name="help-circle-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.helpCenter')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.helpCenter')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={() => router.push('/TermsAndConditions')}>
             <Ionicons name="document-text-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.termsAndConditions')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.termsAndConditions')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={() => router.push('/PrivacyPolicy')}>
             <Ionicons name="shield-checkmark-outline" size={24} color="#00594f" />
-            <Text className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.privacyPolicy')}</Text>
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.privacyPolicy')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
           </TouchableOpacity>
         </View>
@@ -303,7 +304,7 @@ const Profile = () => {
           onPress={handleLogout}
           className="mx-5 mb-8 mt-10 flex-row items-center justify-center rounded-xl bg-red-50 py-4">
           <Ionicons name="log-out-outline" size={24} color="#dc2626" />
-          <Text className="ml-2 font-nunito-bold text-base text-red-600">{t('settings.logOut')}</Text>
+          <Body className="ml-2 font-nunito-bold text-base text-red-600">{t('settings.logOut')}</Body>
         </AnimatedTouchableOpacity>
       </ScrollView>
     </Animated.View>

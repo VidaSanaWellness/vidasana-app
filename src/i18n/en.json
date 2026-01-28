@@ -13,7 +13,10 @@
     "goodEvening": "Good Evening",
     "goodNight": "Good Night",
     "seeAll": "See All",
-    "comingSoon": "Coming Soon"
+    "comingSoon": "Coming Soon",
+    "all": "All",
+    "reset": "Reset",
+    "showResults": "Show Results"
   },
   "auth": {
     "login": {
@@ -144,10 +147,19 @@
     "enableConfirm": "Are you sure you want to enable this service?",
     "disableConfirm": "Are you sure you want to disable this service? Clients will no longer be able to book it.",
     "locationRequired": "Location is required",
-    "categories": "Services",
+    "categories": "Categories",
     "popular": "Most Popular Services",
     "searchPlaceholder": "Search services...",
-    "viewDetails": "View Details"
+    "viewDetails": "View Details",
+    "recommended": "Recommended for you",
+    "noServicesFound": "No services found",
+    "filters": "Filters & Sort",
+    "sortBy": "Sort By",
+    "relevance": "Relevance",
+    "priceLow": "Price: Low to High",
+    "priceHigh": "Price: High to Low",
+    "newest": "Newest",
+    "filterByDay": "Day of Week"
   },
   "validation": {
     "required": "Required",

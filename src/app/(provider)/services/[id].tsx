@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, ScrollView, Image, TouchableOpacity, Alert, ActivityIndicator, Modal, Pressable} from 'react-native';
+import {View, ScrollView, Image, TouchableOpacity, Alert, ActivityIndicator, Modal, Pressable} from 'react-native';
 import {useLocalSearchParams, useRouter, Link} from 'expo-router';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import {useTranslation} from 'react-i18next';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {ImageCarousel} from '@/components';
+import {H2, H3, Body, Caption} from '@/components';
 
 export default function ServiceDetailsScreen() {
   const {t} = useTranslation();
@@ -103,9 +104,9 @@ export default function ServiceDetailsScreen() {
   if (error || !service) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-white p-4">
-        <Text className="mb-4 text-red-500">Failed to load service details.</Text>
+        <Body className="mb-4 text-red-500">Failed to load service details.</Body>
         <TouchableOpacity onPress={() => router.back()} className="rounded-lg bg-gray-200 px-4 py-2">
-          <Text>Go Back</Text>
+          <Body>Go Back</Body>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -139,15 +140,15 @@ export default function ServiceDetailsScreen() {
               <Link href={`/(provider)/services/edit/${id}`} asChild onPress={() => setMenuVisible(false)}>
                 <Pressable className="flex-row items-center border-b border-gray-50 px-4 py-3 active:bg-gray-50">
                   <Feather name="edit-2" size={16} color="#374151" />
-                  <Text className="ml-3 text-gray-700">Edit</Text>
+                  <Body className="ml-3 text-gray-700">Edit</Body>
                 </Pressable>
               </Link>
 
               <Pressable onPress={handleToggleStatus} className="flex-row items-center px-4 py-3 active:bg-gray-50">
                 <Feather name={service.active ? 'slash' : 'check-circle'} size={16} color={service.active ? '#EF4444' : '#00594f'} />
-                <Text className={`ml-3 font-nunito ${service.active ? 'text-red-600' : 'text-primary'}`}>
+                <Body className={`ml-3 ${service.active ? 'text-red-600' : 'text-primary'}`}>
                   {service.active ? t('services.disabled') : t('services.active')}
-                </Text>
+                </Body>
               </Pressable>
             </View>
           </Pressable>
@@ -164,43 +165,43 @@ export default function ServiceDetailsScreen() {
           {/* Category & Status */}
           <View className="mb-2 flex-row items-center justify-between">
             <View className="rounded-full bg-primary/20 px-3 py-1">
-              <Text className="font-nunito-bold text-xs uppercase text-primary">{service.categories?.name || 'Service'}</Text>
+              <Caption className="font-bold uppercase text-primary">{service.categories?.name || 'Service'}</Caption>
             </View>
             <View className={`flex-row items-center rounded-full px-2 py-1 ${service.active ? 'bg-primary/20' : 'bg-red-100'}`}>
               <View className={`mr-1.5 h-2 w-2 rounded-full ${service.active ? 'bg-primary' : 'bg-red-500'}`} />
-              <Text className={`font-nunito-bold text-xs ${service.active ? 'text-primary' : 'text-red-700'}`}>
+              <Caption className={`font-bold ${service.active ? 'text-primary' : 'text-red-700'}`}>
                 {service.active ? t('services.active') : t('services.disabled')}
-              </Text>
+              </Caption>
             </View>
           </View>
 
           {/* Title & Price */}
           <View className="mb-4 flex-row items-start justify-between">
             <View className="flex-1">
-              <Text className="mr-2 font-nunito-bold text-2xl text-gray-900">{service.title}</Text>
+              <H2 className="mr-2 text-2xl text-gray-900">{service.title}</H2>
               {/* Rating Summary */}
               <View className="mt-1 flex-row items-center gap-1">
                 <Ionicons name="star" size={16} color="#F59E0B" />
-                <Text className="font-nunito-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Text>
-                <Text className="font-nunito text-gray-500">({ratingSummary?.count || 0} reviews)</Text>
+                <Body className="font-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Body>
+                <Body className="text-gray-500">({ratingSummary?.count || 0} reviews)</Body>
               </View>
             </View>
-            <Text className="font-nunito-bold text-2xl text-primary">${service.price}</Text>
+            <H2 className="text-2xl text-primary">${service.price}</H2>
           </View>
 
           {/* Details Row */}
           <View className="mb-6 flex-row justify-between rounded-xl bg-gray-50 p-4">
             <View className="flex-1 items-center border-r border-gray-200">
               <Feather name="clock" size={20} color="#4B5563" className="mb-1" />
-              <Text className="mb-1 font-nunito text-xs text-gray-500">{t('services.duration')}</Text>
-              <Text className="font-nunito-bold text-gray-900">
+              <Caption className="mb-1 text-gray-500">{t('services.duration')}</Caption>
+              <Body className="font-bold text-gray-900">
                 {service.start_at?.slice(0, 5)} - {service.end_at?.slice(0, 5)}
-              </Text>
+              </Body>
             </View>
             <View className="flex-1 items-center">
               <Feather name="users" size={20} color="#4B5563" className="mb-1" />
-              <Text className="mb-1 font-nunito text-xs text-gray-500">{t('events.capacity')}</Text>
-              <Text className="font-nunito-bold text-gray-900">{service.capacity} People</Text>
+              <Caption className="mb-1 text-gray-500">{t('events.capacity')}</Caption>
+              <Body className="font-bold text-gray-900">{service.capacity} People</Body>
             </View>
           </View>
 
@@ -231,17 +232,17 @@ export default function ServiceDetailsScreen() {
           )}
 
           {/* Description */}
-          <Text className="mb-2 font-nunito-bold text-lg text-gray-900">{t('services.aboutService')}</Text>
-          <Text className="mb-6 font-nunito leading-6 text-gray-600">{service.description || 'No description provided.'}</Text>
+          <H3 className="mb-2 text-lg text-gray-900">{t('services.aboutService')}</H3>
+          <Body className="mb-6 leading-6 text-gray-600">{service.description || 'No description provided.'}</Body>
 
           {/* Schedule */}
-          <Text className="mb-3 font-nunito-bold text-lg text-gray-900">{t('services.schedule')}</Text>
+          <H3 className="mb-3 text-lg text-gray-900">{t('services.schedule')}</H3>
           <View className="mb-6 flex-row flex-wrap gap-2">
             {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => {
               const isActive = service.week_day?.includes(day as any);
               return (
                 <View key={day} className={`h-10 w-10 items-center justify-center rounded-full ${isActive ? 'bg-primary' : 'bg-gray-100'}`}>
-                  <Text className={`font-nunito-bold text-xs uppercase ${isActive ? 'text-white' : 'text-gray-400'}`}>{day.slice(0, 3)}</Text>
+                  <Caption className={`font-bold uppercase ${isActive ? 'text-white' : 'text-gray-400'}`}>{day.slice(0, 3)}</Caption>
                 </View>
               );
             })}
@@ -249,7 +250,7 @@ export default function ServiceDetailsScreen() {
 
           {/* Reviews List */}
           <View className="mt-2">
-            <Text className="mb-2 font-nunito-bold text-lg text-gray-900">Reviews ({ratingSummary?.count || 0})</Text>
+            <H3 className="mb-2 text-lg text-gray-900">Reviews ({ratingSummary?.count || 0})</H3>
             {reviews && reviews.length > 0 ? (
               reviews.map((review: any) => (
                 <View key={review.id} className="mb-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
@@ -265,18 +266,18 @@ export default function ServiceDetailsScreen() {
                           <Feather name="user" size={16} color="white" />
                         </View>
                       )}
-                      <Text className="font-nunito-bold text-gray-900">{review.user_name || 'Anonymous'}</Text>
+                      <Body className="font-bold text-gray-900">{review.user_name || 'Anonymous'}</Body>
                     </View>
                     <View className="flex-row items-center">
                       <Ionicons name="star" size={14} color="#F59E0B" />
-                      <Text className="ml-1 font-nunito-bold text-xs text-gray-900">{review.rating}</Text>
+                      <Caption className="ml-1 font-bold text-gray-900">{review.rating}</Caption>
                     </View>
                   </View>
-                  {review.comment && <Text className="font-nunito text-gray-600">{review.comment}</Text>}
+                  {review.comment && <Body className="text-gray-600">{review.comment}</Body>}
                 </View>
               ))
             ) : (
-              <Text className="italic text-gray-500">No reviews yet.</Text>
+              <Body className="italic text-gray-500">No reviews yet.</Body>
             )}
           </View>
         </View>

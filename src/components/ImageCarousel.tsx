@@ -1,7 +1,8 @@
-import React, {useState, useRef} from 'react';
-import {View, FlatList, Image, Dimensions, NativeSyntheticEvent, NativeScrollEvent, StyleSheet} from 'react-native';
+import React, {useState} from 'react';
+import {View, Image, Dimensions, StyleSheet} from 'react-native';
 import {Feather} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
+import Carousel from 'react-native-reanimated-carousel';
 
 interface ImageCarouselProps {
   images: string[] | null | undefined;
@@ -13,7 +14,6 @@ const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
 export default function ImageCarousel({images, aspectRatio = 'square'}: ImageCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
 
   // Filter valid images
   const validImages = images?.filter((img) => typeof img === 'string' && img.length > 0) || [];
@@ -24,38 +24,33 @@ export default function ImageCarousel({images, aspectRatio = 'square'}: ImageCar
     return supabase.storage.from('images').getPublicUrl(path).data.publicUrl;
   };
 
-  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const slideSize = event.nativeEvent.layoutMeasurement.width;
-    const index = event.nativeEvent.contentOffset.x / slideSize;
-    const roundIndex = Math.round(index);
-    if (roundIndex !== activeIndex) {
-      setActiveIndex(roundIndex);
-    }
+  const getHeight = () => {
+    if (aspectRatio === 'square') return SCREEN_WIDTH;
+    if (aspectRatio === 'video') return SCREEN_WIDTH * (9 / 16);
+    return 300; // default/wide
   };
 
-  const heightStyle = aspectRatio === 'square' ? {aspectRatio: 1} : {height: 250}; // Default or custom logic
+  const carouselHeight = getHeight();
 
   if (validImages.length === 0) {
     return (
-      <View style={[styles.container, heightStyle, {backgroundColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center'}]}>
+      <View style={[styles.container, {height: carouselHeight, backgroundColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center'}]}>
         <Feather name="image" size={40} color="gray" />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, heightStyle]}>
-      <FlatList
-        ref={flatListRef}
+    <View style={[styles.container, {height: carouselHeight}]}>
+      <Carousel
+        loop={false}
+        width={SCREEN_WIDTH}
+        height={carouselHeight}
         data={validImages}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        keyExtractor={(_, index) => index.toString()}
+        scrollAnimationDuration={1000}
+        onSnapToItem={(index) => setActiveIndex(index)}
         renderItem={({item}) => (
-          <View style={{width: SCREEN_WIDTH, height: '100%'}}>
+          <View style={{flex: 1}}>
             <Image source={{uri: getImageUrl(item)}} style={{width: '100%', height: '100%'}} resizeMode="cover" />
           </View>
         )}

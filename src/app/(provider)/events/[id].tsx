@@ -2,11 +2,12 @@ import {Feather, Ionicons} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import {useQuery} from '@tanstack/react-query';
 import {Link, useLocalSearchParams, useRouter} from 'expo-router';
-import {ActivityIndicator, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, ScrollView, TouchableOpacity, View} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ImageCarousel} from '@/components';
+import {H2, H3, Body, Caption} from '@/components';
 
 export default function EventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
@@ -53,7 +54,7 @@ export default function EventDetailsScreen() {
   if (!event) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <Text className="font-nunito text-gray-500">Event not found</Text>
+        <Body className="text-gray-500">Event not found</Body>
       </View>
     );
   }
@@ -83,66 +84,67 @@ export default function EventDetailsScreen() {
         {/* Content */}
         <View className="p-5">
           {/* Category Badge */}
+          {/* Category Badge */}
           {event.categories && (
-            <View className="bg-primary/10 mb-3 self-start rounded-full px-3 py-1">
-              <Text className="font-nunito-bold text-primary text-xs">{event.categories.name}</Text>
+            <View className="mb-3 self-start rounded-full bg-primary/10 px-3 py-1">
+              <Caption className="font-nunito-bold text-primary">{event.categories.name}</Caption>
             </View>
           )}
 
           {/* Title */}
-          <Text className="font-nunito-bold mb-2 text-2xl text-gray-900">{event.title}</Text>
+          <H2 className="mb-2 text-gray-900">{event.title}</H2>
 
           {/* Date & Time */}
           <View className="mb-6 rounded-xl bg-gray-50 p-4">
             <View className="mb-3 flex-row items-center">
-              <View className="bg-primary/10 mr-3 rounded-full p-2">
+              <View className="mr-3 rounded-full bg-primary/10 p-2">
                 <Feather name="calendar" size={20} color="#00594f" />
               </View>
               <View>
-                <Text className="font-nunito text-xs text-gray-500">{t('events.date')}</Text>
-                <Text className="font-nunito-bold text-gray-900">
+                <Caption className="text-gray-500">{t('events.date')}</Caption>
+                <Body className="font-nunito-bold text-gray-900">
                   {new Date(event.start_at).toLocaleDateString(undefined, {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
                   })}
-                </Text>
+                </Body>
               </View>
             </View>
 
             <View className="flex-row items-center">
-              <View className="bg-primary/10 mr-3 rounded-full p-2">
+              <View className="mr-3 rounded-full bg-primary/10 p-2">
                 <Feather name="clock" size={20} color="#00594f" />
               </View>
               <View>
-                <Text className="font-nunito text-xs text-gray-500">{t('events.time')}</Text>
-                <Text className="font-nunito-bold text-gray-900">
+                <Caption className="text-gray-500">{t('events.time')}</Caption>
+                <Body className="font-nunito-bold text-gray-900">
                   {new Date(event.start_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} -{' '}
                   {new Date(event.end_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-                </Text>
+                </Body>
               </View>
             </View>
 
             {event.book_till && (
               <View className="mt-3 border-t border-gray-200 pt-3">
-                <Text className="font-nunito text-xs font-medium text-red-500">
+                <Caption className="font-medium text-red-500">
                   {t('events.bookingDeadline')}: {new Date(event.book_till).toLocaleDateString()}
-                </Text>
+                </Caption>
               </View>
             )}
           </View>
 
           {/* Description */}
           <View className="mb-6">
-            <Text className="font-nunito-bold mb-2 text-lg text-gray-900">{t('events.aboutEvent')}</Text>
-            <Text className="font-nunito leading-6 text-gray-600">{event.description}</Text>
+            <H3 className="mb-2 text-gray-900">{t('events.aboutEvent')}</H3>
+            <Body className="leading-6 text-gray-600">{event.description}</Body>
           </View>
 
           {/* Location Map */}
           {event.lat && event.lng ? (
             <View className="mb-6">
-              <Text className="font-nunito-bold mb-2 text-lg text-gray-900">{t('events.location')}</Text>
+              <H3 className="mb-2 text-gray-900">{t('events.location')}</H3>
               <View className="h-48 w-full overflow-hidden rounded-xl border border-gray-200">
                 <MapView
                   style={{flex: 1}}
@@ -166,14 +168,14 @@ export default function EventDetailsScreen() {
           {/* Tickets */}
           {event.event_ticket_types && event.event_ticket_types.length > 0 && (
             <View className="mb-6">
-              <Text className="font-nunito-bold mb-3 text-lg text-gray-900">{t('events.tickets')}</Text>
+              <H3 className="mb-3 text-gray-900">{t('events.tickets')}</H3>
               {event.event_ticket_types.map((ticket: any) => (
                 <View key={ticket.id} className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 p-4">
                   <View>
-                    <Text className="font-nunito-bold text-gray-900">{ticket.name}</Text>
-                    <Text className="font-nunito text-xs text-gray-500">Capacity: {ticket.capacity}</Text>
+                    <Body className="font-nunito-bold text-gray-900">{ticket.name}</Body>
+                    <Caption className="text-gray-500">Capacity: {ticket.capacity}</Caption>
                   </View>
-                  <Text className="font-nunito-bold text-primary text-lg">${ticket.price}</Text>
+                  <Body className="font-nunito-bold text-lg text-primary">${ticket.price}</Body>
                 </View>
               ))}
             </View>

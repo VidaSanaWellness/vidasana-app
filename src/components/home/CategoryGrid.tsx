@@ -4,7 +4,8 @@ import {supabase} from '@/utils';
 import {Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {useQuery} from '@tanstack/react-query';
-import {View, Text, TouchableOpacity, FlatList, ActivityIndicator, Image} from 'react-native';
+import {View, TouchableOpacity, FlatList, ActivityIndicator, Image} from 'react-native';
+import {Body} from '../Typography';
 
 interface CategoryGridProps {
   selectedCategory: number | null;
@@ -65,7 +66,7 @@ export const CategoryGrid = ({selectedCategory, onSelectCategory}: CategoryGridP
             )}
           </View>
         )}
-        <Text className={`font-nunito-bold text-sm ${isSelected ? 'text-white' : 'text-gray-700'}`}>{item.name}</Text>
+        <Body className={`font-nunito-bold text-sm ${isSelected ? 'text-white' : 'text-gray-700'}`}>{item.name}</Body>
       </TouchableOpacity>
     );
   };

@@ -2,14 +2,15 @@ import {Link, router} from 'expo-router';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useInfiniteQuery} from '@tanstack/react-query';
-import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
+import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, View} from 'react-native';
 import {useState} from 'react';
 import {useUserLocation} from '@/hooks';
 import {SearchHeader} from '@/components';
-import FilterModal, {FilterState} from '@/components/modals/FilterModal';
-import {useDebouncer} from '@/hooks/useDebounce';
+import {FilterModal, FilterState} from '@/components';
+import {useDebouncer} from '@/hooks';
 import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {H3, Body, Caption} from '@/components';
 
 // Types
 type Event = {
@@ -143,19 +144,19 @@ export default function EventsScreen() {
             <View className="flex-1 justify-between p-3">
               <View>
                 <View className="mb-1 flex-row items-start justify-between">
-                  <Text className="flex-1 font-nunito-bold text-lg text-gray-900" numberOfLines={1}>
+                  <H3 className="flex-1 text-lg text-gray-900" numberOfLines={1}>
                     {item.title}
-                  </Text>
+                  </H3>
                   {item.dist_meters !== undefined && item.dist_meters !== null && (
                     <View className="ml-2 flex-row items-center rounded bg-gray-100 px-1.5 py-0.5">
                       <Feather name="map-pin" size={10} color="#6B7280" />
-                      <Text className="ml-1 font-nunito text-[10px] text-gray-500">{formatDistance(item.dist_meters)}</Text>
+                      <Caption className="ml-1 text-[10px] text-gray-500">{formatDistance(item.dist_meters)}</Caption>
                     </View>
                   )}
                 </View>
-                <Text className="mb-2 font-nunito text-xs text-gray-500" numberOfLines={2}>
+                <Caption className="mb-2 text-xs text-gray-500" numberOfLines={2}>
                   {item.description}
-                </Text>
+                </Caption>
               </View>
 
               <View>
@@ -164,12 +165,12 @@ export default function EventsScreen() {
                   {/* Start Time */}
                   <View className="mb-1 flex-row items-center">
                     <Feather name="clock" size={12} color="#6B7280" />
-                    <Text className="ml-1 font-nunito text-xs text-gray-600">
+                    <Caption className="ml-1 text-xs text-gray-600">
                       {t('events.startTime')}:{' '}
                       {item.start_at
                         ? `${new Date(item.start_at).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} - ${new Date(item.start_at).getDate().toString().padStart(2, '0')}/${(new Date(item.start_at).getMonth() + 1).toString().padStart(2, '0')}/${new Date(item.start_at).getFullYear().toString().slice(-2)}`
                         : ''}
-                    </Text>
+                    </Caption>
                   </View>
                 </View>
               </View>
@@ -216,8 +217,8 @@ export default function EventsScreen() {
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-50">
                   <Feather name="calendar" size={40} color="#D1D5DB" />
                 </View>
-                <Text className="mb-2 font-nunito-bold text-lg text-gray-900">{t('events.noEvents')}</Text>
-                <Text className="mb-6 text-center font-nunito text-gray-500">{t('events.noEventsSubtitle')}</Text>
+                <H3 className="mb-2 text-lg text-gray-900">{t('events.noEvents')}</H3>
+                <Body className="mb-6 text-center text-gray-500">{t('events.noEventsSubtitle')}</Body>
               </View>
             ) : (
               <ActivityIndicator size="large" color="#00594f" className="mt-10" />

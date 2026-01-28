@@ -2,9 +2,10 @@ import {Link} from 'expo-router';
 import {supabase} from '@/utils/supabase';
 import {Feather} from '@expo/vector-icons';
 import {useQuery} from '@tanstack/react-query';
-import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, Text, View} from 'react-native';
+import {ActivityIndicator, FlatList, Image, Pressable, RefreshControl, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {useAppStore} from '@/store';
+import {H3, Body, Caption} from '@/components';
 
 export default function ServicesScreen() {
   const {t, i18n} = useTranslation();
@@ -64,23 +65,23 @@ export default function ServicesScreen() {
             <View className="flex-1 justify-between p-3">
               <View>
                 <View className="mb-1 flex-row items-start justify-between">
-                  <Text className="flex-1 text-lg font-bold text-gray-900" numberOfLines={1}>
+                  <Body className="flex-1 text-lg font-bold text-gray-900" numberOfLines={1}>
                     {item.title}
-                  </Text>
-                  <Text className="text-sm font-semibold text-green-700">${item.price}</Text>
+                  </Body>
+                  <Body className="text-sm font-semibold text-green-700">${item.price}</Body>
                 </View>
-                <Text className="mb-2 text-xs text-gray-500" numberOfLines={2}>
+                <Caption className="mb-2 text-gray-500" numberOfLines={2}>
                   {item.description}
-                </Text>
+                </Caption>
               </View>
 
               <View>
                 {/* Time */}
                 <View className="mb-1 flex-row items-center">
                   <Feather name="clock" size={12} color="#6B7280" />
-                  <Text className="ml-1 text-xs text-gray-600">
+                  <Caption className="ml-1 text-gray-600">
                     {item.start_at?.slice(0, 5)} - {item.end_at?.slice(0, 5)}
-                  </Text>
+                  </Caption>
                 </View>
 
                 {/* Weekdays - Simple pills */}
@@ -90,7 +91,7 @@ export default function ServicesScreen() {
                     if (!isActive) return null;
                     return (
                       <View key={day} className="h-5 items-center justify-center rounded-full bg-green-100 px-2">
-                        <Text className="text-[10px] font-bold uppercase text-green-800">{day.slice(0, 1)}</Text>
+                        <Caption className="text-[10px] font-bold uppercase text-green-800">{day.slice(0, 1)}</Caption>
                       </View>
                     );
                   })}
@@ -121,8 +122,8 @@ export default function ServicesScreen() {
                 <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-gray-50">
                   <Feather name="briefcase" size={40} color="#D1D5DB" />
                 </View>
-                <Text className="mb-2 text-lg font-bold text-gray-900">{t('services.noServices')}</Text>
-                <Text className="mb-6 text-center text-gray-500">{t('services.noServicesSubtitle')}</Text>
+                <H3 className="mb-2 text-lg text-gray-900">{t('services.noServices')}</H3>
+                <Body className="mb-6 text-center text-gray-500">{t('services.noServicesSubtitle')}</Body>
               </View>
             )}
           />

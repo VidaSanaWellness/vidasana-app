@@ -1,19 +1,18 @@
-import {ActivityIndicator, Image, Text, TouchableOpacity, View, Platform, Linking, Modal, TextInput, KeyboardAvoidingView,ScrollView} from 'react-native';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import {ActivityIndicator, TouchableOpacity, View, Platform, Linking, Modal, TextInput, KeyboardAvoidingView, ScrollView} from 'react-native';
 import {Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {supabase} from '@/utils/supabase';
+import {supabase, formatTime, stripe} from '@/utils';
 import {Link, useLocalSearchParams, useRouter} from 'expo-router';
 import {useState} from 'react';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {useAppStore} from '@/store';
 import Toast from 'react-native-toast-message';
-import {Avatar, LikeButton, ImageCarousel} from '@/components';
+import {Avatar, LikeButton, ImageCarousel, H2, H3, Body, Caption, Subtitle} from '@/components';
 import {Rating} from 'react-native-ratings';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {stripe} from '@/utils/stripe';
 import {useStripe} from '@stripe/stripe-react-native';
+import dayjs from 'dayjs';
 
 export default function UserServiceDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
@@ -255,10 +254,10 @@ export default function UserServiceDetailsScreen() {
   if (!service || error) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="text-center text-gray-500">Service not found or an error occurred.</Text>
-        <Text className="mt-2 text-center text-xs text-gray-400">{(error as any)?.message || 'Please check the service ID or try again.'}</Text>
+        <Body className="text-center text-gray-500">Service not found or an error occurred.</Body>
+        <Caption className="mt-2 text-center text-gray-400">{(error as any)?.message || 'Please check the service ID or try again.'}</Caption>
         <TouchableOpacity onPress={() => back()} className="mt-4 rounded-full bg-gray-100 px-6 py-3">
-          <Text>Go Back</Text>
+          <Body>Go Back</Body>
         </TouchableOpacity>
       </View>
     );
@@ -266,18 +265,18 @@ export default function UserServiceDetailsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header Image Carousel */}
-        <View className="relative aspect-square w-full bg-gray-200">
+      <ScrollView className="flex-1 bg-white" contentContainerStyle={{paddingBottom: 100}} showsVerticalScrollIndicator={false}>
+        {/* 1. Header Images (Carousel) */}
+        <View className="relative w-full bg-gray-200">
           <ImageCarousel images={service?.images} aspectRatio="square" />
 
           {/* Back Button */}
-          <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
-            <Ionicons name="arrow-back" size={24} color="white" />
+          <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 z-10 rounded-full bg-white/30 p-2 backdrop-blur-md">
+            <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
 
           {/* Like Button */}
-          <View className="absolute right-4 top-4">
+          <View className="absolute right-4 top-4 z-10">
             <LikeButton
               isLiked={isBookmarked}
               onToggle={() => {
@@ -290,138 +289,167 @@ export default function UserServiceDetailsScreen() {
           </View>
         </View>
 
-        {/* Content */}
-        <View className="p-5 pb-10">
-          <View className="mb-2 flex-row items-center justify-between">
-            <View className="flex-1 pr-4">
-              <View className="flex-row items-center">
-                {/* Provider Image - Clickable */}
+        {/* 2. Main Content (Sheet Effect - Less padding for mobile) */}
+        <View className="bg-white px-6 pb-6 pt-5 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+          {/* 2a. Title Section (Centered) */}
+          <View className="mb-2 items-center">
+            <H2 align="center" className="mb-2 font-nunito-extra-bold text-[24px] leading-8 text-gray-900">
+              {title}
+            </H2>
+          </View>
 
-                <Link href={`/(user)/provider/${(service.provider as any).id}`}>
-                  <Avatar size={52} name="Test" className="h-full w-full" uri={''} />
-                </Link>
+          <View className="mb-5 h-[1px] w-full bg-gray-100" />
 
-                <View className="ml-3 flex-1">
-                  <Text className="font-nunito-bold text-2xl text-gray-900">{title}</Text>
-                  <View className="mt-1 flex-row items-center gap-1">
-                    <Ionicons name="star" size={16} color="#F59E0B" />
-                    <Text className="font-nunito-bold text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Text>
-                    <Text className="font-nunito text-gray-500">({ratingSummary?.count || 0} reviews)</Text>
-                  </View>
+          {/* 2b. Hosted By Section */}
+          <View className="mb-5">
+            <H2 className="mb-3 text-[18px] text-gray-900">Hosted by</H2>
+            <Link href={`/(user)/provider/${(service.provider as any).id}`}>
+              <View className="flex-row items-center gap-3">
+                <Avatar size={44} name={(service.provider as any)?.name} uri={(service.provider as any)?.avatar_url} />
+                <View>
+                  <H3 className="font-nunito-bold text-[16px] capitalize text-gray-900">{(service.provider as any)?.name}</H3>
+                  <Body className="text-gray-500">View profile {'->'}</Body>
                 </View>
               </View>
+            </Link>
+          </View>
+
+          <View className="mb-5 h-[1px] w-full bg-gray-100" />
+
+          {/* 2c. About Section */}
+          <View className="mb-5">
+            <H2 className="mb-3 text-[18px] text-gray-900">About this experience</H2>
+            <Body className="text-[15px] leading-6 text-gray-600">
+              {description || 'Join us for a transformative experience. Unlock your potential in a supportive environment.'}
+            </Body>
+          </View>
+
+          <View className="mb-5 h-[1px] w-full bg-gray-100" />
+
+          {/* 2d. Event Details Section */}
+          <View className="mb-2">
+            <H2 className="mb-4 text-[18px] text-gray-900">Service Details</H2>
+
+            {/* Availability (Weeks) */}
+            <View className="mb-4 flex-row gap-4">
+              <View className="h-10 w-10 items-center justify-center rounded-xl bg-[#FFF0F0]">
+                <Ionicons name="calendar" size={20} color="#E9967A" />
+              </View>
+              <View className="flex-1 justify-center">
+                <Subtitle className="font-nunito-bold  tracking-widest text-gray-500">AVAILABILITY</Subtitle>
+                <H3 className="text-[15px] capitalize text-gray-900">{availableDaysText}</H3>
+              </View>
             </View>
 
-            {service.price !== null && (
-              <View className="rounded-full bg-primary/10 px-3 py-1">
-                <Text className="font-nunito-bold text-primary">${service.price}</Text>
+            {/* Location */}
+            <View className="mb-4 flex-row gap-4">
+              <View className="h-10 w-10 items-center justify-center rounded-xl bg-[#FFF0F0]">
+                <Ionicons name="location" size={20} color="#E9967A" />
               </View>
-            )}
+              <View className="flex-1 justify-center">
+                <Subtitle className="font-nunito-bold  tracking-widest text-gray-500">LOCATION</Subtitle>
+                <H3 className="text-[15px] leading-5 text-gray-900">N/A</H3>
+                <TouchableOpacity onPress={() => openAddressOnMap(service.lat || 0, service.lng || 0, title || '')}>
+                  <Body className="font-nunito-bold text-[13px] text-primary">View on map</Body>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Capacity */}
+            <View className="mb-4 flex-row gap-4">
+              <View className="h-10 w-10 items-center justify-center rounded-xl bg-gray-50">
+                <Ionicons name="people" size={20} color="#6B7280" />
+              </View>
+              <View className="flex-1 justify-center">
+                <Subtitle className="font-nunito-bold  tracking-widest text-gray-500">CAPACITY</Subtitle>
+                <H3 className="text-[15px] text-gray-900">{service.capacity || '0'} participants</H3>
+              </View>
+            </View>
+
+            {/* Duration (Start - End Time) */}
+            <View className="flex-row gap-4">
+              <View className="h-10 w-10 items-center justify-center rounded-xl bg-gray-50">
+                <Ionicons name="time-outline" size={20} color="#6B7280" />
+              </View>
+              <View className="flex-1 justify-center">
+                <Subtitle className="font-nunito-bold  tracking-widest text-gray-500">Time</Subtitle>
+                <H3 className="text-[15px] text-gray-900">
+                  {service.start_at && service.end_at ? `${formatTime(service.start_at)} - ${formatTime(service.end_at)}` : 'N/A'}
+                </H3>
+              </View>
+            </View>
           </View>
 
-          <View className="mb-6 flex-row items-center">
-            <Feather name="clock" size={16} color="gray" />
-            <Text className="ml-2 font-nunito text-gray-600">
-              {t('services.capacity')}: {availableSeats !== null ? `${availableSeats}/${service.capacity}` : service.capacity}
-            </Text>
-          </View>
+          <View className="mb-5 h-[1px] w-full bg-gray-100" />
 
-          {/* Available Days */}
-          <View className="mb-6 flex-row items-center">
-            <Ionicons name="calendar-outline" size={16} color="gray" />
-            <Text className="ml-2 text-gray-600">{availableDaysText}</Text>
-          </View>
-
+          {/* 2e. Reviews Section */}
           <View className="mb-6">
-            <Text className="mb-2 font-nunito-bold text-lg text-gray-900">{t('services.about', 'About')}</Text>
-            <Text className="font-nunito leading-6 text-gray-600">{description}</Text>
-          </View>
-
-          {/* Map Box */}
-          {service.lat && service.lng ? (
-            <View className="mt-4">
-              <Text className="mb-3 font-nunito-bold text-lg text-gray-900">Location</Text>
-              <View className="relative h-48 w-full overflow-hidden rounded-2xl border border-gray-100">
-                <MapView
-                  provider={PROVIDER_GOOGLE}
-                  style={{flex: 1}}
-                  initialRegion={{
-                    latitude: service.lat,
-                    longitude: service.lng,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                  }}
-                  scrollEnabled={false}
-                  zoomEnabled={false}
-                  pitchEnabled={false}
-                  rotateEnabled={false}>
-                  <Marker coordinate={{latitude: service.lat, longitude: service.lng}} title={title} pinColor="#00594f" />
-                </MapView>
-
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  className="absolute bottom-0 left-0 right-0 top-0"
-                  onPress={() => openAddressOnMap(service.lat, service.lng, title)}
-                />
+            <View className="mb-4 flex-row items-center justify-between">
+              <H2 className="text-[18px] text-gray-900">Reviews</H2>
+              <View className="flex-row items-center gap-1">
+                <Ionicons name="star" size={16} color="#F59E0B" />
+                <Body className="font-nunito-bold text-[15px] text-gray-900">{ratingSummary?.avg_rating?.toFixed(1) || '0.0'}</Body>
+                <Caption className="text-gray-500">({ratingSummary?.count || 0})</Caption>
               </View>
             </View>
-          ) : null}
 
-          {/* Reviews Section */}
-          <View className="mt-8">
-            <View className="mb-4 flex-row items-center justify-between">
-              <Text className="font-nunito-bold text-lg text-gray-900">Reviews</Text>
-              <TouchableOpacity onPress={() => setReviewModalVisible(true)}>
-                <Text className="font-nunito-bold text-primary">Write a Review</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Review List */}
+            {/* List of Reviews */}
             {reviews && reviews.length > 0 ? (
-              reviews.map((review) => (
-                <View key={review.id} className="mb-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
+              reviews.map((review: any) => (
+                <View key={review.id} className="mb-4 bg-transparent">
                   <View className="mb-2 flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-2">
-                      {review.user_image ? (
-                        <Image
-                          source={{uri: supabase.storage.from('avatars').getPublicUrl(review.user_image).data.publicUrl}}
-                          className="h-8 w-8 rounded-full"
-                        />
-                      ) : (
-                        <View className="h-8 w-8 items-center justify-center rounded-full bg-gray-300">
-                          <Feather name="user" size={16} color="white" />
+                    <View className="flex-row items-center gap-3">
+                      <Avatar size={36} name={review.user_name} uri={review.user_image} />
+                      <View>
+                        <Body className="font-nunito-bold text-[14px] text-gray-900">{review.user_name}</Body>
+                        <View className="flex-row items-center gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Ionicons
+                              key={i}
+                              size={10}
+                              name={i < review.rating ? 'star' : 'star-outline'}
+                              color={i < review.rating ? '#F59E0B' : '#D1D5DB'}
+                            />
+                          ))}
                         </View>
-                      )}
-                      <Text className="font-nunito-bold text-gray-900">{review.user_name || 'Anonymous'}</Text>
+                      </View>
                     </View>
-                    <View className="flex-row items-center">
-                      <Ionicons name="star" size={14} color="#F59E0B" />
-                      <Text className="ml-1 text-xs font-bold text-gray-900">{review.rating}</Text>
-                    </View>
+                    <Caption className="text-gray-400">{review.created_at ? dayjs(review.created_at).format('DD MMM YYYY') : ''}</Caption>
                   </View>
-                  {review.comment && <Text className="font-nunito text-gray-600">{review.comment}</Text>}
+                  <Body className="pl-[48px] text-[14px] leading-5 text-gray-600">{review.comment}</Body>
                 </View>
               ))
             ) : (
-              <Text className="font-nunito italic text-gray-500">No reviews yet. Be the first!</Text>
+              <View className="items-center justify-center py-4">
+                <Body className="italic text-gray-500">No reviews yet. Be the first!</Body>
+              </View>
             )}
+
+            <TouchableOpacity
+              onPress={() => setReviewModalVisible(true)}
+              className="mt-2 flex-row items-center justify-center rounded-xl bg-gray-50 py-3 active:bg-gray-100">
+              <Ionicons name="create-outline" size={18} color="#4B5563" />
+              <Body className="ml-2 font-nunito-bold text-gray-700">Write a Review</Body>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
 
-      {/* Book Button */}
-      <View className="border-t border-gray-100 p-4">
+      {/* 3. Sticky Footer */}
+      <View className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between rounded-t-[32px] border-t border-gray-100 bg-white p-5 px-6 pb-8 shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.08)]">
+        <View>
+          <H2 className="font-nunito-bold text-[24px] text-gray-900">${service.price?.toFixed(2) || '0.00'}</H2>
+          <Caption className="text-gray-400">per person</Caption>
+        </View>
+
         <Link href={`/(user)/booking/${id}`} asChild>
-          <TouchableOpacity
-            disabled={!service.active}
-            className={`items-center rounded-xl py-4 shadow-sm ${!service.active ? 'bg-gray-300' : 'bg-primary active:opacity-90'}`}>
-            <Text className="font-nunito-bold text-lg text-white">
-              {service.active ? t('services.book_now', 'Book Now') : t('services.unavailable', 'Unavailable')}
-            </Text>
+          <TouchableOpacity className="rounded-full bg-primary px-10 py-4 shadow active:opacity-90" disabled={!service.active}>
+            <Body className="font-nunito-bold text-[17px] text-white">{service.active ? 'Reserve' : 'Unavailable'}</Body>
           </TouchableOpacity>
         </Link>
       </View>
 
+      {/* Modals (Keep existing) */}
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
@@ -436,7 +464,7 @@ export default function UserServiceDetailsScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 justify-end bg-black/50">
           <View className="rounded-t-3xl bg-white p-6 pb-12">
             <View className="mb-6 flex-row items-center justify-between">
-              <Text className="text-xl font-bold">Write a Review</Text>
+              <H3>Write a Review</H3>
               <TouchableOpacity onPress={() => setReviewModalVisible(false)}>
                 <Feather name="x" size={24} color="black" />
               </TouchableOpacity>
@@ -453,7 +481,7 @@ export default function UserServiceDetailsScreen() {
               />
             </View>
 
-            <Text className="mb-2 font-semibold text-gray-700">Comment</Text>
+            <Body className="mb-2 font-semibold text-gray-700">Comment</Body>
             <TextInput
               className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 text-gray-900"
               multiline
@@ -471,7 +499,7 @@ export default function UserServiceDetailsScreen() {
               {submitReviewMutation.isPending ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className="text-lg font-bold text-white">Submit Review</Text>
+                <Body className="font-nunito-bold text-lg text-white">Submit Review</Body>
               )}
             </TouchableOpacity>
           </View>

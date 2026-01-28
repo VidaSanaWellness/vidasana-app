@@ -1,12 +1,13 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, FlatList, ActivityIndicator} from 'react-native';
+import {View, TouchableOpacity, FlatList, ActivityIndicator} from 'react-native';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
 import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
-import {ServiceCard} from '@/components';
+import {ServiceCard} from '../ServiceCard';
 import {useAppStore} from '@/store';
 import Toast from 'react-native-toast-message';
+import {H3, Body} from '../Typography';
 
 interface TopServicesListProps {
   categoryId?: number | null;
@@ -108,9 +109,7 @@ export const TopServicesList = ({categoryId}: TopServicesListProps) => {
   return (
     <View className="mt-3">
       <View className="mb-4 flex-row items-center justify-between px-4">
-        <Text className="font-nunito-bold text-lg text-black">
-          {categoryId ? t('services.recommended', 'Recommended for you') : t('services.popular')}
-        </Text>
+        <H3 className="text-black">{categoryId ? t('services.recommended', 'Recommended for you') : t('services.popular')}</H3>
         <TouchableOpacity
           onPress={() =>
             router.push({
@@ -118,7 +117,7 @@ export const TopServicesList = ({categoryId}: TopServicesListProps) => {
               params: categoryId ? {categoryId: categoryId.toString(), focus: 'true'} : undefined,
             })
           }>
-          <Text className="font-nunito-bold text-sm text-primary">{t('common.seeAll')}</Text>
+          <Body className="font-nunito-bold text-sm text-primary">{t('common.seeAll')}</Body>
         </TouchableOpacity>
       </View>
 
@@ -131,7 +130,7 @@ export const TopServicesList = ({categoryId}: TopServicesListProps) => {
         scrollEnabled={false}
         ListEmptyComponent={
           <View className="items-center py-8">
-            <Text className="font-nunito text-gray-500">{t('services.noServicesFound', 'No services found')}</Text>
+            <Body className="text-gray-500">{t('services.noServicesFound', 'No services found')}</Body>
           </View>
         }
       />

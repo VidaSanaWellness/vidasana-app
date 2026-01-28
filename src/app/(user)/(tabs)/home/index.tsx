@@ -1,19 +1,14 @@
 import {Feather} from '@expo/vector-icons';
-import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
-import {View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, TextInput} from 'react-native';
+import {View, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, TextInput} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import React, {useState, useEffect} from 'react';
-import {HomeHeader, CategoryGrid, MoodCheckInModal, FilterModal, ServiceCard, FilterState} from '@/components';
-import {useDebouncer} from '@/hooks/useDebounce';
-import {useUserLocation} from '@/hooks';
+import {HomeHeader, H3, Body, CategoryGrid, MoodCheckInModal, FilterModal, ServiceCard, FilterState} from '@/components';
+import {useUserLocation, useDebouncer} from '@/hooks';
 import {useInfiniteQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
 import Toast from 'react-native-toast-message';
-
-// Module-level variable to track if modal has been shown in this session
-let hasShownMoodModal = false;
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
@@ -26,46 +21,30 @@ type Service = {
   provider: any;
   created_at: string;
   dist_meters?: number;
+  is_bookmarked?: boolean;
+  week_day?: string[];
+  avg_rating?: number;
 };
 
 export default function HomeScreen() {
   const {t, i18n} = useTranslation();
-  // const router = useRouter(); // Removed unused router
+  const queryClient = useQueryClient();
   const {user} = useAppStore((s) => s.session!);
   const hasSeenMoodModal = useAppStore((s) => s.hasSeenMoodModal);
   const setHasSeenMoodModal = useAppStore((s) => s.setHasSeenMoodModal);
-  const queryClient = useQueryClient();
-
-  // -- State --
-  // Search
   const [searchQuery, setSearchQuery, debouncedSearchQuery] = useDebouncer('', 500);
-
-  // Filters
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [isNearMeEnabled, setIsNearMeEnabled] = useState(true);
-  const [radius, setRadius] = useState<number>(50); // Default 50km
-
-  // Modals
+  const [radius, setRadius] = useState<number>(50);
   const [showMoodModal, setShowMoodModal] = useState(false);
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
-
-  // Refreshing
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Location
   const {location: userLocation} = useUserLocation();
 
-  // Auto-show mood modal
   useEffect(() => {
-    // Show modal only if not seen yet
-    if (!hasSeenMoodModal) {
-      const timer = setTimeout(() => {
-        setShowMoodModal(true);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
+    !hasSeenMoodModal && setTimeout(() => setShowMoodModal(true), 500);
   }, [hasSeenMoodModal]);
 
   const handleMoodSelect = (moodId: number) => {
@@ -76,18 +55,20 @@ export default function HomeScreen() {
   };
 
   // -- Data Fetching --
+  const servicesQueryKey = [
+    'services_search_home',
+    i18n.language,
+    debouncedSearchQuery,
+    selectedCategory,
+    selectedDays,
+    userLocation,
+    sortBy,
+    isNearMeEnabled,
+    radius,
+  ];
+
   const {data, isLoading, refetch, hasNextPage, fetchNextPage, isFetchingNextPage} = useInfiniteQuery({
-    queryKey: [
-      'services_search_home',
-      i18n.language,
-      debouncedSearchQuery,
-      selectedCategory,
-      selectedDays,
-      userLocation,
-      sortBy,
-      isNearMeEnabled,
-      radius,
-    ],
+    queryKey: servicesQueryKey,
     initialPageParam: 0,
     queryFn: async ({pageParam = 0}) => {
       const LIMIT = 10;
@@ -108,11 +89,24 @@ export default function HomeScreen() {
         console.error('Search API Error:', error);
         throw error;
       }
+
+      // Fetch bookmarks for these services to populate is_bookmarked
+      // distinct check to avoid unnecessary calls if empty
+      if (rpcData && rpcData.length > 0 && user?.id) {
+        const serviceIds = rpcData.map((s: any) => s.id);
+        const {data: bookmarks} = await supabase.from('bookmark').select('service').eq('user', user.id).in('service', serviceIds);
+
+        const bookmarkedSet = new Set(bookmarks?.map((b) => b.service));
+
+        return rpcData.map((s: any) => ({
+          ...s,
+          is_bookmarked: bookmarkedSet.has(s.id),
+        })) as Service[];
+      }
+
       return rpcData as Service[];
     },
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === 10 ? allPages.length * 10 : undefined;
-    },
+    getNextPageParam: (lastPage, allPages) => (lastPage.length === 10 ? allPages.length * 10 : undefined),
   });
 
   const services = data?.pages.flatMap((page) => page) || [];
@@ -166,10 +160,10 @@ export default function HomeScreen() {
       }
     },
     onMutate: async ({serviceId, isBookmarked}) => {
-      await queryClient.cancelQueries({queryKey: ['services_search_home', i18n.language]});
-      const previousData = queryClient.getQueryData(['services_search_home', i18n.language]);
+      await queryClient.cancelQueries({queryKey: servicesQueryKey});
+      const previousData = queryClient.getQueryData(servicesQueryKey);
 
-      queryClient.setQueryData(['services_search_home', i18n.language], (old: any) => {
+      queryClient.setQueryData(servicesQueryKey, (old: any) => {
         if (!old) return old;
         return {
           ...old,
@@ -183,78 +177,80 @@ export default function HomeScreen() {
     },
     onError: (err, variables, context: any) => {
       if (context?.previousData) {
-        queryClient.setQueryData(['services_search_home', i18n.language], context.previousData);
+        queryClient.setQueryData(servicesQueryKey, context.previousData);
       }
       Toast.show({type: 'error', text1: 'Failed to update bookmark'});
     },
     onSettled: () => {
-      queryClient.invalidateQueries({queryKey: ['services_search_home', i18n.language]});
+      queryClient.invalidateQueries({queryKey: servicesQueryKey});
     },
   });
 
-  const renderItem = ({item}: {item: any}) => (
-    <View className="px-4">
-      <ServiceCard
-        id={item.id}
-        title={item.title}
-        description={item.description}
-        price={item.price}
-        images={item.images || []}
-        distance={item.dist_meters}
-        isBookmarked={item.is_bookmarked || false}
-        onBookmarkToggle={() => toggleBookmarkMutation.mutate({serviceId: item.id, isBookmarked: item.is_bookmarked || false})}
-      />
-    </View>
-  );
-
-  const HeaderComponent = () => (
-    <View>
-      {/* Search & Filter Bar */}
-      <View className="mb-3 mt-2 flex-row gap-3 px-4">
-        <View className="h-14 flex-1 flex-row items-center rounded-xl border border-gray-100 bg-gray-50 px-4">
-          <Feather name="search" size={20} color="#9CA3AF" />
-          <TextInput
-            className="ml-3 flex-1 font-nunito text-base text-gray-900"
-            placeholder={t('services.searchPlaceholder')}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#9CA3AF"
-          />
-        </View>
-        <TouchableOpacity
-          onPress={() => setFilterModalVisible(true)}
-          className={`h-14 w-14 items-center justify-center rounded-xl ${
-            activeFilterCount > 0 ? 'border-primary bg-primary' : 'border-gray-100 bg-gray-50'
-          } border`}>
-          <Feather name="sliders" size={20} color={activeFilterCount > 0 ? 'white' : '#4B5563'} />
-          {activeFilterCount > 0 && <View className="absolute right-3 top-3 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />}
-        </TouchableOpacity>
+  const renderItem = ({item}: {item: Service}) => {
+    // console.log('Service Item:', JSON.stringify(item, null, 2));
+    return (
+      <View className="px-4">
+        <ServiceCard
+          id={item.id}
+          title={item.title}
+          description={item.description}
+          price={item.price}
+          images={item.images || []}
+          distance={item.dist_meters}
+          isBookmarked={item.is_bookmarked || false}
+          onBookmarkToggle={() => toggleBookmarkMutation.mutate({serviceId: item.id, isBookmarked: item.is_bookmarked || false})}
+          provider={item.provider as any} // Cast safely, keeping 'any' flexibility for now
+          weekDays={item.week_day}
+          rating={item.avg_rating}
+        />
       </View>
-
-      <CategoryGrid selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
-
-      {/* Section Title */}
-      <View className="mb-4 mt-6 flex-row items-center justify-between px-4">
-        <Text className="font-nunito-bold text-lg text-black">
-          {searchQuery || selectedCategory || activeFilterCount > 0
-            ? t('services.results', 'Results')
-            : t('services.recommended', 'Recommended for you')}
-        </Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <HomeHeader onMoodPress={() => setShowMoodModal(true)} />
 
+      <View>
+        {/* Search & Filter Bar */}
+        <View className="mb-3 mt-2 flex-row gap-3 px-4">
+          <View className="h-14 flex-1 flex-row items-center rounded-xl border border-gray-100 bg-gray-50 px-4">
+            <Feather name="search" size={20} color="#9CA3AF" />
+            <TextInput
+              className="ml-3 flex-1 font-nunito text-base text-gray-900"
+              placeholder={t('services.searchPlaceholder')}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+          <TouchableOpacity
+            onPress={() => setFilterModalVisible(true)}
+            className={`h-14 w-14 items-center justify-center rounded-xl ${
+              activeFilterCount > 0 ? 'border-primary bg-primary' : 'border-gray-100 bg-gray-50'
+            } border`}>
+            <Feather name="sliders" size={20} color={activeFilterCount > 0 ? 'white' : '#4B5563'} />
+            {activeFilterCount > 0 && <View className="absolute right-3 top-3 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />}
+          </TouchableOpacity>
+        </View>
+
+        <CategoryGrid selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+
+        {/* Section Title */}
+        <View className="mb-4 mt-6 flex-row items-center justify-between px-4">
+          <H3 className="text-lg text-black">
+            {searchQuery || selectedCategory || activeFilterCount > 0
+              ? t('services.results', 'Results')
+              : t('services.recommended', 'Recommended for you')}
+          </H3>
+        </View>
+      </View>
       <FlatList
         data={services}
         renderItem={renderItem}
         keyExtractor={(item, index) => item.id || `service-${index}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{paddingBottom: 100}}
-        ListHeaderComponent={HeaderComponent}
         onEndReached={() => {
           if (hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
@@ -269,8 +265,8 @@ export default function HomeScreen() {
               <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-50">
                 <Feather name="search" size={32} color="#D1D5DB" />
               </View>
-              <Text className="font-nunito-bold text-lg text-gray-900">{t('services.noServices')}</Text>
-              <Text className="mt-1 font-nunito text-sm text-gray-500">Try adjusting your filters</Text>
+              <H3 className="text-lg text-gray-900">{t('services.noServices')}</H3>
+              <Body className="mt-1 text-sm text-gray-500">Try adjusting your filters</Body>
             </View>
           ) : null
         }

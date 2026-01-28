@@ -1,13 +1,11 @@
 import React from 'react';
-import {View, TouchableOpacity} from 'react-native';
-import { Feather} from '@expo/vector-icons';
-import {useRouter} from 'expo-router';
 import {useAppStore} from '@/store';
+import {useRouter} from 'expo-router';
+import {Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
-
-import {H2, Caption} from '@/components/Typography';
-
-import {Avatar} from '@/components/Avatar';
+import {H2, Caption} from '../Typography';
+import {Avatar} from '../Avatar';
+import {View, TouchableOpacity} from 'react-native';
 
 export const HomeHeader = ({onMoodPress}: {onMoodPress?: () => void}) => {
   const router = useRouter();

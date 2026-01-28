@@ -1,8 +1,9 @@
 import React from 'react';
-import {Modal, View, Text, TouchableOpacity} from 'react-native';
+import {Modal, View, TouchableOpacity} from 'react-native';
 import {Feather} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
+import {H2, Body, H3} from '../Typography';
 
 interface MoodCheckInModalProps {
   visible: boolean;
@@ -45,8 +46,8 @@ export const MoodCheckInModal = ({visible, onClose, onMoodSelect}: MoodCheckInMo
           {/* Header */}
           <View className="mb-6 flex-row items-start justify-between">
             <View>
-              <Text className="font-nunito-bold text-2xl text-gray-900">Hi, Finding Balance?</Text>
-              <Text className="mt-1 font-nunito text-base text-gray-500">How are you feeling right now?</Text>
+              <H2 className="text-gray-900">Hi, Finding Balance?</H2>
+              <Body className="mt-1 text-gray-500">How are you feeling right now?</Body>
             </View>
             <TouchableOpacity onPress={onClose} className="rounded-full bg-gray-50 p-2">
               <Feather name="x" size={20} color="#9CA3AF" />
@@ -66,11 +67,11 @@ export const MoodCheckInModal = ({visible, onClose, onMoodSelect}: MoodCheckInMo
                   backgroundColor: mood.bg,
                 }}>
                 <View className="h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm">
-                  <Text className="text-3xl">{mood.icon}</Text>
+                  <H2 className="text-3xl">{mood.icon}</H2>
                 </View>
-                <Text className="mt-3 font-nunito-bold text-lg" style={{color: mood.color}}>
+                <H3 className="mt-3 text-lg" style={{color: mood.color}}>
                   {mood.label}
-                </Text>
+                </H3>
               </TouchableOpacity>
             ))}
           </View>

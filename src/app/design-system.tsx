@@ -1,8 +1,8 @@
 import React from 'react';
 import {ScrollView, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {Display, H1, H2, H3, Subtitle, Body, Caption} from '@/components/Typography';
-import {Button} from '@/components/Button';
+import {Display, H1, H2, H3, Subtitle, Body, Caption} from '@/components';
+import {Button} from '@/components';
 import {Feather} from '@expo/vector-icons';
 
 export default function DesignSystemScreen() {

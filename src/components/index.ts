@@ -21,3 +21,4 @@ export * from './home/HomeHeader';
 export * from './home/TopEventsList';
 export * from './home/TopServicesList';
 export * from './LanguagePicker';
+export * from './Typography';

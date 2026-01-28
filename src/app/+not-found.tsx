@@ -1,5 +1,6 @@
 import {Link, usePathname, useSegments} from 'expo-router';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
+import {H3, Body} from '@/components';
 
 export default function NotFoundScreen() {
   const path = usePathname();
@@ -8,9 +9,9 @@ export default function NotFoundScreen() {
   console.log('🚀 ~ NotFoundScreen ~ path:', path, segments);
   return (
     <View className="flex-1 items-center justify-center p-5">
-      <Text className="text-xl font-bold">{"This screen doesn't exist."}</Text>
+      <H3 className="text-xl font-bold">{"This screen doesn't exist."}</H3>
       <Link href="/auth" className="mt-4 pt-4">
-        <Text className="text-base text-[#2e78b7]">Go to home screen!</Text>
+        <Body className="text-base text-[#2e78b7]">Go to home screen!</Body>
       </Link>
     </View>
   );

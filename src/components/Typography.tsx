@@ -47,7 +47,7 @@ const getAlignClass = (align: TypographyProps['align']) => {
  */
 export const Display = ({children, className = '', color = 'default', align, ...props}: TypographyProps) => {
   return (
-    <Text className={`font-nunito-black text-4xl tracking-tight ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
+    <Text className={`font-nunito-black text-4xl capitalize tracking-tight ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
       {children}
     </Text>
   );
@@ -58,7 +58,9 @@ export const Display = ({children, className = '', color = 'default', align, ...
  */
 export const H1 = ({children, className = '', color = 'default', align, ...props}: TypographyProps) => {
   return (
-    <Text className={`font-nunito-extra-bold text-3xl tracking-tight ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
+    <Text
+      className={`font-nunito-extra-bold text-3xl capitalize tracking-tight ${getColorClass(color)} ${getAlignClass(align)} ${className}`}
+      {...props}>
       {children}
     </Text>
   );
@@ -69,7 +71,7 @@ export const H1 = ({children, className = '', color = 'default', align, ...props
  */
 export const H2 = ({children, className = '', color = 'default', align, ...props}: TypographyProps) => {
   return (
-    <Text className={`font-nunito-bold text-2xl ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
+    <Text className={`font-nunito-bold text-2xl capitalize ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
       {children}
     </Text>
   );
@@ -80,7 +82,7 @@ export const H2 = ({children, className = '', color = 'default', align, ...props
  */
 export const H3 = ({children, className = '', color = 'default', align, ...props}: TypographyProps) => {
   return (
-    <Text className={`font-nunito-semibold text-lg ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
+    <Text className={`font-nunito-semibold text-lg capitalize ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
       {children}
     </Text>
   );
@@ -91,7 +93,7 @@ export const H3 = ({children, className = '', color = 'default', align, ...props
  */
 export const Subtitle = ({children, className = '', color = 'gray', align, ...props}: TypographyProps) => {
   return (
-    <Text className={`font-nunito-medium text-base ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
+    <Text className={`font-nunito-medium text-base capitalize ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
       {children}
     </Text>
   );
@@ -102,7 +104,7 @@ export const Subtitle = ({children, className = '', color = 'gray', align, ...pr
  */
 export const Body = ({children, className = '', color = 'default', align, ...props}: TypographyProps) => {
   return (
-    <Text className={`font-nunito text-base leading-6 ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
+    <Text className={`font-nunito text-base capitalize leading-6 ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
       {children}
     </Text>
   );
@@ -113,7 +115,7 @@ export const Body = ({children, className = '', color = 'default', align, ...pro
  */
 export const Light = ({children, className = '', color = 'default', align, ...props}: TypographyProps) => {
   return (
-    <Text className={`font-nunito-light text-base italic ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
+    <Text className={`font-nunito-light text-base capitalize italic ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
       {children}
     </Text>
   );
@@ -124,7 +126,7 @@ export const Light = ({children, className = '', color = 'default', align, ...pr
  */
 export const Caption = ({children, className = '', color = 'gray', align, ...props}: TypographyProps) => {
   return (
-    <Text className={`font-nunito-light text-sm ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
+    <Text className={`font-nunito-light text-sm capitalize ${getColorClass(color)} ${getAlignClass(align)} ${className}`} {...props}>
       {children}
     </Text>
   );

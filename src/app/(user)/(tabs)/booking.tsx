@@ -1,13 +1,14 @@
 import {useQuery} from '@tanstack/react-query';
 import React, {useMemo, useState} from 'react';
-import {View, Text, SectionList, TouchableOpacity, RefreshControl, StatusBar} from 'react-native';
+import {View, SectionList, TouchableOpacity, RefreshControl, StatusBar} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
 import {useRouter} from 'expo-router';
-import {BookingCard} from '@/components/BookingCard';
+import {BookingCard} from '@/components';
 import {Feather} from '@expo/vector-icons';
 import dayjs from 'dayjs';
+import {H2, H3, Body, Caption} from '@/components';
 
 type Booking = {
   id: string;
@@ -138,7 +139,7 @@ export default function BookingsScreen() {
 
   const renderSectionHeader = ({section: {title}}: {section: {title: string}}) => (
     <View className="bg-gray-50 pb-4 pt-6">
-      <Text className="font-nunito-bold text-lg text-black">{title}</Text>
+      <H3 className="text-black">{title}</H3>
     </View>
   );
 
@@ -174,7 +175,7 @@ export default function BookingsScreen() {
 
       {/* Header */}
       <View className="mb-4 mt-1 flex-row items-center justify-between">
-        <Text className="font-nunito-bold text-3xl text-gray-900">My Bookings</Text>
+        <H2 className="text-gray-900">My Bookings</H2>
       </View>
 
       {/* Tabs */}
@@ -182,12 +183,12 @@ export default function BookingsScreen() {
         <TouchableOpacity
           onPress={() => setActiveTab('service')}
           className={`flex-1 items-center rounded-full py-2 ${activeTab === 'service' ? 'bg-primary shadow-sm' : 'shadow-none'}`}>
-          <Text className={`font-nunito-bold ${activeTab === 'service' ? 'text-white' : 'text-gray-400'}`}>Services</Text>
+          <Body className={`font-nunito-bold ${activeTab === 'service' ? 'text-white' : 'text-gray-400'}`}>Services</Body>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setActiveTab('event')}
           className={`flex-1 items-center rounded-full py-2 ${activeTab === 'event' ? 'bg-primary shadow-sm' : 'shadow-none'}`}>
-          <Text className={`font-nunito-bold ${activeTab === 'event' ? 'text-white' : 'text-gray-400'}`}>Events</Text>
+          <Body className={`font-nunito-bold ${activeTab === 'event' ? 'text-white' : 'text-gray-400'}`}>Events</Body>
         </TouchableOpacity>
       </View>
 
@@ -204,7 +205,7 @@ export default function BookingsScreen() {
           !loading ? (
             <View className="mt-20 items-center">
               <Feather name="calendar" size={48} color="#D4C3B7" />
-              <Text className="mt-4 font-nunito text-gray-500">No {activeTab} bookings found</Text>
+              <Body className="mt-4 text-gray-500">No {activeTab} bookings found</Body>
             </View>
           ) : null
         }

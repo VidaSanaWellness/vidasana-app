@@ -1,5 +1,6 @@
 import React from 'react';
-import {TouchableOpacity, View, Text, ActivityIndicator, TouchableOpacityProps} from 'react-native';
+import {TouchableOpacity, View, ActivityIndicator, TouchableOpacityProps} from 'react-native';
+import {Body} from './Typography';
 
 interface ButtonProps extends TouchableOpacityProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -82,7 +83,7 @@ export const Button = ({
       ) : (
         <>
           {leftIcon && <View className="mr-2">{leftIcon}</View>}
-          <Text className={`${getTextClasses()} ${getTextSize()} text-center`}>{label}</Text>
+          <Body className={`${getTextClasses()} ${getTextSize()} text-center`}>{label}</Body>
           {rightIcon && <View className="ml-2">{rightIcon}</View>}
         </>
       )}
