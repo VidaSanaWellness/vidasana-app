@@ -1,3 +1,4 @@
+import {stringHash} from '@/utils';
 import {Image, Text, View} from 'react-native';
 
 type AvatarProps = {name?: string; size?: number; className?: string; uri?: string | null};
@@ -10,7 +11,8 @@ const colorSet = [
 ];
 
 export function Avatar({name = '', uri = null, size = 60, className}: AvatarProps) {
-  const randomColor = colorSet[Math.floor(Math.random() * colorSet.length)];
+  const colorIndex = name ? stringHash(name) % colorSet.length : 0;
+  const randomColor = colorSet[colorIndex];
 
   const getInitials = (fullName: string) => {
     if (!fullName.trim()) return 'N/A';

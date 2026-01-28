@@ -109,7 +109,7 @@ export const ServiceCard = ({
 
           {/* Row 2: Title & Price */}
           <View className="flex-row items-start justify-between gap-2">
-            <H2 className="flex-1 capitalize text-gray-900" numberOfLines={2}>
+            <H2 className="flex-1 text-xl capitalize text-gray-900" numberOfLines={1}>
               {title}
             </H2>
             <View className="items-end">
