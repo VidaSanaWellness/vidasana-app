@@ -832,11 +832,10 @@ export type Database = {
           user_lng?: number
         }
         Returns: {
-          active: boolean
+          avg_rating: number
           book_till: string
-          category: number
+          category_id: number
           category_name: string
-          created_at: string
           description: string
           dist_meters: number
           end_at: string
@@ -845,11 +844,10 @@ export type Database = {
           lat: number
           lng: number
           price: number
-          provider: string
-          provider_name: string
+          provider: Json
           start_at: string
           title: string
-          updated_at: string
+          total_reviews: number
         }[]
       }
       search_map_items: {
@@ -876,17 +874,20 @@ export type Database = {
           user_lng?: number
         }
         Returns: {
+          avg_rating: number
           created_at: string
           description: string
           dist_meters: number
           id: string
           images: string[]
+          is_bookmarked: boolean
           lat: number
           lng: number
           price: number
           provider: Json
           title: string
           total_count: number
+          week_day: string[]
         }[]
       }
       show_limit: { Args: never; Returns: number }
