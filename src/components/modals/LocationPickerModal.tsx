@@ -13,7 +13,7 @@ interface LocationPickerModalProps {
   initialLocation?: {lat: number; lng: number} | null;
 }
 
-export default function LocationPickerModal({visible, onClose, onConfirm, initialLocation}: LocationPickerModalProps) {
+export function LocationPickerModal({visible, onClose, onConfirm, initialLocation}: LocationPickerModalProps) {
   const {t} = useTranslation();
   const mapRef = React.useRef<MapView>(null);
 

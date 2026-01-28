@@ -12,6 +12,7 @@ export * from './Button';
 export * from './Typography';
 export * from './PhoneInputField';
 export * from './ServiceCard';
+export * from './EventCard';
 export * from './modals/MoodCheckInModal';
 export * from './modals/FilterModal'; // Exports FilterState
 export {default as FilterModal} from './modals/FilterModal'; // Exports Component

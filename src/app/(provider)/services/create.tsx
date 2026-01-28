@@ -13,8 +13,7 @@ import Toast from 'react-native-toast-message';
 import {ServiceFormValues, LanguageCode, UnifiedImage, WeekDay} from '@/types/service';
 import {LANGUAGES, getDays} from '@/constants';
 import {useTranslation} from 'react-i18next';
-import LocationPickerModal from '@/components';
-import {H2, Body, Caption} from '@/components';
+import {LocationPickerModal, H2, Body, Caption} from '@/components';
 
 export default function CreateServiceScreen() {
   const router = useRouter();

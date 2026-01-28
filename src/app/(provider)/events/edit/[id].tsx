@@ -13,10 +13,8 @@ import Toast from 'react-native-toast-message';
 import {ImagePickerAsset, launchImageLibraryAsync, MediaTypeOptions} from 'expo-image-picker';
 import {useTranslation} from 'react-i18next';
 import {EventFormValues, EventUnifiedImage, LanguageCode} from '@/types/events';
-import {LANGUAGES} from '@/constants';
-import LocationPickerModal from '@/components';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-import {H2, Body, Caption} from '@/components';
+import {H2, Body, Caption, LocationPickerModal} from '@/components';
 
 type Category = Tables<'categories'>;
 

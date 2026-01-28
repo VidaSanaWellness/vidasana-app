@@ -15,9 +15,8 @@ import {Enums} from '@/types';
 import {useTranslation} from 'react-i18next';
 import {ServiceFormValues, LanguageCode, UnifiedImage} from '@/types/service';
 import {LANGUAGES, getDays} from '@/constants';
-import LocationPickerModal from '@/components';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-import {H2, Body, Caption} from '@/components';
+import {H2, Body, Caption, LocationPickerModal} from '@/components';
 
 // Types
 

@@ -23,7 +23,7 @@ import {LikeButton, ImageCarousel} from '@/components';
 import {H2, H3, Body, Caption} from '@/components';
 import {Rating} from 'react-native-ratings';
 import Toast from 'react-native-toast-message';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 export default function UserEventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
@@ -37,21 +37,38 @@ export default function UserEventDetailsScreen() {
   const [ratingInput, setRatingInput] = useState(0);
   const [commentInput, setCommentInput] = useState('');
 
+  // Helper to validate UUID
+  const isValidUUID = (uuid: any) => {
+    return typeof uuid === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
+  };
+
+  useEffect(() => {
+    if (id) {
+      console.log('[EventDetails] ID:', id, 'Valid:', isValidUUID(id));
+    }
+  }, [id]);
+
   const {
     data: event,
     isLoading,
     refetch,
     isRefetching,
+    error,
+    isError,
   } = useQuery({
     queryKey: ['event', id, i18n.language],
     queryFn: async () => {
+      console.log('[EventDetails] Fetching event with ID:', id);
       const {data, error} = await supabase
         .from('events')
         .select('*, event_translations(*), event_ticket_types(*), categories(*)')
         .eq('id', id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Fetch Event Error:', error);
+        throw error;
+      }
 
       // Check if liked
       const {count} = await supabase.from('event_bookmarks').select('*', {count: 'exact', head: true}).eq('event', id).eq('user', user.id);
@@ -70,6 +87,7 @@ export default function UserEventDetailsScreen() {
         is_liked: count ? count > 0 : false,
       };
     },
+    enabled: !!id && isValidUUID(id),
   });
 
   // Fetch Rating Summary
@@ -91,7 +109,7 @@ export default function UserEventDetailsScreen() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!id,
+    enabled: !!id && id !== 'undefined',
   });
 
   const toggleLikeMutation = useMutation({
@@ -148,6 +166,18 @@ export default function UserEventDetailsScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator size="large" color="#00594f" />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <Body className="font-nunito text-red-500">Error loading event</Body>
+        <Caption className="text-gray-500">{(error as any)?.message}</Caption>
+        <TouchableOpacity onPress={() => refetch()} className="mt-4 rounded-lg bg-primary px-4 py-2">
+          <Body className="text-white">Retry</Body>
+        </TouchableOpacity>
       </View>
     );
   }
