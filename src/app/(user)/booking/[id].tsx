@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {supabase, stripe} from '@/utils';
+import {supabase, fetchPaymentSheetParams} from '@/utils';
 import {Ionicons} from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import {useQuery} from '@tanstack/react-query';
@@ -74,10 +74,31 @@ export default function BookingScreen() {
     return true;
   };
 
-  // Generate Time Slots based on start_at/end_at
+  // Fetch Existing Bookings for Selected Date
+  const {data: existingBookings} = useQuery({
+    enabled: !!id && !!selectedDate,
+    queryKey: ['bookings', id, selectedDate],
+    queryFn: async () => {
+      if (!selectedDate) return [];
+      const startOfDay = dayjs(selectedDate).startOf('day').toISOString();
+      const endOfDay = dayjs(selectedDate).endOf('day').toISOString();
+
+      const {data, error} = await supabase
+        .from('services_booking')
+        .select('appointed')
+        .eq('service', id)
+        .neq('status', 'cancel') // Exclude cancelled bookings
+        .gte('appointed', startOfDay)
+        .lte('appointed', endOfDay);
+
+      if (error) throw error;
+      return data.map((b) => dayjs(b.appointed).format('h:mm A'));
+    },
+  });
+
   // Generate Time Slots based on start_at/end_at
   const timeSlots = (() => {
-    if (!service || !service.start_at || !service.end_at) return [];
+    if (!selectedDate || !service || !service.start_at || !service.end_at) return [];
 
     // Default duration 60 mins since not in schema
     const DURATION_MINUTES = 60;
@@ -88,7 +109,11 @@ export default function BookingScreen() {
     const end = dayjs(`2000-01-01 ${service.end_at}`);
 
     while (current.isBefore(end)) {
-      slots.push(current.format('h:mm A'));
+      const timeString = current.format('h:mm A');
+      // valid if NOT in existingBookings
+      if (!existingBookings?.includes(timeString)) {
+        slots.push(timeString);
+      }
       current = current.add(DURATION_MINUTES, 'minute');
     }
     return slots;
@@ -105,7 +130,10 @@ export default function BookingScreen() {
       // Check if price is greater than 0
       if ((service.price || 0) > 0) {
         // 1. Fetch Payment Params
-        const {paymentIntent, customer, ephemeralKey} = await stripe.fetchPaymentSheetParams({serviceId: id});
+        const {paymentIntent, customer, ephemeralKey, publishableKey} = await fetchPaymentSheetParams({
+          id: service.id,
+          type: 'service',
+        });
 
         if (!paymentIntent) throw new Error('Failed to fetch payment params');
 
@@ -205,7 +233,6 @@ export default function BookingScreen() {
 
       Toast.show({type: 'success', text1: 'Booking Confirmed!', text2: 'Processing receipt...'});
       // Navigate to E-Receipt instead of bookings list
-      router.dismissAll();
       router.replace(`/(user)/receipt/${bookingData.id}`);
     } catch (err: any) {
       console.error('Booking creation error:', err);
@@ -277,7 +304,7 @@ export default function BookingScreen() {
                   className={`mb-2 h-9 w-[13.5%] items-center justify-center rounded-full  
                                 ${isSelected ? 'bg-primary' : ''}`}>
                   <Body
-                    className={`font-medium
+                    className={`${isSelectable ? 'font-nunito-bold' : 'font-medium'}
                                 ${
                                   isSelected
                                     ? 'text-white'
@@ -300,18 +327,23 @@ export default function BookingScreen() {
         {/* Time Slots */}
         <H3 className="mb-3">Choose Start Time</H3>
         <View className="mb-8 flex-row flex-wrap gap-3">
-          {timeSlots.map((time, index) => {
-            const isSelected = selectedTime === time;
-            return (
-              <TouchableOpacity
-                key={index}
-                onPress={() => setSelectedTime(time)}
-                className={`rounded-full border px-4 py-2 ${isSelected ? 'border-primary bg-primary' : 'border-primary bg-white'}`}>
-                <Body className={`font-nunito-bold ${isSelected ? 'text-white' : 'text-primary'}`}>{time}</Body>
-              </TouchableOpacity>
-            );
-          })}
-          {timeSlots.length === 0 && <Body className="text-gray-500">No slots available.</Body>}
+          {!selectedDate ? (
+            <Body className="italic text-gray-500">Please select a date above to see available times.</Body>
+          ) : timeSlots.length === 0 ? (
+            <Body className="text-gray-500">No slots available for this date.</Body>
+          ) : (
+            timeSlots.map((time, index) => {
+              const isSelected = selectedTime === time;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setSelectedTime(time)}
+                  className={`rounded-full border px-4 py-2 ${isSelected ? 'border-primary bg-primary' : 'border-primary bg-white'}`}>
+                  <Body className={`font-nunito-bold ${isSelected ? 'text-white' : 'text-primary'}`}>{time}</Body>
+                </TouchableOpacity>
+              );
+            })
+          )}
         </View>
       </ScrollView>
 

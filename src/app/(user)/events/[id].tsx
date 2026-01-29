@@ -24,14 +24,135 @@ import {H2, H3, Body, Caption} from '@/components';
 import {Rating} from 'react-native-ratings';
 import Toast from 'react-native-toast-message';
 import {useEffect, useState} from 'react';
+import {useStripe} from '@stripe/stripe-react-native';
+import {fetchPaymentSheetParams} from '@/utils/stripe';
 
 export default function UserEventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
-  const {back} = useRouter();
+  const router = useRouter();
   const {t, i18n} = useTranslation();
   const {user} = useAppStore((s) => s.session!);
   const queryClient = useQueryClient();
+
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [isBooking, setIsBooking] = useState(false);
+  const {initPaymentSheet, presentPaymentSheet} = useStripe();
+
+  // Reset quantity when ticket changes
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedTicket]);
+
+  const incrementQuantity = () => {
+    if (!selectedTicket) return;
+
+    // Check available capacity
+    const bookedCount = ticketBookings?.[selectedTicket.id] || 0;
+    const availableTickets = selectedTicket.capacity - bookedCount;
+
+    if (quantity >= availableTickets) {
+      Toast.show({type: 'info', text1: 'Maximum capacity reached', text2: `Only ${availableTickets} tickets available`});
+      return;
+    }
+
+    setQuantity((prev) => prev + 1);
+  };
+
+  const decrementQuantity = () => {
+    if (quantity > 1) setQuantity((prev) => prev - 1);
+  };
+
+  // Handle Booking
+  const handleBookEvent = async () => {
+    if (!selectedTicket || isBooking) {
+      if (!selectedTicket) Toast.show({type: 'error', text1: 'Please select a ticket'});
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      // 1. Fetch Payment Params
+      const {paymentIntent, customer, ephemeralKey} = await fetchPaymentSheetParams({
+        id: id,
+        type: 'event',
+        ticketId: selectedTicket.id,
+      });
+
+      if (!paymentIntent) throw new Error('Failed to fetch payment params');
+
+      // 2. Initialize Payment Sheet
+      const {error: initError} = await initPaymentSheet({
+        merchantDisplayName: 'VidaSana Wellness',
+        customerId: customer,
+        customerEphemeralKeySecret: ephemeralKey,
+        paymentIntentClientSecret: paymentIntent,
+        defaultBillingDetails: {
+          name: user.user_metadata?.full_name,
+          email: user.email,
+        },
+      });
+
+      if (initError) throw initError;
+
+      // 3. Present Payment Sheet
+      const {error: paymentError} = await presentPaymentSheet();
+
+      if (paymentError) {
+        if (paymentError.code === 'Canceled') {
+          // User canceled, do nothing
+          return;
+        }
+        throw paymentError;
+      }
+
+      // 4. Create Payment Record (Required for Booking)
+      const {data: paymentData, error: paymentRecordError} = await supabase
+        .from('payments')
+        .insert({
+          amount: selectedTicket.price * quantity,
+          status: 'succeeded',
+          currency: 'usd',
+        })
+        .select()
+        .single();
+
+      if (paymentRecordError) {
+        console.error('Payment Record Creation Error:', paymentRecordError);
+        // If payment succeeded but record creation failed, we might want to alert support or handle differently.
+        // For now, throwing to show error.
+        throw new Error('Payment recorded failed, please contact support');
+      }
+
+      // 5. Create Booking Record
+      const {data: bookingData, error: bookingError} = await supabase
+        .from('event_booking')
+        .insert({
+          event_id: id,
+          ticket_type_id: selectedTicket.id,
+          payment_id: paymentData.id,
+          unit_price: selectedTicket.price,
+          total_price: selectedTicket.price * quantity,
+          quantity: quantity,
+        })
+        .select()
+        .single();
+
+      if (bookingError) throw bookingError;
+      if (!bookingData) throw new Error('Booking creation failed');
+
+      Toast.show({type: 'success', text1: 'Booking Confirmed!', text2: 'Processing receipt...'});
+      router.replace(`/(user)/receipt/${bookingData.id}?type=event`);
+      // Navigate to Home or Stay?
+      // router.replace('/(user)/bookings'); // Optional
+    } catch (err: any) {
+      console.error('Event Booking Error:', err);
+      Toast.show({type: 'error', text1: 'Booking Failed', text2: err.message});
+    } finally {
+      setIsBooking(false);
+    }
+  };
 
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
   const [ratingInput, setRatingInput] = useState(0);
@@ -99,6 +220,26 @@ export default function UserEventDetailsScreen() {
       return data || [];
     },
     enabled: !!id,
+  });
+
+  // Fetch Ticket Bookings Count
+  const {data: ticketBookings} = useQuery({
+    enabled: !!id,
+    queryKey: ['event_ticket_bookings', id],
+    queryFn: async () => {
+      const {data, error} = await supabase.from('event_booking').select('ticket_type_id, quantity').eq('event_id', id);
+
+      if (error) throw error;
+
+      // Aggregate bookings by ticket type
+      const bookingMap: Record<string, number> = {};
+      data?.forEach((booking: any) => {
+        const ticketId = booking.ticket_type_id;
+        bookingMap[ticketId] = (bookingMap[ticketId] || 0) + (booking.quantity || 0);
+      });
+
+      return bookingMap;
+    },
   });
 
   const toggleLikeMutation = useMutation({
@@ -191,7 +332,7 @@ export default function UserEventDetailsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView
-        className="flex-1"
+        className="mb-28 flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#00594f" />}>
         {/* Header Image Carousel */}
@@ -199,7 +340,7 @@ export default function UserEventDetailsScreen() {
           <ImageCarousel images={event?.images} aspectRatio="square" />
 
           {/* Back Button */}
-          <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
+          <TouchableOpacity onPress={() => router.back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
 
@@ -312,15 +453,34 @@ export default function UserEventDetailsScreen() {
           {event.event_ticket_types && event.event_ticket_types.length > 0 && (
             <View className="mb-6">
               <H3 className="mb-3 text-lg font-bold text-gray-900">{t('events.tickets')}</H3>
-              {event.event_ticket_types.map((ticket: any) => (
-                <View key={ticket.id} className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 p-4">
-                  <View>
-                    <Body className="font-bold text-gray-900">{ticket.name}</Body>
-                    <Caption className="text-xs text-gray-500">Capacity: {ticket.capacity}</Caption>
-                  </View>
-                  <Body className="text-lg font-bold text-green-700">${ticket.price}</Body>
-                </View>
-              ))}
+              {event.event_ticket_types.map((ticket: any) => {
+                const isSelected = selectedTicket?.id === ticket.id;
+                const bookedCount = ticketBookings?.[ticket.id] || 0;
+                const availableTickets = ticket.capacity - bookedCount;
+                const isSoldOut = availableTickets <= 0;
+
+                return (
+                  <TouchableOpacity
+                    key={ticket.id}
+                    onPress={() => !isSoldOut && setSelectedTicket(ticket)}
+                    disabled={isSoldOut}
+                    className={`mb-3 flex-row items-center justify-between rounded-xl border p-4 ${
+                      isSoldOut ? 'border-gray-200 bg-gray-100 opacity-50' : isSelected ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'
+                    }`}>
+                    <View>
+                      <Body className={`font-bold ${isSoldOut ? 'text-gray-400' : isSelected ? 'text-primary' : 'text-gray-900'}`}>
+                        {ticket.name}
+                      </Body>
+                      <Caption className="text-xs text-gray-500">
+                        {isSoldOut ? 'Sold Out' : `${availableTickets} / ${ticket.capacity} available`}
+                      </Caption>
+                    </View>
+                    <Body className={`text-lg font-bold ${isSoldOut ? 'text-gray-400' : isSelected ? 'text-primary' : 'text-green-700'}`}>
+                      ${ticket.price}
+                    </Body>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
 
@@ -366,10 +526,39 @@ export default function UserEventDetailsScreen() {
         </View>
       </ScrollView>
 
-      {/* Book Button (Placeholder until flow is implemented) */}
-      <View className="border-t border-gray-100 p-4">
-        <TouchableOpacity className="items-center rounded-xl bg-primary py-4 shadow-sm active:opacity-90">
-          <Body className="font-nunito-bold text-lg text-white">{t('events.bookNow')}</Body>
+      {/* 3. Sticky Footer with Quantity & Book Button */}
+      <View className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between rounded-t-[32px] border-t border-gray-100 bg-white p-5 px-6 pb-8 shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.08)]">
+        {/* Quantity Selector (Left) */}
+        <View className="flex-row items-center gap-4 rounded-full bg-gray-50 px-2 py-2">
+          <TouchableOpacity
+            onPress={decrementQuantity}
+            disabled={!selectedTicket || quantity <= 1}
+            className={`h-10 w-10 items-center justify-center rounded-full shadow-none ${!selectedTicket || quantity <= 1 ? 'bg-gray-100' : 'bg-white shadow-sm'}`}>
+            <Feather name="minus" size={18} color={quantity <= 1 ? '#9CA3AF' : '#1F2937'} />
+          </TouchableOpacity>
+
+          <Body className="min-w-[20px] text-center font-nunito-bold text-lg text-gray-900">{quantity}</Body>
+
+          <TouchableOpacity
+            onPress={incrementQuantity}
+            disabled={!selectedTicket}
+            className={`h-10 w-10 items-center justify-center rounded-full shadow-none ${!selectedTicket ? 'bg-gray-100' : 'bg-white shadow-sm'}`}>
+            <Feather name="plus" size={18} color={!selectedTicket ? '#9CA3AF' : '#1F2937'} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Book Button (Right) */}
+        <TouchableOpacity
+          onPress={handleBookEvent}
+          disabled={!selectedTicket || isBooking}
+          className={`ml-4 flex-1 items-center rounded-full py-4 shadow active:opacity-90 ${selectedTicket && !isBooking ? 'bg-primary' : 'bg-gray-300'}`}>
+          {isBooking ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Body className="font-nunito-bold text-[17px] text-white">
+              {selectedTicket ? `Book - $${(selectedTicket.price * quantity).toFixed(2)}` : 'Select Ticket'}
+            </Body>
+          )}
         </TouchableOpacity>
       </View>
 

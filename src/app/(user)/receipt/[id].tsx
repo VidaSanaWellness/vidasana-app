@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, ScrollView, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView} from 'react-native';
+import {View, ScrollView, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Image, Modal} from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {Ionicons, Feather} from '@expo/vector-icons';
 import {supabase} from '@/utils';
@@ -11,16 +11,64 @@ import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
 import {H3, Body, Caption} from '@/components';
+import {IMAGES} from '@/assets/images';
 
 export default function ReceiptScreen() {
-  const {id} = useLocalSearchParams<{id: string}>();
   const router = useRouter();
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const {id, type} = useLocalSearchParams<{id: string; type?: string}>();
 
   // Fetch Booking Details with Joins
   const {data: booking, isLoading} = useQuery({
-    queryKey: ['booking-receipt', id],
+    queryKey: ['booking-receipt', id, type],
     queryFn: async () => {
+      // EVENT BOOKING
+      if (type === 'event') {
+        const {data, error} = await supabase
+          .from('event_booking')
+          .select(
+            `
+              *,
+              event:events (
+                  *,
+                  provider:profile (*),
+                  event_translations (*)
+              ),
+              ticket:event_ticket_types (*),
+              payment:payments (*)
+          `
+          )
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        // Find translation (English or first available)
+        const translation = data.event?.event_translations?.find((t: any) => t.lang_code === 'en') || data.event?.event_translations?.[0];
+
+        // Extract location from PostGIS point if available
+        const locationData = data.event?.location as any;
+        let locationAddress = 'TBA';
+        if (locationData?.coordinates) {
+          locationAddress = `${locationData.coordinates[1]?.toFixed(4)}, ${locationData.coordinates[0]?.toFixed(4)}`;
+        }
+
+        // Normalize structure for UI
+        return {
+          ...data,
+          title: translation?.title || 'Event',
+          subtitle: data.ticket?.name || 'Ticket',
+          providerName: data.event?.provider?.name || 'Organizer',
+          date: data.event?.start_at,
+          price: data.total_price,
+          isEvent: true,
+          location: locationAddress,
+          ticketType: data.ticket?.name,
+          quantity: data.quantity || 1,
+        };
+      }
+
+      // SERVICE BOOKING (Default)
       const {data, error} = await supabase
         .from('services_booking')
         .select(
@@ -28,7 +76,9 @@ export default function ReceiptScreen() {
             *,
             service:services (
                 *,
-                provider:provider (*)
+                provider:profile (*),
+                service_translations (*),
+                category:categories (*)
             ),
             payment:payments (*)
         `
@@ -37,7 +87,20 @@ export default function ReceiptScreen() {
         .single();
 
       if (error) throw error;
-      return data;
+
+      // Find translation
+      const translation = data.service?.service_translations?.find((t: any) => t.lang_code === 'en') || data.service?.service_translations?.[0];
+
+      // Normalize structure for UI
+      return {
+        ...data,
+        title: translation?.title || 'Service',
+        subtitle: data.service?.category?.name || 'Wellness',
+        providerName: data.service?.provider?.name || 'Provider',
+        date: data.appointed,
+        price: data.price,
+        isEvent: false,
+      };
     },
     enabled: !!id,
   });
@@ -57,9 +120,9 @@ export default function ReceiptScreen() {
             booking ID: ${booking.id.split('-')[0]}
           </h3>
           <p>
-            Service: ${(booking.service as any)?.translations?.[0]?.title || 'Service'} <br />
-            Provider: ${booking.service?.provider?.name || 'Provider'} <br />
-            Date: ${dayjs(booking.appointed).format('MMM D, YYYY | h:mm A')} <br />
+            ${booking.isEvent ? 'Event' : 'Service'}: ${booking.title} <br />
+            ${booking.isEvent ? 'Organizer' : 'Provider'}: ${booking.providerName} <br />
+            Date: ${dayjs(booking.date).format('MMM D, YYYY | h:mm A')} <br />
             Amount: $${booking.price} <br />
             Status: ${booking.payment?.status || 'Unpaid'} <br />
             Transaction ID: ${booking.payment?.id || 'N/A'}
@@ -106,102 +169,155 @@ export default function ReceiptScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="relative z-50 flex-row items-center justify-between p-4">
+      <View className="relative flex-row items-center justify-between border-b border-gray-100 p-4 pb-3">
         <TouchableOpacity onPress={() => router.back()} className="rounded-full bg-gray-100 p-2">
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <H3>E-Receipt</H3>
+        <H3 className="text-gray-900">E-Receipt</H3>
         <TouchableOpacity onPress={() => setIsMenuVisible(!isMenuVisible)} className="rounded-full bg-gray-100 p-2">
           <Feather name="more-horizontal" size={24} color="black" />
         </TouchableOpacity>
-
-        {/* Dropdown Menu */}
-        {isMenuVisible && (
-          <View className="absolute right-4 top-16 z-50 w-48 rounded-xl border border-gray-100 bg-white p-1 shadow-lg" style={{elevation: 5}}>
-            <TouchableOpacity onPress={handleShare} className="flex-row items-center p-3 hover:bg-gray-50">
-              <Feather name="send" size={18} color="#333" className="mr-3" />
-              <Body className="ml-2 font-medium text-gray-700">Share E-Receipt</Body>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleDownload} className="flex-row items-center border-t border-gray-50 p-3">
-              <Feather name="download" size={18} color="#333" className="mr-3" />
-              <Body className="ml-2 font-medium text-gray-700">Download E-Receipt</Body>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handlePrint} className="flex-row items-center border-t border-gray-50 p-3">
-              <Feather name="printer" size={18} color="#333" className="mr-3" />
-              <Body className="ml-2 font-medium text-gray-700">Print</Body>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
 
-      <ScrollView className="mt-4 flex-1 px-4" showsVerticalScrollIndicator={false}>
+      {/* Dropdown Menu Modal */}
+      <Modal visible={isMenuVisible} transparent animationType="fade" onRequestClose={() => setIsMenuVisible(false)}>
+        <TouchableOpacity onPress={() => setIsMenuVisible(false)} className="flex-1" activeOpacity={1}>
+          <View className="absolute right-4 top-32 w-60 rounded-2xl border border-gray-100 bg-white shadow-xl" style={{elevation: 8}}>
+            <TouchableOpacity
+              onPress={() => {
+                setIsMenuVisible(false);
+                handleShare();
+              }}
+              className="flex-row items-center rounded-t-2xl p-4 active:bg-gray-50">
+              <Feather name="send" size={20} color="#00594f" />
+              <Body className="font-nunito-semibold ml-3 text-gray-900">Share E-Receipt</Body>
+            </TouchableOpacity>
+            <View className="mx-4 h-[1px] bg-gray-100" />
+            <TouchableOpacity
+              onPress={() => {
+                setIsMenuVisible(false);
+                handleDownload();
+              }}
+              className="flex-row items-center p-4 active:bg-gray-50">
+              <Feather name="download" size={20} color="#00594f" />
+              <Body className="font-nunito-semibold ml-3 text-gray-900">Download E-Receipt</Body>
+            </TouchableOpacity>
+            <View className="mx-4 h-[1px] bg-gray-100" />
+            <TouchableOpacity
+              onPress={() => {
+                setIsMenuVisible(false);
+                handlePrint();
+              }}
+              className="flex-row items-center rounded-b-2xl p-4 active:bg-gray-50">
+              <Feather name="printer" size={20} color="#00594f" />
+              <Body className="font-nunito-semibold ml-3 text-gray-900">Print</Body>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      <ScrollView className="flex-1 px-5 pt-6" showsVerticalScrollIndicator={false}>
         {/* QR Code Section */}
-        <View className="mb-8 items-center py-6">
-          <QRCode value={booking?.id || 'invalid'} size={180} />
-          <Body className="mt-4 font-medium tracking-widest text-gray-500">{booking?.id.split('-')[0]}</Body>
+        <View className="mb-8 items-center py-4">
+          <QRCode
+            size={180}
+            logoSize={40}
+            // color="#00594f"
+            logo={IMAGES.logo}
+            backgroundColor="white"
+            logoBackgroundColor="white"
+            value={`vidasana://receipt/${booking?.id}${type ? `?type=${type}` : ''}`}
+          />
+          <Body className="mt-4 font-nunito-bold tracking-widest text-gray-400">{booking?.id?.split('-')[0]?.toUpperCase()}</Body>
         </View>
 
-        {/* Ticket Details Card */}
-        <View className="mb-6 rounded-3xl bg-gray-50 p-6">
-          <View className="mb-4 flex-row justify-between">
-            <Body className="text-gray-500">Services</Body>
-            <Body className="font-nunito-bold text-gray-900">{(booking?.service as any)?.translations?.[0]?.title}</Body>
+        {/* Details Card */}
+        <View className="mb-5 rounded-2xl bg-gray-50 p-5">
+          <View className="mb-5 border-b border-gray-200 pb-4">
+            <Caption className="mb-1 text-center uppercase tracking-wide text-gray-400">
+              {booking?.isEvent ? 'Event Booking' : 'Service Booking'}
+            </Caption>
+            <H3 className="text-center text-xl font-extrabold text-primary">{booking?.title || 'N/A'}</H3>
+            {booking?.isEvent && booking?.ticketType && (
+              <Body className="font-nunito-semibold mt-2 text-center text-gray-500">
+                {booking.ticketType} × {booking.quantity}
+              </Body>
+            )}
           </View>
-          <View className="mb-4 flex-row justify-between">
-            <Body className="text-gray-500">Category</Body>
-            <Body className="font-nunito-bold text-gray-900">{(booking?.service as any)?.category?.name || 'Wellness'}</Body>
+
+          {/* Date & Time with proper spacing */}
+          <View className="mb-3 flex-row justify-between py-2">
+            <Body className="text-gray-500">Date</Body>
+            <Body className="font-nunito-bold text-gray-900">{booking?.date ? dayjs(booking.date).format('MMM D, YYYY') : 'N/A'}</Body>
           </View>
-          <View className="mb-4 flex-row justify-between">
-            <Body className="text-gray-500">Provider</Body>
-            <Body className="font-nunito-bold text-gray-900">{(booking?.service as any)?.provider?.name}</Body>
+
+          <View className="mb-3 flex-row justify-between py-2">
+            <Body className="text-gray-500">Time</Body>
+            <Body className="font-nunito-bold text-gray-900">{booking?.date ? dayjs(booking.date).format('h:mm A') : 'N/A'}</Body>
           </View>
-          <View className="mb-4 flex-row justify-between">
-            <Body className="text-gray-500">Date & Time</Body>
-            <Body className="font-nunito-bold text-gray-900">{dayjs(booking?.appointed).format('MMM D, YYYY | h:mm A')}</Body>
+
+          {/* Location for events */}
+          {booking?.isEvent && booking?.location && (
+            <View className="mb-3 flex-row justify-between py-2">
+              <Body className="text-gray-500">Location</Body>
+              <Body className="max-w-[60%] text-right font-nunito-bold text-gray-900" numberOfLines={2}>
+                {booking.location}
+              </Body>
+            </View>
+          )}
+
+          {/* Provider/Organizer */}
+          <View className="mt-2 flex-row justify-between border-t border-gray-200 pt-4">
+            <Body className="text-gray-500">{booking?.isEvent ? 'Organizer' : 'Provider'}</Body>
+            <Body className="font-nunito-bold text-gray-900">{booking?.providerName || 'N/A'}</Body>
           </View>
-          {/* Promo & Working Hours Removed as requested */}
         </View>
 
         {/* Payment Details Card */}
-        <View className="mb-8 rounded-3xl bg-gray-50 p-6">
-          <View className="mb-6 flex-row items-center justify-between">
-            <Body className="font-medium text-gray-500">Payment Details</Body>
-            <Ionicons name="chevron-down" size={20} color="#9ca3af" />
+        <View className="mb-8 rounded-2xl bg-gray-50 p-5">
+          <View className="mb-5 flex-row items-center justify-between">
+            <Body className="font-nunito-bold text-gray-700">Payment Details</Body>
+            <Ionicons name="card-outline" size={20} color="#00594f" />
           </View>
 
-          <View className="mb-4 flex-row justify-between">
+          <View className="mb-3 flex-row justify-between py-2">
             <Body className="text-gray-500">Amount</Body>
-            <Body className="font-nunito-bold text-gray-900">${booking?.price}</Body>
+            <Body className="font-nunito-extrabold text-lg text-primary">${booking?.price ? Number(booking.price).toFixed(2) : '0.00'}</Body>
           </View>
-          {/* Promo Removed */}
-          <View className="mb-4 flex-row justify-between">
-            <Body className="text-gray-500">Payment Methods</Body>
-            <Body className="font-nunito-bold text-gray-900">Card ending ****</Body>
+
+          <View className="mb-3 flex-row justify-between py-2">
+            <Body className="text-gray-500">Payment Method</Body>
+            <Body className="font-nunito-bold text-gray-900">Card •••• ••••</Body>
           </View>
-          <View className="mb-4 flex-row justify-between">
-            <Body className="text-gray-500">Date</Body>
-            <Body className="font-nunito-bold text-gray-900">{dayjs(booking?.payment?.created_at).format('MMM D, YYYY | h:mm:ss A')}</Body>
+
+          <View className="mb-3 flex-row justify-between py-2">
+            <Body className="text-gray-500">Payment Date</Body>
+            <Body className="font-nunito-bold text-gray-900">
+              {booking?.payment?.created_at ? dayjs(booking.payment.created_at).format('MMM D, YYYY') : 'N/A'}
+            </Body>
           </View>
-          <View className="mb-4 flex-row justify-between">
+
+          <View className="mb-3 flex-row items-center justify-between py-2">
             <Body className="text-gray-500">Transaction ID</Body>
             <TouchableOpacity
               className="flex-row items-center"
               onPress={async () => {
                 if (booking?.payment?.id) {
                   await Clipboard.setStringAsync(booking.payment.id);
-                  Toast.show({type: 'success', text1: 'Copied!', text2: 'Transaction ID copied to clipboard'});
+                  Toast.show({type: 'success', text1: 'Copied!', text2: 'Transaction ID copied'});
                 }
               }}>
-              <Body className="mr-2 max-w-[150px] font-nunito-bold text-xs text-gray-900" numberOfLines={1} ellipsizeMode="tail">
-                {booking?.payment?.id || 'N/A'}
+              <Body className="mr-2 max-w-[140px] font-nunito-bold text-xs text-gray-900" numberOfLines={1}>
+                {booking?.payment?.id ? booking.payment.id.split('-')[0].toUpperCase() : 'N/A'}
               </Body>
-              <Ionicons name="copy-outline" size={16} color="#00594f" />
+              {booking?.payment?.id && <Ionicons name="copy-outline" size={16} color="#00594f" />}
             </TouchableOpacity>
           </View>
-          <View className="mt-2 flex-row items-center justify-between">
+
+          <View className="mt-2 flex-row items-center justify-between border-t border-gray-200 pt-4">
             <Body className="text-gray-500">Status</Body>
-            <View className="rounded-lg bg-sage/20 px-3 py-1">
-              <Caption className="font-nunito-bold capitalize text-sage">{booking?.payment?.status || 'Unknown'}</Caption>
+            <View className="rounded-full bg-green-50 px-3 py-1.5">
+              <Caption className="font-nunito-bold capitalize text-green-700">{booking?.payment?.status || 'Pending'}</Caption>
             </View>
           </View>
         </View>

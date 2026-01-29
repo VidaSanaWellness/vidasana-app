@@ -21,25 +21,34 @@ export const connectAccount = async () => {
 };
 
 /**
- * Fetch parameters for PaymentSheet (Local/Client-side implementation)
- * Uses direct Stripe API calls to bypass backend deployment issues.
+ * Fetch parameters for PaymentSheet (Secure/Cloud implementation)
+ * Uses Supabase Edge Functions to handle payments securely.
  */
-export const fetchPaymentSheetParams = async ({serviceId}: {serviceId: string}) => {
+export const fetchPaymentSheetParams = async ({id, type, ticketId}: {id: string; type: 'service' | 'event'; ticketId?: string}) => {
   try {
     const {
       data: {user},
     } = await supabase.auth.getUser();
     if (!user) throw new Error('User not found');
 
-    // 1. Get Service Details from Database
+    // 1. Get Details from Database
     let providerId;
     let price = 0;
 
-    if (serviceId) {
-      const {data} = await supabase.from('services').select('id, price, provider').eq('id', serviceId).single();
+    if (type === 'service') {
+      const {data} = await supabase.from('services').select('id, price, provider').eq('id', id).single();
       if (!data) throw new Error('Service not found');
       providerId = data.provider;
       price = data.price || 0;
+    } else if (type === 'event') {
+      // For events, we need the ticket price and the event's owner (provider)
+      if (!ticketId) throw new Error('Ticket ID required for events');
+
+      const {data: ticket} = await supabase.from('event_ticket_types').select('price, events(provider)').eq('id', ticketId).single();
+      if (!ticket) throw new Error('Ticket not found');
+
+      providerId = (ticket.events as any)?.provider;
+      price = ticket.price || 0;
     }
 
     if (!providerId) throw new Error('Provider ID missing');
@@ -47,47 +56,31 @@ export const fetchPaymentSheetParams = async ({serviceId}: {serviceId: string}) 
     // 2. Ensure Stripe Customer ID
     let customerId = user.user_metadata?.stripe_customer_id;
     if (!customerId) {
-      // Create Customer via Edge Function (reusing create_account_link logic or adding specific action if needed)
-      // For now, assuming customer exists or handled elsewhere. If not, we might need a specific 'create-customer' action.
-      // Let's rely on existing backend logic or add it if missing.
-      // Actually, let's use a simple direct call for now if needed, but better to put in edge function.
-      // Adding 'create-customer' implicitly in payment-intent or separate action is best.
-      // For this refactor, let's assume customerId exists or critical: we need a way to create customer on backend.
-      // Let's add a quick check/create in the Edge Function 'create-payment-intent' logic? No, separation is better.
-      // Falling back to: if no customerId, we must fail or implementing create-customer in edge function.
-      // Let's implement 'create-customer' in Edge Function quickly if missed, or for now, throw error.
-      // WAIT: Previous code did `stripeFetch('customers', 'POST')`. We need this in Edge Function.
+      const {data: customerData, error: customerError} = await supabase.functions.invoke('stripe-connect', {
+        body: {email: user.email, action: 'create-customer', name: user.user_metadata?.full_name || user.email},
+      });
 
-      // TEMPORARY FIX: Call edge function action 'get-or-create-customer' (we need to add this to index.ts to be thorough)
-      // OR: Update create-payment-intent to handle missing customer.
-      // Let's assume user HAS customer_id for this step, or handle gracefully.
-      // To be safe: We'll add 'create-customer' to Edge Function in next step if this fails.
-      // For now -> Error if missing.
-      throw new Error('Stripe Customer ID missing. Please contact support.');
+      if (customerError) throw customerError;
+      if (customerData?.error) throw new Error(`Edge Function: ${customerData.error}`);
+
+      customerId = customerData.customerId;
     }
 
     // 3. Get Ephemeral Key via Edge Function
-    const {data: ekData, error: ekError} = await supabase.functions.invoke('stripe-connect', {
-      body: {action: 'create-ephemeral-key', customerId},
-    });
+    const {data: ekData, error: ekError} = await supabase.functions.invoke('stripe-connect', {body: {action: 'create-ephemeral-key', customerId}});
     if (ekError) throw ekError;
 
     // 4. Create Payment Intent via Edge Function
     const amount = Math.round(price * 100);
     const {data: piData, error: piError} = await supabase.functions.invoke('stripe-connect', {
-      body: {
-        action: 'create-payment-intent',
-        amount,
-        customerId,
-        providerId,
-      },
+      body: {amount, customerId, providerId, action: 'create-payment-intent'},
     });
     if (piError) throw piError;
 
     return {
-      paymentIntent: piData.clientSecret,
-      ephemeralKey: ekData.secret,
       customer: customerId,
+      ephemeralKey: ekData.secret,
+      paymentIntent: piData.clientSecret,
       publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     };
   } catch (error: any) {

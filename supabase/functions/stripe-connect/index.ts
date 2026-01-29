@@ -22,6 +22,9 @@ serve(async (req) => {
       global: {headers: {Authorization: req.headers.get('Authorization')!}},
     });
 
+    // Admin Access for auth updates
+    const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+
     const {
       data: {user},
     } = await supabaseClient.auth.getUser();
@@ -30,7 +33,9 @@ serve(async (req) => {
       throw new Error('User not found');
     }
 
-    const {action} = await req.json();
+    // Parse body once
+    const reqData = await req.json();
+    const {action} = reqData;
 
     if (action === 'create_account_link') {
       // 1. Check if provider has stripe_account_id
@@ -82,7 +87,7 @@ serve(async (req) => {
     }
 
     if (action === 'create-ephemeral-key') {
-      const {customerId} = await req.json();
+      const {customerId} = reqData;
       if (!customerId) throw new Error('Customer ID required');
 
       const ephemeralKey = await stripe.ephemeralKeys.create({customer: customerId}, {apiVersion: '2022-11-15'});
@@ -93,7 +98,7 @@ serve(async (req) => {
     }
 
     if (action === 'create-payment-intent') {
-      const {amount, customerId, providerId} = await req.json();
+      const {amount, customerId, providerId} = reqData;
 
       if (!amount || !customerId || !providerId) throw new Error('Missing required params');
 
@@ -135,6 +140,21 @@ serve(async (req) => {
       });
     }
 
+    if (action === 'create-customer') {
+      const {email, name} = reqData;
+
+      const customer = await stripe.customers.create({name: name, email: email});
+
+      // Update Supabase Auth Metadata
+      await supabaseAdmin.auth.admin.updateUserById(user.id, {
+        user_metadata: {stripe_customer_id: customer.id},
+      });
+
+      return new Response(JSON.stringify({customerId: customer.id}), {
+        headers: {...corsHeaders, 'Content-Type': 'application/json'},
+      });
+    }
+
     if (action === 'check_status') {
       let {data: provider} = await supabaseClient.from('provider').select('stripe').eq('id', user.id).single();
 
@@ -163,7 +183,7 @@ serve(async (req) => {
   } catch (error) {
     return new Response(JSON.stringify({error: error.message}), {
       headers: {...corsHeaders, 'Content-Type': 'application/json'},
-      status: 400,
+      status: 200, // Returning 200 to debug the error content on client
     });
   }
 });

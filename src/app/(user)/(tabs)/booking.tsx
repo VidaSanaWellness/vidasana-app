@@ -164,7 +164,7 @@ export default function BookingsScreen() {
         // location={item.location} // Removed from BookingCard props
         image={imageUrl}
         price={item.price}
-        onPress={() => router.push(`/(user)/receipt/${item.id}` as any)}
+        onPress={() => router.push(`/(user)/receipt/${item.id}?type=${item.type}` as any)}
       />
     );
   };
