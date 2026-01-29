@@ -23,6 +23,8 @@ interface ServiceCardProps {
   } | null;
   rating?: number;
   basePath?: string;
+  variant?: 'user' | 'provider';
+  isActive?: boolean;
 }
 
 export const ServiceCard = ({
@@ -36,9 +38,14 @@ export const ServiceCard = ({
   onBookmarkToggle,
   provider,
   rating,
-  basePath = '/(user)/services',
+  basePath,
+  variant = 'user',
+  isActive,
 }: ServiceCardProps) => {
   const imageUrl = images && images.length > 0 ? supabase.storage.from('images').getPublicUrl(images[0]).data.publicUrl : null;
+
+  // Default path logic
+  const linkHref = basePath ? `${basePath}/${id}` : variant === 'provider' ? `/(provider)/services/${id}` : `/(user)/services/${id}`;
 
   const formatDistance = (meters?: number) => {
     if (!meters && meters !== 0) return null;
@@ -48,42 +55,57 @@ export const ServiceCard = ({
 
   const displayDays = weekDays && weekDays.length > 0 ? weekDays.slice(0, 3).map((d) => d.slice(0, 3).charAt(0).toUpperCase() + d.slice(1, 3)) : [];
 
-  const showProvider = provider && provider.name && provider.name.trim().length > 0;
+  const showProvider = variant === 'user' && provider && provider.name && provider.name.trim().length > 0;
 
   // Theme Color (~Deep Teal)
   const THEME_COLOR = '#045D56';
 
   return (
-    <Link href={`${basePath}/${id}`} asChild>
+    <Link href={linkHref} asChild>
       <Pressable className="mb-5 block overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm shadow-gray-200 active:scale-[0.99]">
         {/* --- Hero Image Section --- */}
         <View className="relative aspect-[16/10] w-full bg-gray-100">
           {imageUrl ? (
-            <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
+            <Image
+              source={{uri: imageUrl}}
+              className={`h-full w-full ${variant === 'provider' && !isActive ? 'opacity-50' : ''}`}
+              resizeMode="cover"
+            />
           ) : (
             <View className="h-full w-full items-center justify-center bg-gray-50">
               <Ionicons name="image-outline" size={36} color="#D1D5DB" />
             </View>
           )}
 
-          {/* Like Button (Top Right) */}
-          <TouchableOpacity
-            onPress={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onBookmarkToggle();
-            }}
-            className="absolute right-4 top-4 h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm"
-            activeOpacity={0.7}>
-            <Ionicons name={isBookmarked ? 'heart' : 'heart-outline'} size={20} color={isBookmarked ? '#EF4444' : '#1F2937'} />
-          </TouchableOpacity>
+          {/* Provider: Active/Inactive Badge */}
+          {variant === 'provider' && isActive !== undefined && (
+            <View className={`absolute left-4 top-4 rounded-full px-2 py-1 ${isActive ? 'bg-green-100' : 'bg-gray-100'}`}>
+              <Caption className={`font-nunito-bold text-xs ${isActive ? 'text-green-700' : 'text-gray-500'}`}>
+                {isActive ? 'Active' : 'Inactive'}
+              </Caption>
+            </View>
+          )}
+
+          {/* User: Like Button (Top Right) */}
+          {variant === 'user' && (
+            <TouchableOpacity
+              onPress={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onBookmarkToggle();
+              }}
+              className="absolute right-4 top-4 h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm"
+              activeOpacity={0.7}>
+              <Ionicons name={isBookmarked ? 'heart' : 'heart-outline'} size={20} color={isBookmarked ? '#EF4444' : '#1F2937'} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* --- Content Body --- */}
         <View className="flex-col gap-2 p-4">
           {/* Row 1: Provider & Rating */}
           <View className="flex-row items-center justify-between">
-            {/* Provider (Left) */}
+            {/* Provider (Left) - Only for User */}
             {showProvider ? (
               <View className="flex-1 flex-row items-center gap-2">
                 <Avatar size={30} uri={provider!.image} name={provider!.name} className="bg-gray-100" />
@@ -92,13 +114,11 @@ export const ServiceCard = ({
                 </H3>
               </View>
             ) : (
-              <View className="flex-row items-center gap-2">
-                <View className="h-6 w-6 rounded-full bg-gray-100" />
-                <View className="h-4 w-20 rounded bg-gray-100" />
-              </View>
+              // Spacer if no provider shown
+              <View />
             )}
 
-            {/* Rating (Right) */}
+            {/* Rating (Right) - Shown for both */}
             {rating ? (
               <View className="flex-row items-center gap-1 rounded-md bg-yellow-50 px-1.5 py-0.5">
                 <Ionicons name="star" size={12} color="#F59E0B" />
@@ -135,8 +155,8 @@ export const ServiceCard = ({
               )}
             </View>
 
-            {/* Distance (Right) */}
-            {distance !== undefined && distance !== null && (
+            {/* Distance (Right) - Only for User */}
+            {variant === 'user' && distance !== undefined && distance !== null && (
               <View className="flex-row items-center gap-1 pl-2">
                 <Feather name="map-pin" size={14} color="#4B5563" />
                 <Subtitle className="text-[12px] text-gray-500">{formatDistance(distance)}</Subtitle>

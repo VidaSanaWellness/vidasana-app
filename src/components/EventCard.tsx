@@ -20,6 +20,8 @@ interface EventCardProps {
   } | null;
   basePath?: string;
   rating?: number;
+  variant?: 'user' | 'provider';
+  isActive?: boolean;
 }
 
 export const EventCard = ({
@@ -31,11 +33,14 @@ export const EventCard = ({
   startAt,
   distance,
   provider,
-  basePath = '/(user)/events',
+  basePath,
   rating,
+  variant = 'user',
+  isActive,
 }: EventCardProps) => {
   const imageUrl = images && images.length > 0 ? supabase.storage.from('images').getPublicUrl(images[0]).data.publicUrl : null;
   const startDate = new Date(startAt);
+  const linkHref = basePath ? `${basePath}/${id}` : variant === 'provider' ? `/(provider)/events/${id}` : `/(user)/events/${id}`;
 
   const formatDistance = (meters?: number) => {
     if (!meters && meters !== 0) return null;
@@ -52,19 +57,23 @@ export const EventCard = ({
   const THEME_COLOR = '#045D56';
 
   return (
-    <Link href={`${basePath}/${id}`} asChild>
+    <Link href={linkHref} asChild>
       <Pressable className="mb-5 block overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm shadow-gray-200 active:scale-[0.99]">
         {/* --- Hero Image Section --- */}
         <View className="relative aspect-[16/10] w-full bg-gray-100">
           {imageUrl ? (
-            <Image source={{uri: imageUrl}} className="h-full w-full" resizeMode="cover" />
+            <Image
+              source={{uri: imageUrl}}
+              className={`h-full w-full ${variant === 'provider' && !isActive ? 'opacity-50' : ''}`}
+              resizeMode="cover"
+            />
           ) : (
             <View className="h-full w-full items-center justify-center bg-gray-50">
               <Feather name="calendar" size={36} color="#D1D5DB" />
             </View>
           )}
 
-          {/* Date Badge (Overlay) */}
+          {/* Date Badge (Overlay) - Always Top Left */}
           <View className="absolute left-4 top-4 overflow-hidden rounded-xl bg-white/95 shadow-sm backdrop-blur-md">
             <View className="items-center px-3 py-2">
               <Caption className="font-nunito-bold text-xs uppercase text-red-500">{month}</Caption>
@@ -72,12 +81,23 @@ export const EventCard = ({
             </View>
           </View>
 
-          {/* Like Button (Top Right) */}
-          <TouchableOpacity
-            className="absolute right-4 top-4 h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm"
-            activeOpacity={0.7}>
-            <Ionicons name="heart-outline" size={20} color="#1F2937" />
-          </TouchableOpacity>
+          {/* Provider: Active/Inactive Badge (Top Right) */}
+          {variant === 'provider' && isActive !== undefined && (
+            <View className={`absolute right-4 top-4 rounded-full px-2 py-1 ${isActive ? 'bg-green-100' : 'bg-gray-100'}`}>
+              <Caption className={`font-nunito-bold text-xs ${isActive ? 'text-green-700' : 'text-gray-500'}`}>
+                {isActive ? 'Active' : 'Inactive'}
+              </Caption>
+            </View>
+          )}
+
+          {/* User: Like Button (Top Right) */}
+          {variant === 'user' && (
+            <TouchableOpacity
+              className="absolute right-4 top-4 h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm"
+              activeOpacity={0.7}>
+              <Ionicons name="heart-outline" size={20} color="#1F2937" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* --- Content Body --- */}
@@ -85,9 +105,9 @@ export const EventCard = ({
           {/* Row 1: Title & Rating */}
           <View className="flex-row items-center justify-between">
             {/* Title (Left) */}
-            <H3 className="flex-1 text-base leading-tight text-gray-900" numberOfLines={1}>
+            <H2 className="flex-1 text-xl capitalize text-gray-900" numberOfLines={1}>
               {title}
-            </H3>
+            </H2>
 
             {/* Rating (Right) */}
             {rating ? (
@@ -101,9 +121,9 @@ export const EventCard = ({
           {/* Row 2: Provider/Desc & Price */}
           <View className="flex-row items-center justify-between gap-2">
             <View className="flex-1 flex-row items-center gap-2">
-              {provider?.image && <Avatar size={20} uri={provider.image} name={provider.name} />}
+              {variant === 'user' && provider?.image && <Avatar size={20} uri={provider.image} name={provider.name} />}
               <Caption className="max-w-[150px] flex-1 text-gray-500" numberOfLines={1}>
-                {provider?.name || description}
+                {variant === 'user' ? provider?.name : description}
               </Caption>
             </View>
 
@@ -120,8 +140,8 @@ export const EventCard = ({
               <Caption className="font-nunito-bold text-[11px] text-gray-600">{time}</Caption>
             </View>
 
-            {/* Distance (Right) */}
-            {distance !== undefined && distance !== null && (
+            {/* Distance (Right) - Only User */}
+            {variant === 'user' && distance !== undefined && distance !== null && (
               <View className="flex-row items-center gap-1 pl-2">
                 <Feather name="map-pin" size={14} color="#4B5563" />
                 <Subtitle className="text-[12px] text-gray-500">{formatDistance(distance)}</Subtitle>
