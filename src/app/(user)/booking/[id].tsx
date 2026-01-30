@@ -9,7 +9,7 @@ import {useStripe} from '@stripe/stripe-react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import {View, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView} from 'react-native';
-import {H3, Body} from '@/components';
+import {H3, Body, Loader} from '@/components';
 
 dayjs.extend(customParseFormat);
 
@@ -184,11 +184,7 @@ export default function BookingScreen() {
       if (paymentIntentId) {
         const {data: paymentData, error: paymentError} = await supabase
           .from('payments')
-          .insert({
-            amount: service?.price || 0,
-            currency: 'usd',
-            status: 'succeeded',
-          })
+          .insert({currency: 'usd', status: 'succeeded', amount: service?.price || 0})
           .select()
           .single();
 
@@ -201,10 +197,8 @@ export default function BookingScreen() {
 
       // Parse "4:30 PM" manually to avoid plugin issues
       // Format is "h:mm A" -> ["4", "30", "PM"]
-      if (!selectedTime) {
-        Toast.show({type: 'error', text1: 'Please select a time'});
-        return;
-      }
+      if (!selectedTime) return Toast.show({type: 'error', text1: 'Please select a time'});
+
       const [timeStr, period] = selectedTime.split(' ');
       const [hoursStr, minutesStr] = timeStr.split(':');
 
@@ -243,7 +237,7 @@ export default function BookingScreen() {
   if (isServiceLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#00594f" />
+        <Loader visible />
       </View>
     );
   }

@@ -16,7 +16,11 @@
     "comingSoon": "Bientôt Disponible",
     "all": "Tous",
     "reset": "Réinitialiser",
-    "showResults": "Voir les résultats"
+    "showResults": "Voir les résultats",
+    "services": "Services",
+    "events": "Événements",
+    "retry": "Réessayer",
+    "saveChanges": "Enregistrer les modifications"
   },
   "auth": {
     "login": {
@@ -45,14 +49,15 @@
       "signUpButton": "S'inscrire",
       "alreadyMember": "Déjà membre ?",
       "loginLink": "Connexion",
-      "success": "Inscription réussie ! Veuillez compléter la configuration des paiements."
+      "success": "Inscription réussie !"
     },
     "forgotPassword": {
       "title": "Réinitialiser le mot de passe",
       "subtitle": "Entrez votre email pour recevoir les instructions",
       "sendLink": "Envoyer le lien de réinitialisation",
       "rememberPassword": "Vous vous souvenez de votre mot de passe ?",
-      "loginLink": "Connexion"
+      "loginLink": "Connexion",
+      "errorGeneric": "Échec de l'envoi de l'email de réinitialisation"
     },
     "changePassword": {
       "title": "Change Password",
@@ -93,6 +98,27 @@
     "sat": "Sam",
     "sun": "Dim"
   },
+  "map": {
+    "services": "Services",
+    "events": "Événements",
+    "cluster": "Groupe"
+  },
+  "bookings": {
+    "title": "Mes Réservations",
+    "providerTitle": "Réservations",
+    "services": "Services",
+    "events": "Événements",
+    "noBookings": "Aucune réservation {{type}} trouvée",
+    "noBookingsYet": "Aucune Réservation Pour Le Moment",
+    "noBookingsMessage": "Vos prochaines réservations apparaîtront ici groupées par date.",
+    "refresh": "Actualiser",
+    "bookingDetails": "Détails de la Réservation",
+    "selectDate": "Sélectionner une Date",
+    "chooseStartTime": "Choisir l'Heure de Début",
+    "selectDateFirst": "Veuillez sélectionner une date ci-dessus pour voir les horaires disponibles.",
+    "noSlotsAvailable": "Aucun créneau disponible pour cette date.",
+    "continueWithPrice": "Continuer - ${{price}}"
+  },
   "events": {
     "createTitle": "Créer un nouvel événement",
     "eventTitle": "Titre de l'événement",
@@ -126,7 +152,14 @@
     "searchPlaceholder": "Rechercher des événements...",
     "dateRange": "Plage de dates",
     "bookNow": "Réserver des billets",
-    "popular": "Événements à Venir"
+    "popular": "Événements à Venir",
+    "errorLoading": "Erreur lors du chargement de l'événement",
+    "notFound": "Événement non trouvé",
+    "openInMaps": "Ouvrir dans Maps",
+    "writeReview": "Écrire un Avis",
+    "noReviews": "Aucun avis pour le moment. Soyez le premier !",
+    "submitReview": "Soumettre l'Avis",
+    "comment": "Commentaire"
   },
   "services": {
     "createTitle": "Créer un nouveau service",
@@ -159,7 +192,71 @@
     "priceLow": "Prix : Croissant",
     "priceHigh": "Prix : Décroissant",
     "newest": "Plus récents",
-    "filterByDay": "Jour de la semaine"
+    "filterByDay": "Jour de la semaine",
+    "tryAdjustingFilters": "Essayez d'ajuster vos filtres",
+    "notFound": "Service non trouvé ou une erreur s'est produite.",
+    "hostedBy": "Organisé par",
+    "viewProfile": "Voir le profil ->",
+    "aboutExperience": "À propos de cette expérience",
+    "serviceDetails": "Détails du Service",
+    "availability": "DISPONIBILITÉ",
+    "locationLabel": "EMPLACEMENT",
+    "viewOnMap": "Voir sur la carte",
+    "capacityLabel": "CAPACITÉ",
+    "participants": "{{count}} participants",
+    "timeLabel": "Heure",
+    "reviews": "Avis",
+    "noReviews": "Aucun avis pour le moment. Soyez le premier !",
+    "writeReview": "Écrire un Avis",
+    "perPerson": "par personne",
+    "comment": "Commentaire",
+    "submitReview": "Soumettre l'Avis",
+    "results": "Résultats"
+  },
+  "receipt": {
+    "title": "Reçu Électronique",
+    "share": "Partager le Reçu",
+    "download": "Télécharger le Reçu",
+    "print": "Imprimer",
+    "scanQR": "Scanner pour voir le reçu",
+    "location": "Emplacement",
+    "time": "Heure",
+    "date": "Date",
+    "paymentDetails": "Détails du Paiement",
+    "amount": "Montant",
+    "paymentDate": "Date de Paiement",
+    "transactionId": "ID de Transaction"
+  },
+  "provider": {
+    "services": "Services",
+    "events": "Événements",
+    "loadingProfile": "Chargement du profil...",
+    "paymentSetup": {
+      "title": "Recevoir des Paiements avec Stripe",
+      "subtitle": "Connectez votre compte bancaire pour recevoir les paiements de vos réservations instantanément.",
+      "connectStripe": "Connecter Stripe",
+      "secureNote": "Vous serez redirigé vers l'intégration entièrement sécurisée hébergée par Stripe.",
+      "setupIncomplete": "Configuration Incomplète",
+      "setupIncompleteMessage": "Vous devez fournir plus d'informations pour commencer à recevoir des paiements.",
+      "completeSetup": "Compléter la Configuration",
+      "stripeConnected": "Stripe Connecté",
+      "accountReady": "Votre compte est prêt à recevoir des paiements.",
+      "managePayouts": "Gérer les Paiements",
+      "goHome": "Aller à l'Accueil",
+      "viewBalance": "Voir votre solde et modifier les détails bancaires sur Stripe."
+    },
+    "underReview": {
+      "title": "En Cours de Révision",
+      "message": "Votre profil de fournisseur est actuellement en cours de révision par notre équipe. Cela prend généralement 24 à 48 heures."
+    }
+  },
+  "likedItems": {
+    "title": "Éléments Aimés",
+    "services": "Services",
+    "events": "Événements",
+    "viewDetails": "Voir les Détails",
+    "noLiked": "Aucun {{type}} aimé",
+    "noLikedMessage": "Les éléments que vous aimez apparaîtront ici."
   },
   "validation": {
     "required": "Requis",
@@ -200,7 +297,14 @@
     "save": "Enregistrer les modifications",
     "updateDetails": "Mettez à jour vos informations personnelles pour rester en contact.",
     "nameMinLength": "Le nom doit comporter au moins 3 lettres",
-    "nameInvalid": "Veuillez entrer un nom valide"
+    "nameInvalid": "Veuillez entrer un nom valide",
+    "fullName": "Nom Complet",
+    "placeholderFullName": "Votre nom complet",
+    "phoneNumber": "Numéro de Téléphone",
+    "placeholderPhone": "Ajouter un numéro de téléphone",
+    "email": "Email",
+    "cancel": "Annuler",
+    "description": "Mettez à jour vos informations personnelles pour que les prestataires et compagnons puissent rester en contact."
   },
   "passwordStrength": {
     "label": "Force du mot de passe :",

@@ -16,7 +16,11 @@
     "comingSoon": "Próximamente",
     "all": "Todos",
     "reset": "Restablecer",
-    "showResults": "Mostrar resultados"
+    "showResults": "Mostrar resultados",
+    "services": "Servicios",
+    "events": "Eventos",
+    "retry": "Reintentar",
+    "saveChanges": "Guardar cambios"
   },
   "auth": {
     "login": {
@@ -45,14 +49,15 @@
       "signUpButton": "Registrarse",
       "alreadyMember": "¿Ya eres miembro?",
       "loginLink": "Iniciar sesión",
-      "success": "¡Registro exitoso! Por favor completa la configuración de pagos."
+      "success": "¡Registro exitoso!"
     },
     "forgotPassword": {
       "title": "Restablecer contraseña",
       "subtitle": "Ingresa tu correo para recibir instrucciones",
       "sendLink": "Enviar enlace de restablecimiento",
       "rememberPassword": "¿Recuerdas tu contraseña?",
-      "loginLink": "Iniciar sesión"
+      "loginLink": "Iniciar sesión",
+      "errorGeneric": "Error al enviar correo de restablecimiento"
     },
     "changePassword": {
       "title": "Change Password",
@@ -93,6 +98,27 @@
     "sat": "Sáb",
     "sun": "Dom"
   },
+  "map": {
+    "services": "Servicios",
+    "events": "Eventos",
+    "cluster": "Grupo"
+  },
+  "bookings": {
+    "title": "Mis Reservas",
+    "providerTitle": "Reservas",
+    "services": "Servicios",
+    "events": "Eventos",
+    "noBookings": "No se encontraron reservas de {{type}}",
+    "noBookingsYet": "Aún No Hay Reservas",
+    "noBookingsMessage": "Tus próximas reservas aparecerán aquí agrupadas por fecha.",
+    "refresh": "Actualizar",
+    "bookingDetails": "Detalles de la Reserva",
+    "selectDate": "Seleccionar Fecha",
+    "chooseStartTime": "Elegir Hora de Inicio",
+    "selectDateFirst": "Por favor selecciona una fecha arriba para ver los horarios disponibles.",
+    "noSlotsAvailable": "No hay horarios disponibles para esta fecha.",
+    "continueWithPrice": "Continuar - ${{price}}"
+  },
   "events": {
     "createTitle": "Crear nuevo evento",
     "eventTitle": "Título del evento",
@@ -126,7 +152,14 @@
     "searchPlaceholder": "Buscar eventos...",
     "dateRange": "Rango de fechas",
     "bookNow": "Reservar entradas",
-    "popular": "Próximos Eventos"
+    "popular": "Próximos Eventos",
+    "errorLoading": "Error al cargar evento",
+    "notFound": "Evento no encontrado",
+    "openInMaps": "Abrir en Mapas",
+    "writeReview": "Escribir una Reseña",
+    "noReviews": "Aún no hay reseñas. ¡Sé el primero!",
+    "submitReview": "Enviar Reseña",
+    "comment": "Comentario"
   },
   "services": {
     "createTitle": "Crear nuevo servicio",
@@ -159,7 +192,71 @@
     "priceLow": "Precio: Bajo a Alto",
     "priceHigh": "Precio: Alto a Bajo",
     "newest": "Más recientes",
-    "filterByDay": "Día de la semana"
+    "filterByDay": "Día de la semana",
+    "tryAdjustingFilters": "Intenta ajustar tus filtros",
+    "notFound": "Servicio no encontrado o ocurrió un error.",
+    "hostedBy": "Organizado por",
+    "viewProfile": "Ver perfil ->",
+    "aboutExperience": "Sobre esta experiencia",
+    "serviceDetails": "Detalles del Servicio",
+    "availability": "DISPONIBILIDAD",
+    "locationLabel": "UBICACIÓN",
+    "viewOnMap": "Ver en mapa",
+    "capacityLabel": "CAPACIDAD",
+    "participants": "{{count}} participantes",
+    "timeLabel": "Hora",
+    "reviews": "Reseñas",
+    "noReviews": "Aún no hay reseñas. ¡Sé el primero!",
+    "writeReview": "Escribir una Reseña",
+    "perPerson": "por persona",
+    "comment": "Comentario",
+    "submitReview": "Enviar Reseña",
+    "results": "Resultados"
+  },
+  "receipt": {
+    "title": "Recibo Electrónico",
+    "share": "Compartir Recibo",
+    "download": "Descargar Recibo",
+    "print": "Imprimir",
+    "scanQR": "Escanea para ver el recibo",
+    "location": "Ubicación",
+    "time": "Hora",
+    "date": "Fecha",
+    "paymentDetails": "Detalles del Pago",
+    "amount": "Monto",
+    "paymentDate": "Fecha de Pago",
+    "transactionId": "ID de Transacción"
+  },
+  "provider": {
+    "services": "Servicios",
+    "events": "Eventos",
+    "loadingProfile": "Cargando perfil...",
+    "paymentSetup": {
+      "title": "Recibe Pagos con Stripe",
+      "subtitle": "Conecta tu cuenta bancaria para recibir pagos de tus reservas al instante.",
+      "connectStripe": "Conectar Stripe",
+      "secureNote": "Serás redirigido a la incorporación completamente segura alojada por Stripe.",
+      "setupIncomplete": "Configuración Incompleta",
+      "setupIncompleteMessage": "Necesitas proporcionar más información para comenzar a recibir pagos.",
+      "completeSetup": "Completar Configuración",
+      "stripeConnected": "Stripe Conectado",
+      "accountReady": "Tu cuenta está lista para recibir pagos.",
+      "managePayouts": "Gestionar Pagos",
+      "goHome": "Ir al Inicio",
+      "viewBalance": "Ver tu saldo y editar detalles bancarios en Stripe."
+    },
+    "underReview": {
+      "title": "En Revisión",
+      "message": "Tu perfil de proveedor está siendo revisado por nuestro equipo. Esto suele tardar 24-48 horas."
+    }
+  },
+  "likedItems": {
+    "title": "Elementos Favoritos",
+    "services": "Servicios",
+    "events": "Eventos",
+    "viewDetails": "Ver Detalles",
+    "noLiked": "No hay {{type}} favoritos",
+    "noLikedMessage": "Los elementos que te gusten aparecerán aquí."
   },
   "validation": {
     "required": "Requerido",
@@ -200,7 +297,14 @@
     "save": "Guardar cambios",
     "updateDetails": "Actualiza tus datos personales para mantener el contacto.",
     "nameMinLength": "El nombre debe tener al menos 3 letras",
-    "nameInvalid": "Por favor ingresa un nombre válido"
+    "nameInvalid": "Por favor ingresa un nombre válido",
+    "fullName": "Nombre Completo",
+    "placeholderFullName": "Tu nombre completo",
+    "phoneNumber": "Número de Teléfono",
+    "placeholderPhone": "Agrega un número de teléfono",
+    "email": "Correo Electrónico",
+    "cancel": "Cancelar",
+    "description": "Actualiza tus datos personales para que los proveedores y acompañantes puedan mantenerse en contacto."
   },
   "passwordStrength": {
     "label": "Fortaleza de la contraseña:",

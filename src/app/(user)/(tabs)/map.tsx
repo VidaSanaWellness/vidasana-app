@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, ActivityIndicator, TouchableOpacity, Platform} from 'react-native';
+import {View, TouchableOpacity, Image, Modal, Pressable, Animated} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useQuery} from '@tanstack/react-query';
 import {supabase} from '@/utils/supabase';
@@ -9,8 +9,10 @@ import Supercluster from 'supercluster';
 import {Feature, Point} from 'geojson';
 import {useDebouncer} from '@/hooks';
 import {useUserLocation} from '@/hooks';
-import {Feather} from '@expo/vector-icons';
-import {Body, Caption} from '@/components';
+import {Body, Caption, Loader, H3, Subtitle} from '@/components';
+import {Ionicons} from '@expo/vector-icons';
+import {Rating} from 'react-native-ratings';
+import {useTranslation} from 'react-i18next';
 
 // Helper to convert zoom level to radius (approximate)
 const getRadiusFromZoom = (zoom: number) => {
@@ -18,19 +20,14 @@ const getRadiusFromZoom = (zoom: number) => {
 };
 
 export default function MapScreen() {
+  const {t} = useTranslation();
   const mapRef = useRef<MapView>(null);
   const [initialRegion, setInitialRegion] = useState<Region | null>(null);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
   // State for fetching parameters (Debounced)
-  const [fetchParams, setFetchParams, debouncedParams] = useDebouncer(
-    {
-      lat: 37.7749,
-      lng: -122.4194,
-      radius: 10,
-      zoom: 14,
-    },
-    1000
-  );
+  const [fetchParams, setFetchParams, debouncedParams] = useDebouncer({zoom: 14, radius: 10, lat: 37.7749, lng: -122.4194}, 1000);
 
   // -- User Location Setup --
   const {location, isLoading: isLocationLoading} = useUserLocation();
@@ -50,14 +47,27 @@ export default function MapScreen() {
       mapRef.current?.animateToRegion(region, 1000);
     } else if (!isLocationLoading && !location) {
       // Default SF
-      setInitialRegion({
-        latitude: 37.7749,
-        longitude: -122.4194,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
+      setInitialRegion({latitude: 37.7749, longitude: -122.4194, latitudeDelta: 0.0922, longitudeDelta: 0.0421});
     }
   }, [location, isLocationLoading]);
+
+  // Animate bottom sheet
+  useEffect(() => {
+    if (selectedItem) {
+      Animated.spring(slideAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 11,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [selectedItem]);
 
   // -- Data Fetching --
   const {data: items, isLoading} = useQuery({
@@ -152,34 +162,10 @@ export default function MapScreen() {
     mapRef.current?.animateCamera({center: coordinate, zoom: expansionZoom}, {duration: 500});
   };
 
-  const handleZoomIn = () => {
-    const region = currentRegionRef.current;
-    if (!region || !mapRef.current) return;
-
-    const newRegion = {
-      ...region,
-      latitudeDelta: region.latitudeDelta / 2,
-      longitudeDelta: region.longitudeDelta / 2,
-    };
-    mapRef.current.animateToRegion(newRegion, 400);
-  };
-
-  const handleZoomOut = () => {
-    const region = currentRegionRef.current;
-    if (!region || !mapRef.current) return;
-
-    const newRegion = {
-      ...region,
-      latitudeDelta: region.latitudeDelta * 2,
-      longitudeDelta: region.longitudeDelta * 2,
-    };
-    mapRef.current.animateToRegion(newRegion, 400);
-  };
-
   if (!initialRegion)
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#00594f" />
+        <Loader visible />
       </View>
     );
 
@@ -187,12 +173,13 @@ export default function MapScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <MapView
         ref={mapRef}
-        provider={PROVIDER_GOOGLE}
+        showsCompass
         style={{flex: 1}}
-        initialRegion={initialRegion}
         showsUserLocation
+        zoomControlEnabled
         showsMyLocationButton
-        zoomControlEnabled={true}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={initialRegion}
         onRegionChangeComplete={onRegionChangeComplete}>
         {clusters.map((feature) => {
           const isCluster = feature.properties.cluster;
@@ -213,16 +200,16 @@ export default function MapScreen() {
 
           return (
             <Marker
-              key={`item-${feature.properties.itemId}`}
               coordinate={coordinate}
-              pinColor={feature.properties.itemType === 'event' ? 'teal' : 'green'}
               title={feature.properties.title}
-              onCalloutPress={() => {
-                const path =
-                  feature.properties.itemType === 'event'
-                    ? `/(user)/events/${feature.properties.itemId}`
-                    : `/(user)/services/${feature.properties.itemId}`;
-                router.push(path as any);
+              key={`item-${feature.properties.itemId}`}
+              pinColor={feature.properties.itemType === 'event' ? '#EF4444' : '#00594f'}
+              onPress={() => {
+                // Find the full item data
+                const fullItem = items?.find((item) => item.id === feature.properties.itemId);
+                if (fullItem) {
+                  setSelectedItem(fullItem);
+                }
               }}
             />
           );
@@ -230,45 +217,124 @@ export default function MapScreen() {
       </MapView>
 
       {/* Loading Indicator */}
-      {isLoading && (
-        <View className="pointer-events-none absolute left-0 right-0 top-14 items-center">
-          <View className="rounded-full bg-white px-4 py-2 shadow-sm">
-            <ActivityIndicator size="small" color="#00594f" />
-          </View>
-        </View>
-      )}
-
-      {/* Zoom Controls (iOS Only - Android uses native zoomControlEnabled) */}
-      {Platform.OS === 'ios' && (
-        <View className="absolute bottom-32 right-4 gap-3">
-          <TouchableOpacity
-            onPress={handleZoomIn}
-            className="h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg active:bg-gray-50">
-            <Feather name="plus" size={24} color="#374151" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleZoomOut}
-            className="h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg active:bg-gray-50">
-            <Feather name="minus" size={24} color="#374151" />
-          </TouchableOpacity>
-        </View>
-      )}
+      <Loader visible={isLoading} />
 
       {/* Legend */}
-      <View className="absolute bottom-8 left-4 rounded-lg bg-white/90 p-3 shadow-lg">
+      <View className="top-safe-offset-4 absolute left-4 rounded-lg bg-white/90 p-3 shadow-lg">
         <View className="mb-2 flex-row items-center gap-2">
           <View className="h-3 w-3 rounded-full bg-primary" />
-          <Caption className="font-medium text-gray-700">Services</Caption>
+          <Caption className="font-medium text-gray-700">{t('map.services')}</Caption>
         </View>
         <View className="mb-2 flex-row items-center gap-2">
-          <View className="h-3 w-3 rounded-full bg-sage" />
-          <Caption className="font-medium text-gray-700">Events</Caption>
+          <View className="h-3 w-3 rounded-full bg-secondary" />
+          <Caption className="font-medium text-gray-700">{t('map.events')}</Caption>
         </View>
         <View className="flex-row items-center gap-2">
           <View className="h-3 w-3 rounded-full bg-orange-500" />
-          <Caption className="font-medium text-gray-700">Cluster</Caption>
+          <Caption className="font-medium text-gray-700">{t('map.cluster')}</Caption>
         </View>
       </View>
+
+      {/* Bottom Sheet Modal */}
+      <Modal visible={!!selectedItem} transparent animationType="none" onRequestClose={() => setSelectedItem(null)}>
+        <Pressable className="flex-1 bg-black/40" onPress={() => setSelectedItem(null)}>
+          <Animated.View
+            style={{
+              transform: [{translateY: slideAnim.interpolate({inputRange: [0, 1], outputRange: [400, 0]})}],
+            }}
+            className="absolute bottom-0 left-0 right-0">
+            <Pressable onPress={(e) => e.stopPropagation()}>
+              <View className="rounded-t-3xl bg-white p-5 pb-8 shadow-2xl">
+                {selectedItem && (
+                  <View className="flex-row gap-4">
+                    {/* Image - Larger & Cleaner */}
+                    <View className="h-28 w-28 overflow-hidden rounded-xl bg-gray-50 shadow-sm">
+                      {selectedItem.images && selectedItem.images.length > 0 ? (
+                        <Image
+                          source={{uri: supabase.storage.from('images').getPublicUrl(selectedItem.images[0]).data.publicUrl}}
+                          className="h-full w-full"
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View className="h-full w-full items-center justify-center">
+                          <Ionicons name="image-outline" size={32} color="#E5E7EB" />
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Content Column */}
+                    <View className="flex-1 justify-between py-1">
+                      {/* Close Button - Absolute Top Right */}
+                      <TouchableOpacity
+                        onPress={() => setSelectedItem(null)}
+                        className="absolute -right-1 -top-1 z-10 p-2 opacity-60"
+                        activeOpacity={0.7}>
+                        <Ionicons name="close-circle" size={24} color="#9CA3AF" />
+                      </TouchableOpacity>
+
+                      {/* Header Section */}
+                      <View className="pr-8">
+                        <H3 className="mb-0.5 text-lg font-bold text-gray-900" numberOfLines={1}>
+                          {selectedItem.title}
+                        </H3>
+
+                        {/* Provider & Rating Row */}
+                        <View className="flex-row items-center gap-1.5">
+                          {selectedItem.provider_name && (
+                            <Caption className="text-sm font-medium text-gray-500" numberOfLines={1}>
+                              {selectedItem.provider_name}
+                            </Caption>
+                          )}
+                          <View className="h-1 w-1 rounded-full bg-gray-300" />
+                          <View className="flex-row items-center gap-1">
+                            <Ionicons name="star" size={12} color="#F59E0B" />
+                            <Caption className="text-xs font-bold text-gray-700">
+                              {selectedItem.rating > 0 ? selectedItem.rating.toFixed(1) : 'New'}
+                            </Caption>
+                          </View>
+                        </View>
+                      </View>
+
+                      {/* Footer Section: Price, Distance, Action */}
+                      <View className="flex-row items-end justify-between pt-3">
+                        <View>
+                          {selectedItem.price ? (
+                            <Subtitle className="text-lg font-extrabold text-primary">${selectedItem.price}</Subtitle>
+                          ) : (
+                            <Subtitle className="text-lg font-extrabold text-gray-400">-</Subtitle>
+                          )}
+                          {selectedItem.distance && (
+                            <Caption className="mt-0.5 text-xs text-gray-400">
+                              <Ionicons name="location-sharp" size={10} color="#9CA3AF" />{' '}
+                              {selectedItem.distance < 1000
+                                ? `${Math.round(selectedItem.distance)}m`
+                                : `${(selectedItem.distance / 1000).toFixed(1)}km`}
+                            </Caption>
+                          )}
+                        </View>
+
+                        <TouchableOpacity
+                          onPress={() => {
+                            const path = selectedItem.type === 'event' ? `/(user)/events/${selectedItem.id}` : `/(user)/services/${selectedItem.id}`;
+                            setSelectedItem(null);
+                            router.push(path as any);
+                          }}
+                          className="flex-row items-center gap-1 rounded-full bg-primary px-5 py-2.5 shadow-sm transition-transform active:scale-95"
+                          activeOpacity={0.9}>
+                          <Caption className="font-bold text-white">
+                            {selectedItem.type === 'event' ? t('events.bookNow') : t('bookings.bookingDetails')}
+                          </Caption>
+                          <Ionicons name="arrow-forward" size={14} color="#fff" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
+            </Pressable>
+          </Animated.View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }

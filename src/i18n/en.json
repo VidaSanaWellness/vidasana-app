@@ -16,7 +16,11 @@
     "comingSoon": "Coming Soon",
     "all": "All",
     "reset": "Reset",
-    "showResults": "Show Results"
+    "showResults": "Show Results",
+    "services": "Services",
+    "events": "Events",
+    "retry": "Retry",
+    "saveChanges": "Save Changes"
   },
   "auth": {
     "login": {
@@ -45,14 +49,15 @@
       "signUpButton": "Sign Up",
       "alreadyMember": "Already a member?",
       "loginLink": "Login",
-      "success": "Registration successful! Please complete your payout setup."
+      "success": "Registration successful!"
     },
     "forgotPassword": {
       "title": "Reset Password",
       "subtitle": "Enter your email to receive reset instructions",
       "sendLink": "Send Reset Link",
       "rememberPassword": "Remember your password?",
-      "loginLink": "Login"
+      "loginLink": "Login",
+      "errorGeneric": "Failed to send reset email"
     },
     "changePassword": {
       "title": "Change Password",
@@ -93,6 +98,27 @@
     "sat": "Sat",
     "sun": "Sun"
   },
+  "map": {
+    "services": "Services",
+    "events": "Events",
+    "cluster": "Cluster"
+  },
+  "bookings": {
+    "title": "My Bookings",
+    "providerTitle": "Bookings",
+    "services": "Services",
+    "events": "Events",
+    "noBookings": "No {{type}} bookings found",
+    "noBookingsYet": "No Bookings Yet",
+    "noBookingsMessage": "Your future bookings will appear here grouped by date.",
+    "refresh": "Refresh",
+    "bookingDetails": "Booking Details",
+    "selectDate": "Select Date",
+    "chooseStartTime": "Choose Start Time",
+    "selectDateFirst": "Please select a date above to see available times.",
+    "noSlotsAvailable": "No slots available for this date.",
+    "continueWithPrice": "Continue - ${{price}}"
+  },
   "events": {
     "createTitle": "Create New Event",
     "eventTitle": "Event Title",
@@ -126,7 +152,14 @@
     "searchPlaceholder": "Search events...",
     "dateRange": "Date Range",
     "bookNow": "Book Tickets",
-    "popular": "Upcoming Events"
+    "popular": "Upcoming Events",
+    "errorLoading": "Error loading event",
+    "notFound": "Event not found",
+    "openInMaps": "Open in Maps",
+    "writeReview": "Write a Review",
+    "noReviews": "No reviews yet. Be the first!",
+    "submitReview": "Submit Review",
+    "comment": "Comment"
   },
   "services": {
     "createTitle": "Create New Service",
@@ -152,6 +185,7 @@
     "searchPlaceholder": "Search services...",
     "viewDetails": "View Details",
     "recommended": "Recommended for you",
+    "results": "Results",
     "noServicesFound": "No services found",
     "filters": "Filters & Sort",
     "sortBy": "Sort By",
@@ -159,7 +193,84 @@
     "priceLow": "Price: Low to High",
     "priceHigh": "Price: High to Low",
     "newest": "Newest",
-    "filterByDay": "Day of Week"
+    "filterByDay": "Day of Week",
+    "tryAdjustingFilters": "Try adjusting your filters",
+    "notFound": "Service not found or an error occurred.",
+    "hostedBy": "Hosted by",
+    "viewProfile": "View profile ->",
+    "aboutExperience": "About this experience",
+    "serviceDetails": "Service Details",
+    "availability": "AVAILABILITY",
+    "locationLabel": "LOCATION",
+    "viewOnMap": "View on map",
+    "capacityLabel": "CAPACITY",
+    "participants": "{{count}} participants",
+    "timeLabel": "Time",
+    "reviews": "Reviews",
+    "noReviews": "No reviews yet. Be the first!",
+    "writeReview": "Write a Review",
+    "perPerson": "per person",
+    "comment": "Comment",
+    "submitReview": "Submit Review"
+  },
+  "receipt": {
+    "title": "E-Receipt",
+    "share": "Share E-Receipt",
+    "download": "Download E-Receipt",
+    "print": "Print",
+    "scanQR": "Scan to view receipt",
+    "location": "Location",
+    "time": "Time",
+    "date": "Date",
+    "paymentDetails": "Payment Details",
+    "amount": "Amount",
+    "paymentDate": "Payment Date",
+    "transactionId": "Transaction ID"
+  },
+  "provider": {
+    "services": "Services",
+    "events": "Events",
+    "loadingProfile": "Loading profile...",
+    "paymentSetup": {
+      "title": "Get Paid with Stripe",
+      "subtitle": "Connect your bank account to receive payouts from your bookings instantly.",
+      "connectStripe": "Connect Stripe",
+      "secureNote": "You will be redirected to completely secure onboarding hosted by Stripe.",
+      "setupIncomplete": "Setup Incomplete",
+      "setupIncompleteMessage": "You need to provide more information to start receiving payouts.",
+      "completeSetup": "Complete Setup",
+      "stripeConnected": "Stripe Connected",
+      "accountReady": "Your account is ready to receive payouts.",
+      "managePayouts": "Manage Payouts",
+      "goHome": "Go Home",
+      "viewBalance": "View your balance and edit bank details on Stripe."
+    },
+    "underReview": {
+      "title": "Under Review",
+      "message": "Your provider profile is currently being reviewed by our team. This usually takes 24-48 hours."
+    }
+  },
+  "likedItems": {
+    "title": "Liked Items",
+    "services": "Services",
+    "events": "Events",
+    "viewDetails": "View Details",
+    "noLiked": "No liked {{type}}",
+    "noLikedMessage": "Items you like will appear here."
+  },
+  "profile": {
+    "editTitle": "Edit Profile",
+    "save": "Save Changes",
+    "updateDetails": "Update your personal details so providers and companions can stay in touch.",
+    "nameMinLength": "Name at least have 3 latters",
+    "nameInvalid": "Please enter a valid name",
+    "fullName": "Full Name",
+    "placeholderFullName": "Your full name",
+    "phoneNumber": "Phone Number",
+    "placeholderPhone": "Add a phone number",
+    "email": "Email",
+    "cancel": "Cancel",
+    "description": "Update your personal details so providers and companions can stay in touch."
   },
   "validation": {
     "required": "Required",
@@ -194,13 +305,6 @@
     "stripeAccountId": "Stripe Account ID:",
     "stripePlaceholder": "Stripe Account ID",
     "errorDoc": "Error while getting doc file."
-  },
-  "profile": {
-    "editTitle": "Edit Profile",
-    "save": "Save Changes",
-    "updateDetails": "Update your personal details so providers and companions can stay in touch.",
-    "nameMinLength": "Name at least have 3 latters",
-    "nameInvalid": "Please enter a valid name"
   },
   "passwordStrength": {
     "label": "Password Strength:",

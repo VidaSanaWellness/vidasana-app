@@ -16,17 +16,11 @@ import {Button} from '@/components';
 const Page = () => {
   const {t} = useTranslation();
   const {back} = useRouter();
-  const {control, handleSubmit, formState} = useForm({
-    defaultValues: {
-      email: '',
-    },
-  });
+  const {control, handleSubmit, formState} = useForm({defaultValues: {email: ''}});
 
   const onSubmit = async (data: {email: string}) => {
     try {
-      const {error} = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${expo.scheme}://auth/reset-password`,
-      });
+      const {error} = await supabase.auth.resetPasswordForEmail(data.email, {redirectTo: `${expo.scheme}://auth/reset-password`});
 
       if (error) throw error;
 
@@ -38,11 +32,12 @@ const Page = () => {
 
       // Optional: Navigate back or to a specific confirmation screen
       // back();
-    } catch (error: any) {
+    } catch (e: any) {
+      console.log('🚀 ~ onSubmit ~ error:', e?.response?.data || e?.message || e);
       Toast.show({
         type: 'error',
         text1: t('common.error', 'Error'),
-        text2: error.message || t('auth.forgotPassword.errorGeneric', 'Failed to send reset email'),
+        text2: e.message || t('auth.forgotPassword.errorGeneric', 'Failed to send reset email'),
       });
     }
   };

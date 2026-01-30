@@ -10,7 +10,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
-import {H3, Body, Caption} from '@/components';
+import {H3, Body, Caption, Loader} from '@/components';
 import {IMAGES} from '@/assets/images';
 
 export default function ReceiptScreen() {
@@ -161,7 +161,7 @@ export default function ReceiptScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#15803d" />
+        <Loader visible />
       </View>
     );
   }

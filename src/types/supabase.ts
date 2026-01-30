@@ -860,9 +860,14 @@ export type Database = {
       search_map_items: {
         Args: { radius_meters: number; user_lat: number; user_lng: number }
         Returns: {
+          distance: number
           id: string
+          images: string[]
           lat: number
           lng: number
+          price: number
+          provider_name: string
+          rating: number
           title: string
           type: string
         }[]

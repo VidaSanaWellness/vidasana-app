@@ -1,16 +1,16 @@
 import type React from 'react';
 import {useState, useEffect} from 'react';
 import {supabase} from '@/utils';
-import {Link, useRouter} from 'expo-router';
+import {useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import {ActivityIndicator, Alert, Image, Platform, ScrollView, TouchableOpacity, View} from 'react-native';
-import {LanguagePicker} from '@/components';
-import {H2, H3, Body, Caption} from '@/components';
+import {H2, H3, Body, Caption, LanguagePicker, EditProfileModal} from '@/components';
 import {useTranslation} from 'react-i18next';
 import {useAppStore} from '@/store';
+import Toast from 'react-native-toast-message';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -27,21 +27,14 @@ const Profile = () => {
     phone: '',
     role: '',
   });
-  const [editedInfo, setEditedInfo] = useState({fullName: '', phone: ''});
-  const [isSaving, setIsSaving] = useState(false);
   const [isFetchingProfile, setIsFetchingProfile] = useState(true);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isLanguagePickerVisible, setIsLanguagePickerVisible] = useState(false);
   const {t, i18n} = useTranslation();
 
   const isLoadingProfile = false; // We can improve this with a query later if needed
   const refresh = async () => {}; // Placeholder for now
   const insets = useSafeAreaInsets();
-  const keyboardVerticalOffset = Platform.OS === 'ios' ? Math.max(insets.bottom, 0) + 12 : 0;
-  const _keyboardSpacerHeight = Math.max(0, keyboardHeight > 0 ? keyboardHeight - keyboardVerticalOffset : 0);
-  const isProvider = !!currentUser?.user_metadata?.isProvider;
   const isBusy = isLoadingProfile || isFetchingProfile;
-  const roleLabel = userInfo.role ? String(userInfo.role).toUpperCase() : isProvider ? 'PROVIDER' : 'MEMBER';
 
   useEffect(() => {
     if (!currentUser) {
@@ -89,32 +82,6 @@ const Profile = () => {
     fetchProfile();
   }, [currentUser]);
 
-  //   useEffect(() => {
-  //     if (!isEditing) {
-  //       setKeyboardHeight(0);
-  //       return;
-  //     }
-
-  //     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-  //     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-  //     const handleKeyboardShow = (event: KeyboardEvent) => {
-  //       setKeyboardHeight(event.endCoordinates?.height ?? 0);
-  //     };
-
-  //     const handleKeyboardHide = () => {
-  //       setKeyboardHeight(0);
-  //     };
-
-  //     const showSubscription = Keyboard.addListener(showEvent, handleKeyboardShow);
-  //     const hideSubscription = Keyboard.addListener(hideEvent, handleKeyboardHide);
-
-  //     return () => {
-  //       showSubscription.remove();
-  //       hideSubscription.remove();
-  //     };
-  //   }, [isEditing]);
-
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
@@ -137,57 +104,57 @@ const Profile = () => {
     }
   };
 
-  const handlePasswordChange = () => {
-    router.push('/(settings)/change-password');
-  };
+  const handlePasswordChange = () => router.push('/(settings)/change-password');
 
   const handleEditPress = () => {
     if (isLoadingProfile || isFetchingProfile) return;
-    setEditedInfo({phone: userInfo.phone, fullName: userInfo.fullName});
     setIsEditing(true);
   };
 
-  const handleCancelEdit = () => {
-    if (isSaving) return;
-    setIsEditing(false);
-    setEditedInfo({fullName: '', phone: ''});
-  };
+  // const handleSaveProfile = async () => {
+  //   if (!currentUser?.id) return Alert.alert('Error', "We couldn't verify your account. Please sign in again.");
 
-  const handleSaveProfile = async () => {
-    if (!currentUser?.id) return Alert.alert('Error', "We couldn't verify your account. Please sign in again.");
+  //   const trimmedName = editedInfo.fullName.trim();
+  //   const trimmedPhone = editedInfo.phone.trim();
 
-    const trimmedName = editedInfo.fullName.trim();
-    const trimmedPhone = editedInfo.phone.trim();
+  //   if (!trimmedName) return Alert.alert('Name required', 'Please enter your full name before saving.');
 
-    if (!trimmedName) return Alert.alert('Name required', 'Please enter your full name before saving.');
+  //   setIsSaving(true);
+  //   try {
+  //     const fullPhoneNumber = selectedCountry ? `${selectedCountry?.callingCode} ${trimmedPhone}` : trimmedPhone;
+  //     const countryCode = selectedCountry?.cca2 || '';
 
-    setIsSaving(true);
-    try {
-      const {data, error} = await supabase
-        .from('profile')
-        .update({name: trimmedName, phone: trimmedPhone || null})
-        .eq('id', currentUser.id)
-        .select('name, phone, role')
-        .single();
+  //     const {data, error} = await supabase
+  //       .from('profile')
+  //       .update({name: trimmedName, phone: fullPhoneNumber || null, country: countryCode})
+  //       .eq('id', currentUser.id)
+  //       .select('name, phone, role')
+  //       .single();
 
-      if (error) throw error;
+  //     if (error) throw error;
 
-      setUserInfo({
-        email: userInfo.email, // Email is not in profile table, keep existing
-        fullName: data?.name ?? trimmedName,
-        phone: data?.phone ?? trimmedPhone,
-        role: String(data?.role ?? userInfo.role ?? ''),
-      });
-      setIsEditing(false);
-      setEditedInfo({fullName: '', phone: ''});
-      await refresh();
-      Alert.alert('Profile updated', 'Your changes have been saved.');
-    } catch (saveError) {
-      console.error('Error updating profile:', saveError);
-      Alert.alert('Error', "We couldn't save your profile changes right now. Please try again shortly.");
-    } finally {
-      setIsSaving(false);
-    }
+  //     setUserInfo({
+  //       email: userInfo.email, // Email is not in profile table, keep existing
+  //       fullName: data?.name ?? trimmedName,
+  //       phone: data?.phone ?? fullPhoneNumber,
+  //       role: String(data?.role ?? userInfo.role ?? ''),
+  //     });
+  //     setIsEditing(false);
+  //     setEditedInfo({fullName: '', phone: ''});
+  //     await refresh();
+  //     Alert.alert('Profile updated', 'Your changes have been saved.');
+  //   } catch (saveError) {
+  //     console.error('Error updating profile:', saveError);
+  //     Alert.alert('Error', "We couldn't save your profile changes right now. Please try again shortly.");
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
+
+  const handleUpdateSuccess = (updatedData: {fullName: string; phone: string}) => {
+    setUserInfo((prev) => ({...prev, phone: updatedData.phone, fullName: updatedData.fullName}));
+    Toast.show({type: 'success', text1: 'Profile updated successfully'});
+    refresh();
   };
 
   if (isFetchingProfile && !userInfo.fullName) {
@@ -219,13 +186,11 @@ const Profile = () => {
             </View>
           </TouchableOpacity>
 
-          <View className="flex-row items-center space-x-2">
-            <H2 className="text-black">{userInfo.fullName || 'Your Name'}</H2>
-
-            <View className={`rounded-full px-3 py-1 ${isProvider ? 'bg-primary' : 'bg-gray-300'}`}>
-              <Caption className="font-nunito-bold text-white">{roleLabel}</Caption>
-            </View>
+          <View className={`rounded-full bg-primary px-3 py-1`}>
+            <Caption className="text-xs font-bold uppercase text-white">{currentUser?.user_metadata?.role || 'Member'}</Caption>
           </View>
+
+          <H2 className="text-center font-nunito-bold text-2xl text-black">{currentUser?.user_metadata?.full_name || 'User'}</H2>
 
           <Body className="mt-1 text-base text-[#666]">{userInfo.email}</Body>
         </View>
@@ -242,13 +207,11 @@ const Profile = () => {
         <View className="mt-6 px-5">
           <H3 className="mb-4 text-black">{t('settings.accountSettings')}</H3>
 
-          <Link asChild href="/edit-profile">
-            <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3">
-              <Ionicons name="person-outline" size={24} color="#00594f" />
-              <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('profile.editTitle')}</Body>
-              <Ionicons name="chevron-forward" size={24} color="#00594f" />
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={handleEditPress}>
+            <Ionicons name="person-outline" size={24} color="#00594f" />
+            <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('profile.editTitle')}</Body>
+            <Ionicons name="chevron-forward" size={24} color="#00594f" />
+          </TouchableOpacity>
 
           <TouchableOpacity className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3" onPress={handlePasswordChange}>
             <Ionicons name="key-outline" size={24} color="#00594f" />
@@ -307,6 +270,9 @@ const Profile = () => {
           <Body className="ml-2 font-nunito-bold text-base text-red-600">{t('settings.logOut')}</Body>
         </AnimatedTouchableOpacity>
       </ScrollView>
+
+      {/* EDIT MODE SHEET */}
+      <EditProfileModal visible={isEditing} onClose={() => setIsEditing(false)} onSuccess={handleUpdateSuccess} initialData={userInfo} />
     </Animated.View>
   );
 };

@@ -7,11 +7,11 @@ import {useTranslation} from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import {LanguagePicker} from '@/components';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {PhoneInputField} from '@/components';
-import Animated, {FadeIn, FadeOut, SlideInDown, SlideOutDown} from 'react-native-reanimated';
-import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, TextInput, TouchableOpacity, View} from 'react-native';
+import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
+import {ActivityIndicator, Alert, Image, Platform, ScrollView, TouchableOpacity, View} from 'react-native';
 import {useAppStore} from '@/store';
-import {H2, H3, Body, Caption} from '@/components';
+import {H2, H3, Body, Caption, EditProfileModal} from '@/components';
+import Toast from 'react-native-toast-message';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -26,32 +26,19 @@ const Profile = () => {
     phone: '',
     role: '',
   });
-  const [editedInfo, setEditedInfo] = useState({fullName: '', phone: ''});
-  const [isSaving, setIsSaving] = useState(false);
   const [isFetchingProfile, setIsFetchingProfile] = useState(true);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isLanguagePickerVisible, setIsLanguagePickerVisible] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState<any>(null);
 
   const {t, i18n} = useTranslation();
 
   const isLoadingProfile = isFetchingProfile;
   const refresh = async () => {};
   const insets = useSafeAreaInsets();
-  const keyboardVerticalOffset = Platform.OS === 'ios' ? Math.max(insets.bottom, 0) + 12 : 0;
-  const _keyboardSpacerHeight = Math.max(0, keyboardHeight > 0 ? keyboardHeight - keyboardVerticalOffset : 0);
-  const isProvider = !!currentUser?.user_metadata?.role && currentUser.user_metadata.role === 'provider';
   const isBusy = isLoadingProfile || isFetchingProfile;
-  const roleLabel = userInfo.role ? String(userInfo.role).toUpperCase() : isProvider ? 'PROVIDER' : 'MEMBER';
 
   useEffect(() => {
     if (!currentUser) {
-      setUserInfo({
-        fullName: '',
-        email: '',
-        phone: '',
-        role: '',
-      });
+      setUserInfo({fullName: '', email: '', phone: '', role: ''});
       setProfileImage(null);
       setIsFetchingProfile(false);
       return;
@@ -69,10 +56,7 @@ const Profile = () => {
       try {
         const {data, error} = await supabase.from('profile').select('name, phone, role, image').eq('id', currentUser.id).single();
 
-        if (error) {
-          console.error('Error fetching profile:', error.message);
-          return;
-        }
+        if (error) return console.error('Error fetching profile:', error.message);
 
         if (data) {
           setUserInfo({
@@ -92,32 +76,6 @@ const Profile = () => {
 
     fetchProfile();
   }, [currentUser]);
-
-  //   useEffect(() => {
-  //     if (!isEditing) {
-  //       setKeyboardHeight(0);
-  //       return;
-  //     }
-  //
-  //     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-  //     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-  //
-  //     const handleKeyboardShow = (event: KeyboardEvent) => {
-  //       setKeyboardHeight(event.endCoordinates?.height ?? 0);
-  //     };
-  //
-  //     const handleKeyboardHide = () => {
-  //       setKeyboardHeight(0);
-  //     };
-  //
-  //     const showSubscription = Keyboard.addListener(showEvent, handleKeyboardShow);
-  //     const hideSubscription = Keyboard.addListener(hideEvent, handleKeyboardHide);
-  //
-  //     return () => {
-  //       showSubscription.remove();
-  //       hideSubscription.remove();
-  //     };
-  //   }, [isEditing]);
 
   const handleLogout = async () => {
     try {
@@ -147,55 +105,23 @@ const Profile = () => {
 
   const handleEditPress = () => {
     if (isLoadingProfile || isFetchingProfile) return;
-    setEditedInfo({phone: userInfo.phone, fullName: userInfo.fullName});
     setIsEditing(true);
   };
 
-  const handleCancelEdit = () => {
-    if (isSaving) return;
-    setIsEditing(false);
-    setEditedInfo({fullName: '', phone: ''});
+  const handleUpdateSuccess = (updatedData: {fullName: string; phone: string}) => {
+    setUserInfo((prev) => ({...prev, phone: updatedData.phone, fullName: updatedData.fullName}));
+    Toast.show({type: 'success', text1: 'Profile updated successfully'});
+    refresh();
   };
 
-  const handleSaveProfile = async () => {
-    if (!currentUser?.id) return Alert.alert('Error', "We couldn't verify your account. Please sign in again.");
-
-    const trimmedName = editedInfo.fullName.trim();
-    const trimmedPhone = editedInfo.phone.trim();
-
-    if (!trimmedName) return Alert.alert('Name required', 'Please enter your full name before saving.');
-
-    setIsSaving(true);
-    try {
-      const fullPhoneNumber = selectedCountry ? `${selectedCountry?.callingCode} ${trimmedPhone}` : trimmedPhone;
-      const countryCode = selectedCountry?.cca2 || '';
-
-      const {data, error} = await supabase
-        .from('profile')
-        .update({name: trimmedName, phone: fullPhoneNumber || null, country: countryCode})
-        .eq('id', currentUser.id)
-        .select('name, phone, role')
-        .single();
-
-      if (error) throw error;
-
-      setUserInfo({
-        email: userInfo.email,
-        fullName: data?.name ?? trimmedName,
-        phone: data?.phone ?? fullPhoneNumber,
-        role: String(data?.role ?? userInfo.role ?? ''),
-      });
-      setIsEditing(false);
-      setEditedInfo({fullName: '', phone: ''});
-      await refresh();
-      Alert.alert('Profile updated', 'Your changes have been saved.');
-    } catch (saveError) {
-      console.error('Error updating profile:', saveError);
-      Alert.alert('Error', "We couldn't save your profile changes right now. Please try again shortly.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  if (isFetchingProfile && !userInfo.fullName) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#00594f" />
+        <Body className="mt-4 text-gray-500">Loading profile...</Body>
+      </View>
+    );
+  }
 
   return (
     <Animated.View entering={FadeIn} exiting={FadeOut} className="flex-1 bg-white">
@@ -217,15 +143,13 @@ const Profile = () => {
             </View>
           </TouchableOpacity>
 
-          <View className="flex-row items-center space-x-2">
-            <H2 className="font-nunito-bold text-2xl text-black">{currentUser?.user_metadata?.full_name || 'User'}</H2>
-
-            <View className={`rounded-full px-3 py-1 ${currentUser?.user_metadata?.role === 'provider' ? 'bg-primary' : 'bg-gray-300'}`}>
-              <Caption className="text-xs font-bold uppercase text-white">{currentUser?.user_metadata?.role || 'Member'}</Caption>
-            </View>
+          <View className={`rounded-full bg-primary px-3 py-1`}>
+            <Caption className="text-xs uppercase text-white">{currentUser?.user_metadata?.role || 'Member'}</Caption>
           </View>
 
-          <Body className="mt-1 font-nunito text-base text-gray-500">{currentUser?.email}</Body>
+          <H2 className="text-center font-nunito-bold text-2xl text-black">{currentUser?.user_metadata?.full_name || 'User'}</H2>
+
+          <Body className="mt-1 font-nunito text-base !lowercase text-gray-500">{currentUser?.email}</Body>
         </View>
 
         {/* Loading State */}
@@ -312,89 +236,7 @@ const Profile = () => {
       </ScrollView>
 
       {/* EDIT MODE SHEET */}
-      {isEditing && (
-        <Animated.View entering={FadeIn} exiting={FadeOut} pointerEvents="box-none" className="absolute inset-0 bg-[rgba(0,0,0,0.25)]">
-          <TouchableOpacity className="absolute inset-0" activeOpacity={1} accessible={false} onPress={handleCancelEdit} />
-
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? Math.max(insets.bottom, 0) - 112 : 0}
-            className="w-full flex-1 items-center justify-end"
-            style={{paddingBottom: insets.bottom || 0}}>
-            <Animated.View
-              entering={SlideInDown}
-              exiting={SlideOutDown}
-              className="max-h-[90%] w-full rounded-t-3xl bg-white px-6 pb-12 pt-6 shadow-lg">
-              <KeyboardAvoidingView className="w-full flex-grow-0">
-                <View className="w-full">
-                  <H3 className="mb-2 text-xl font-bold text-[#1F1F1F]">Edit Profile</H3>
-
-                  <Body className="mb-5 text-sm text-[#6B6B6B]">Update your personal details so providers and companions can stay in touch.</Body>
-
-                  {/* Full Name */}
-                  <View className="mb-5">
-                    <Body className="mb-2 font-nunito text-sm text-gray-700">Full Name</Body>
-                    <TextInput
-                      editable={!isSaving}
-                      returnKeyType="done"
-                      value={editedInfo.fullName}
-                      placeholder="Your full name"
-                      onChangeText={(text) => setEditedInfo((p) => ({...p, fullName: text}))}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 font-nunito text-base text-gray-900"
-                    />
-                  </View>
-
-                  {/* Phone */}
-                  <View className="mb-5">
-                    <Body className="mb-2 font-nunito text-sm text-gray-700">Phone Number</Body>
-                    <PhoneInputField
-                      value={editedInfo.phone}
-                      onChangePhoneNumber={(text) => setEditedInfo((p) => ({...p, phone: text}))}
-                      selectedCountry={selectedCountry}
-                      onChangeSelectedCountry={setSelectedCountry}
-                      placeholder="Add a phone number"
-                    />
-                  </View>
-
-                  {/* Email */}
-                  <View className="mb-5">
-                    <Body className="mb-2 text-sm text-[#4A4A4A]">Email</Body>
-                    <TextInput
-                      editable={false}
-                      value={userInfo.email}
-                      selectTextOnFocus={false}
-                      className="rounded-xl border border-[#E0E0E0] bg-[#F0F0F0] px-4 py-3 text-base text-[#9E9E9E]"
-                    />
-                  </View>
-
-                  {/* Buttons */}
-                  <View className="flex-row justify-end space-x-3">
-                    <TouchableOpacity
-                      disabled={isSaving}
-                      onPress={handleCancelEdit}
-                      className={`rounded-xl bg-gray-100 px-5 py-3 ${isSaving ? 'opacity-60' : ''}`}>
-                      <Body className="font-nunito-bold text-base text-gray-700">Cancel</Body>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={handleSaveProfile}
-                      disabled={isSaving}
-                      className={`rounded-xl bg-primary px-5 py-3 ${isSaving ? 'opacity-60' : ''}`}>
-                      {isSaving ? (
-                        <ActivityIndicator size="small" color="#FFF" />
-                      ) : (
-                        <Body className="font-nunito-bold text-base text-white">Save Changes</Body>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-
-                  <View className="h-10" />
-                </View>
-              </KeyboardAvoidingView>
-            </Animated.View>
-          </KeyboardAvoidingView>
-        </Animated.View>
-      )}
+      <EditProfileModal visible={isEditing} onClose={() => setIsEditing(false)} onSuccess={handleUpdateSuccess} initialData={userInfo} />
     </Animated.View>
   );
 };

@@ -46,7 +46,8 @@ const Register = () => {
   const onSubmit = async (data: FormData) => {
     try {
       if (role === 'provider' && !document) return setDocError(t('validation.docRequired'));
-      if (!agreeToTerms) return Alert.alert(t('auth.register.termsRequiredTitle'), t('auth.register.termsRequiredMessage'));
+      if (!agreeToTerms)
+        return Toast.show({type: 'error', text1: t('auth.register.termsRequiredTitle'), text2: t('auth.register.termsRequiredMessage')});
 
       const {email, phone, password, fullName} = data;
 
@@ -82,13 +83,10 @@ const Register = () => {
         if (providerError) throw providerError;
       }
 
-      Toast.show({type: 'success', text1: t('auth.register.success')});
+      Toast.show({type: 'success', text2: t('auth.register.success')});
 
-      if (role === 'provider') {
-        router.replace('/(provider)/payment-setup');
-      }
+      if (role === 'provider') router.replace('/(provider)/payment-setup');
     } catch (e: any) {
-      console.log('🚀 ~ onSubmit ~ e:', e);
       Toast.show({type: 'error', text1: e?.message});
     }
   };

@@ -1,3 +1,4 @@
+export * from './EditProfileModal';
 export * from './Loader';
 export * from './Avatar';
 export * from './BookingCard';

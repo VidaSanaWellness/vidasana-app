@@ -45,14 +45,16 @@ export const PhoneInputField = ({
               height: 56, // h-14
             } as ViewStyle,
             input: {
+              paddingLeft: 8,
               color: '#000',
               fontSize: 16,
               fontFamily: 'Nunito_400Regular',
             },
             flagContainer: {
-              backgroundColor: 'transparent',
+              paddingRight: 0,
               borderTopLeftRadius: 8,
               borderBottomLeftRadius: 8,
+              backgroundColor: 'transparent',
             },
             callingCode: {
               fontSize: 16,
@@ -68,12 +70,14 @@ export const PhoneInputField = ({
             },
           }}
           modalStyles={{
-            container: {
-              backgroundColor: '#FFF',
-            },
             backdrop: {
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backgroundColor: 'rgba(0, 0, 0, 0.4)', // Semi-transparent dark overlay
             },
+            // modal: {
+            //   backgroundColor: '#FFF',
+            //   borderTopLeftRadius: 16,
+            //   borderTopRightRadius: 16,
+            // },
             list: {
               backgroundColor: '#FFF',
             },

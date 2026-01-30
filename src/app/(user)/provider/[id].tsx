@@ -10,6 +10,7 @@ import {H2, Body} from '@/components/Typography';
 import {Avatar} from '@/components/Avatar';
 import {ServiceCard} from '@/components/ServiceCard';
 import dayjs from 'dayjs';
+import {Loader} from '@/components';
 
 export default function ProviderProfileScreen() {
   const {id: idParam} = useLocalSearchParams();
@@ -146,7 +147,7 @@ export default function ProviderProfileScreen() {
   if (isLoadingProvider) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#00594f" />
+        <Loader visible />
       </View>
     );
   }
