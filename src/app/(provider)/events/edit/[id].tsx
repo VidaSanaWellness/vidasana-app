@@ -1,4 +1,4 @@
-import {AntDesign, Feather, Ionicons} from '@expo/vector-icons';
+import {Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {supabase, uploadFile} from '@/utils/supabase';
 import {Tables} from '@/types';
@@ -6,15 +6,14 @@ import {useAppStore} from '@/store';
 import {useForm, Controller} from 'react-hook-form';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useRouter, useLocalSearchParams} from 'expo-router';
-import {View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image} from 'react-native';
+import {View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator} from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import React, {useEffect, useState} from 'react';
 import Toast from 'react-native-toast-message';
-import {ImagePickerAsset, launchImageLibraryAsync, MediaTypeOptions} from 'expo-image-picker';
 import {useTranslation} from 'react-i18next';
 import {EventFormValues, EventUnifiedImage, LanguageCode} from '@/types/events';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-import {H2, Body, Caption, LocationPickerModal} from '@/components';
+import {H2, Body, Caption, LanguageTabs, TranslatableFields, ImageInput, LocationInput} from '@/components';
+import {LANGUAGES} from '@/constants';
 
 type Category = Tables<'categories'>;
 
@@ -29,7 +28,6 @@ export default function EditEventScreen() {
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | 'book_till' | null>(null);
   const [datePickerMode, setDatePickerMode] = useState<'date' | 'time' | 'datetime'>('datetime');
-  const [isLocationPickerVisible, setLocationPickerVisible] = useState(false);
 
   const {
     watch,
@@ -53,6 +51,7 @@ export default function EditEventScreen() {
       ticket_types: [],
       lat: null,
       lng: null,
+      address: '',
     },
   });
 
@@ -110,10 +109,7 @@ export default function EditEventScreen() {
 
       eventData.event_translations.forEach((tr: any) => {
         if (translations[tr.lang_code]) {
-          translations[tr.lang_code] = {
-            title: tr.title,
-            description: tr.description,
-          };
+          translations[tr.lang_code] = {title: tr.title, description: tr.description};
         }
       });
 
@@ -140,6 +136,7 @@ export default function EditEventScreen() {
         ticket_types: tickets,
         lat: (eventData as any).location?.coordinates ? (eventData as any).location.coordinates[1] : null,
         lng: (eventData as any).location?.coordinates ? (eventData as any).location.coordinates[0] : null,
+        address: eventData.address || '',
       });
     }
   }, [eventData, reset]);
@@ -175,6 +172,7 @@ export default function EditEventScreen() {
           book_till: data.book_till ? data.book_till.toISOString() : null,
           images: imagePaths,
           location: data.lat && data.lng ? `POINT(${data.lng} ${data.lat})` : null,
+          address: data.address,
         })
         .eq('id', id);
 
@@ -245,30 +243,6 @@ export default function EditEventScreen() {
   const onSubmit = (data: EventFormValues) => mutate(data);
 
   // --- Helpers same as create ---
-  const pickImages = async (value: EventUnifiedImage[], onChange: (images: EventUnifiedImage[]) => void) => {
-    const result = await launchImageLibraryAsync({
-      mediaTypes: MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      const MAX_SIZE = 5 * 1024 * 1024;
-      const validImages: ImagePickerAsset[] = [];
-      result.assets.forEach((asset) => {
-        if (asset.fileSize && asset.fileSize <= MAX_SIZE) validImages.push(asset);
-      });
-      if (validImages.length > 0) {
-        const newImages: EventUnifiedImage[] = validImages.map((asset) => ({
-          id: asset.uri,
-          type: 'new',
-          uri: asset.uri,
-          file: asset,
-        }));
-        onChange([...(value || []), ...newImages]);
-      }
-    }
-  };
 
   const openDatePicker = (field: 'start_at' | 'end_at' | 'book_till') => {
     setActiveTimeField(field);
@@ -327,98 +301,21 @@ export default function EditEventScreen() {
         </View>
 
         {/* Language Tabs */}
-        <View className="mb-6 flex-row rounded-lg bg-gray-100 p-1">
-          {LANGUAGES.map((lang, i) => (
-            <TouchableOpacity
-              key={i}
-              onPress={() => setActiveLanguage(lang.code)}
-              className={`flex-1 items-center rounded-md py-2 ${activeLanguage === lang.code ? 'bg-white shadow-sm' : 'shadow-none'}`}>
-              <Body className={`font-nunito-bold ${activeLanguage === lang.code ? 'text-primary' : 'text-gray-500'}`}>{lang.label}</Body>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <LanguageTabs languages={LANGUAGES} activeLanguage={activeLanguage} onChange={setActiveLanguage} />
 
-        {LANGUAGES.map((lang) => (
-          <View key={lang.code} style={{display: activeLanguage === lang.code ? 'flex' : 'none'}}>
-            <View className="mb-4">
-              <Body className="mb-1 font-nunito-bold text-sm text-gray-700">
-                {t('events.eventTitle')} ({lang.label})
-              </Body>
-              <Controller
-                control={control}
-                rules={{required: 'Title is required'}}
-                name={`translations.${lang.code}.title`}
-                render={({field: {onChange, value}}) => (
-                  <TextInput
-                    className="rounded-lg border border-gray-300 bg-white p-3 font-nunito"
-                    placeholder={t('events.eventTitlePlaceholder')}
-                    value={value}
-                    onChangeText={onChange}
-                  />
-                )}
-              />
-              {errors.translations?.[lang.code]?.title && (
-                <Caption className="mt-1 text-red-500">{errors.translations[lang.code]?.title?.message}</Caption>
-              )}
-            </View>
+        {/* Multilingual Fields */}
+        <TranslatableFields
+          control={control}
+          errors={errors}
+          activeLanguage={activeLanguage}
+          languages={LANGUAGES}
+          t={t}
+          titlePlaceholder={t('events.eventTitlePlaceholder')}
+          descriptionPlaceholder={t('events.descriptionPlaceholder')}
+        />
 
-            <View className="mb-4">
-              <Body className="mb-1 font-nunito-bold text-sm text-gray-700">
-                {t('events.description')} ({lang.label})
-              </Body>
-              <Controller
-                control={control}
-                name={`translations.${lang.code}.description`}
-                rules={{required: 'Description is required'}}
-                render={({field: {onChange, value}}) => (
-                  <TextInput
-                    multiline
-                    value={value}
-                    textAlignVertical="top"
-                    onChangeText={onChange}
-                    placeholder={t('events.descriptionPlaceholder')}
-                    className="h-24 rounded-lg border border-gray-300 bg-white p-3 font-nunito"
-                  />
-                )}
-              />
-              {errors.translations?.[lang.code]?.description && (
-                <Caption className="mt-1 text-red-500">{errors.translations[lang.code]?.description?.message}</Caption>
-              )}
-            </View>
-          </View>
-        ))}
-
-        {/* Common Fields */}
-        <View className="mb-4">
-          <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.images')}</Body>
-          <Controller
-            name="images"
-            control={control}
-            rules={{validate: (val) => val?.length > 0 || 'At least one image is required'}}
-            render={({field: {onChange, value}, fieldState: {error}}) => (
-              <>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2 flex-row">
-                  {value?.map((img, index) => (
-                    <View key={index} className="relative mr-2">
-                      <Image source={{uri: img.uri}} className="h-24 w-24 rounded-lg" />
-                      <TouchableOpacity
-                        onPress={() => onChange(value.filter((_, i) => i !== index))}
-                        className="absolute right-1 top-1 rounded-full bg-red-500 p-1">
-                        <AntDesign name="close" size={12} color="white" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                  <TouchableOpacity
-                    onPress={() => pickImages(value, onChange)}
-                    className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-                    <Feather name="camera" size={24} color="gray" />
-                  </TouchableOpacity>
-                </ScrollView>
-                {error?.message && <Caption className="mt-1 text-red-500">{error.message}</Caption>}
-              </>
-            )}
-          />
-        </View>
+        {/* Images */}
+        <ImageInput control={control} name="images" label={t('events.images')} />
 
         <View className="mb-4">
           <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.category')}</Body>
@@ -475,56 +372,8 @@ export default function EditEventScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Location Section */}
-        <View className="mb-6">
-          <Body className="mb-2 font-nunito-bold text-sm text-gray-700">{t('events.location')}</Body>
-          <Controller
-            control={control}
-            name="lat"
-            render={({field: {value: lat}}) => {
-              const lng = watch('lng');
-              return (
-                <View>
-                  {lat && lng ? (
-                    <View className="mb-3 h-40 overflow-hidden rounded-xl bg-gray-100">
-                      <MapView
-                        provider={PROVIDER_GOOGLE}
-                        style={{flex: 1}}
-                        initialRegion={{
-                          latitude: lat,
-                          longitude: lng,
-                          latitudeDelta: 0.01,
-                          longitudeDelta: 0.01,
-                        }}
-                        scrollEnabled={false}
-                        zoomEnabled={false}
-                        pitchEnabled={false}
-                        rotateEnabled={false}>
-                        <Marker coordinate={{latitude: lat, longitude: lng}} />
-                      </MapView>
-                      <TouchableOpacity
-                        className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center bg-black/10"
-                        onPress={() => setLocationPickerVisible(true)}>
-                        <View className="items-center justify-center rounded-full bg-white/90 p-2 shadow-sm">
-                          <Feather name="edit-2" size={20} color="#00594f" />
-                        </View>
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
-
-                  <TouchableOpacity
-                    onPress={() => setLocationPickerVisible(true)}
-                    className={`flex-row items-center justify-center rounded-xl border border-dashed p-4 ${lat ? 'border-primary/30 bg-primary/5' : 'border-gray-300 bg-gray-50'}`}>
-                    <Feather name="map-pin" size={20} color={lat ? '#00594f' : '#9CA3AF'} />
-                    <Body className={`ml-2 font-nunito-bold ${lat ? 'text-primary' : 'text-gray-500'}`}>
-                      {lat ? 'Change Location' : 'Select Location on Map'}
-                    </Body>
-                  </TouchableOpacity>
-                </View>
-              );
-            }}
-          />
-        </View>
+        {/* Location Selection */}
+        <LocationInput control={control} setValue={setValue} watch={watch} label={t('events.location')} />
 
         {/* Tickets */}
         <View className="mb-6">
@@ -601,15 +450,6 @@ export default function EditEventScreen() {
         mode={datePickerMode as any}
         onConfirm={handleConfirmDate}
         onCancel={() => setTimePickerVisible(false)}
-      />
-      <LocationPickerModal
-        visible={isLocationPickerVisible}
-        onClose={() => setLocationPickerVisible(false)}
-        initialLocation={watch('lat') && watch('lng') ? {lat: watch('lat')!, lng: watch('lng')!} : null}
-        onConfirm={(loc) => {
-          setValue('lat', loc.lat, {shouldValidate: true});
-          setValue('lng', loc.lng, {shouldValidate: true});
-        }}
       />
     </SafeAreaView>
   );

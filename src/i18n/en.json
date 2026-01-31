@@ -20,7 +20,10 @@
     "services": "Services",
     "events": "Events",
     "retry": "Retry",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "addPhotos": "Add Photos",
+    "address": "Address",
+    "addressPlaceholder": "Enter full address"
   },
   "auth": {
     "login": {
@@ -101,7 +104,9 @@
   "map": {
     "services": "Services",
     "events": "Events",
-    "cluster": "Cluster"
+    "cluster": "Cluster",
+    "changeLocation": "Change Location",
+    "selectLocation": "Select Location on Map"
   },
   "bookings": {
     "title": "My Bookings",
@@ -117,7 +122,8 @@
     "chooseStartTime": "Choose Start Time",
     "selectDateFirst": "Please select a date above to see available times.",
     "noSlotsAvailable": "No slots available for this date.",
-    "continueWithPrice": "Continue - ${{price}}"
+    "continueWithPrice": "Continue - ${{price}}",
+    "scan": "Scan"
   },
   "events": {
     "createTitle": "Create New Event",
@@ -274,6 +280,8 @@
   },
   "validation": {
     "required": "Required",
+    "titleRequired": "Title is required",
+    "descriptionRequired": "Description is required",
     "fullNameRequired": "Full Name is required",
     "fullNameAlphabets": "Full name must contain alphabets only",
     "fullNameTwoWords": "Please enter at least 2 words",
@@ -315,5 +323,12 @@
   },
   "notifications": {
     "title": "Notifications"
+  },
+  "scanner": {
+    "title": "Scan Booking QR",
+    "instruction": "Align the QR code within the frame to check in",
+    "cameraPermissionTitle": "Camera Access Needed",
+    "cameraPermissionMessage": "We need permission to access your camera to scan booking QR codes.",
+    "grantPermission": "Grant Permission"
   }
 }

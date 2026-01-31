@@ -1,5 +1,6 @@
 import {Database} from './supabase';
 export * from './supabase';
+export * from './events';
 
 type TList = keyof Database['public']['Tables'];
 type TFieldView = keyof Database['public']['Tables']['profile'];

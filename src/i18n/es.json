@@ -20,7 +20,10 @@
     "services": "Servicios",
     "events": "Eventos",
     "retry": "Reintentar",
-    "saveChanges": "Guardar cambios"
+    "saveChanges": "Guardar cambios",
+    "addPhotos": "Añadir fotos",
+    "address": "Dirección",
+    "addressPlaceholder": "Ingresa la dirección completa"
   },
   "auth": {
     "login": {
@@ -101,7 +104,9 @@
   "map": {
     "services": "Servicios",
     "events": "Eventos",
-    "cluster": "Grupo"
+    "cluster": "Grupo",
+    "changeLocation": "Cambiar ubicación",
+    "selectLocation": "Seleccionar ubicación en el mapa"
   },
   "bookings": {
     "title": "Mis Reservas",
@@ -117,7 +122,8 @@
     "chooseStartTime": "Elegir Hora de Inicio",
     "selectDateFirst": "Por favor selecciona una fecha arriba para ver los horarios disponibles.",
     "noSlotsAvailable": "No hay horarios disponibles para esta fecha.",
-    "continueWithPrice": "Continuar - ${{price}}"
+    "continueWithPrice": "Continuar - ${{price}}",
+    "scan": "Escanear"
   },
   "events": {
     "createTitle": "Crear nuevo evento",
@@ -260,6 +266,8 @@
   },
   "validation": {
     "required": "Requerido",
+    "titleRequired": "El título es obligatorio",
+    "descriptionRequired": "La descripción es obligatoria",
     "fullNameRequired": "El nombre completo es obligatorio",
     "fullNameAlphabets": "El nombre completo solo debe contener letras",
     "fullNameTwoWords": "Por favor ingresa al menos 2 palabras",
@@ -315,5 +323,12 @@
   },
   "notifications": {
     "title": "Notificaciones"
+  },
+  "scanner": {
+    "title": "Escanear QR de Reserva",
+    "instruction": "Alinea el código QR dentro del marco para registrarte",
+    "cameraPermissionTitle": "Acceso a la cámara necesario",
+    "cameraPermissionMessage": "Necesitamos permiso para acceder a tu cámara y escanear los códigos QR de las reservas.",
+    "grantPermission": "Conceder permiso"
   }
 }

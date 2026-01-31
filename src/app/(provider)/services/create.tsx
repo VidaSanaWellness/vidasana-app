@@ -1,28 +1,26 @@
-import {AntDesign, Feather, Ionicons} from '@expo/vector-icons';
+import {Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {supabase, uploadFile} from '@/utils/supabase';
+import {supabase, uploadFile} from '@/utils';
 import {useAppStore} from '@/store';
 import {useForm, Controller, type FieldErrors} from 'react-hook-form';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useRouter} from 'expo-router';
-import {View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import {View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator} from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import React, {useState} from 'react';
 import Toast from 'react-native-toast-message';
-import {ServiceFormValues, LanguageCode, UnifiedImage, WeekDay} from '@/types/service';
+import {ServiceFormValues, LanguageCode, WeekDay} from '@/types/service';
 import {LANGUAGES, getDays} from '@/constants';
 import {useTranslation} from 'react-i18next';
-import {LocationPickerModal, H2, Body, Caption} from '@/components';
+import {H2, Body, Caption, LanguageTabs, TranslatableFields, ImageInput, LocationInput} from '@/components';
 
 export default function CreateServiceScreen() {
   const router = useRouter();
   const {t} = useTranslation();
   const queryClient = useQueryClient();
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
-  const [isLocationPickerVisible, setLocationPickerVisible] = useState(false);
-  const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<LanguageCode>('en');
+  const [activeTimeField, setActiveTimeField] = useState<'start_at' | 'end_at' | null>(null);
 
   const {
     watch,
@@ -32,11 +30,7 @@ export default function CreateServiceScreen() {
     formState: {errors, isSubmitting},
   } = useForm<ServiceFormValues>({
     defaultValues: {
-      translations: {
-        en: {title: '', description: ''},
-        es: {title: '', description: ''},
-        fr: {title: '', description: ''},
-      },
+      translations: {en: {title: '', description: ''}, es: {title: '', description: ''}, fr: {title: '', description: ''}},
       category: null,
       price: '',
       capacity: '',
@@ -44,12 +38,10 @@ export default function CreateServiceScreen() {
       end_at: null,
       week_day: [],
       images: [],
-      lat: null,
       lng: null,
+      address: '',
     },
   });
-
-  const selectedImages = watch('images');
 
   // Fetch Categories
   const {data: categories, isLoading: isLoadingCategories} = useQuery({
@@ -85,12 +77,12 @@ export default function CreateServiceScreen() {
       const createPayload: any = {
         capacity: parseInt(data.capacity),
         category: data.category!,
-        // title and description removed from here
         end_at: data.end_at!.toLocaleTimeString('en-US', {hour12: false}),
         price: parseFloat(data.price),
         start_at: data.start_at!.toLocaleTimeString('en-US', {hour12: false}),
         week_day: data.week_day,
         location: data.lat && data.lng ? `POINT(${data.lng} ${data.lat})` : null,
+        address: data.address,
       };
 
       if (uploadedImagePaths.length > 0) createPayload.images = uploadedImagePaths;
@@ -102,19 +94,15 @@ export default function CreateServiceScreen() {
 
       // 4. Insert Translations
       const translationInserts = LANGUAGES.map((lang) => ({
-        service_id: serviceData.id,
         lang_code: lang.code,
+        service_id: serviceData.id,
         title: data.translations[lang.code].title,
         description: data.translations[lang.code].description,
       }));
 
       const {error: translationError} = await supabase.from('service_translations').insert(translationInserts);
 
-      if (translationError) {
-        // Optional: rollback service creation if translation fails?
-        // For now, just throw error
-        throw translationError;
-      }
+      if (translationError) throw translationError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['services']});
@@ -138,51 +126,6 @@ export default function CreateServiceScreen() {
   };
 
   const onSubmit = (data: ServiceFormValues) => createServiceMutation.mutate(data);
-
-  // Image Picker Logic
-  const pickImages = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-      const validImages: ImagePicker.ImagePickerAsset[] = [];
-      let rejectedCount = 0;
-
-      result.assets.forEach((asset) => {
-        if (asset.fileSize && asset.fileSize <= MAX_SIZE) {
-          validImages.push(asset);
-        } else {
-          rejectedCount++;
-        }
-      });
-
-      if (rejectedCount > 0)
-        Toast.show({type: 'error', text1: 'File too large', text2: `${rejectedCount} image(s) exceeded the 5MB limit and were skipped.`});
-
-      if (validImages.length > 0) {
-        const currentImages = watch('images');
-        const newImages: UnifiedImage[] = validImages.map((asset) => ({
-          id: asset.uri,
-          type: 'new',
-          uri: asset.uri,
-          file: asset,
-        }));
-        setValue('images', [...currentImages, ...newImages], {shouldValidate: true});
-      }
-    }
-  };
-
-  const removeImage = (index: number) => {
-    const currentImages = watch('images');
-    setValue(
-      'images',
-      currentImages.filter((_, i) => i !== index)
-    );
-  };
 
   // Time Picker Logic
   const handleConfirmTime = (date: Date) => {
@@ -218,99 +161,21 @@ export default function CreateServiceScreen() {
         </View>
 
         {/* Language Tabs */}
-        <View className="mb-6 flex-row rounded-lg bg-gray-100 p-1">
-          {LANGUAGES.map((lang, i) => (
-            <TouchableOpacity
-              key={i}
-              onPress={() => setActiveLanguage(lang.code)}
-              className={`flex-1 items-center rounded-md py-2 ${activeLanguage === lang.code ? 'bg-white shadow-sm' : 'shadow-none'}`}>
-              <Body className={`font-nunito-bold ${activeLanguage === lang.code ? 'text-primary' : 'text-gray-500'}`}>{lang.label}</Body>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <LanguageTabs languages={LANGUAGES} activeLanguage={activeLanguage} onChange={setActiveLanguage} />
 
-        {LANGUAGES.map((lang) => (
-          <View key={lang.code} style={{display: activeLanguage === lang.code ? 'flex' : 'none'}}>
-            {/* Title (Multi-lang) */}
-            <View className="mb-4">
-              <Body className="mb-1 font-nunito-bold text-sm text-gray-700">
-                {t('services.serviceTitle')} ({lang.label})
-              </Body>
-              <Controller
-                control={control}
-                rules={{required: t('validation.required')}}
-                name={`translations.${lang.code}.title`}
-                render={({field: {onChange, value}}) => (
-                  <View>
-                    <TextInput
-                      className="rounded-lg border border-gray-300 bg-white p-3 font-nunito"
-                      placeholder={t('services.serviceTitlePlaceholder')}
-                      value={value}
-                      onChangeText={onChange}
-                    />
-                    {errors.translations?.[lang.code]?.title && (
-                      <Caption className="mt-1 text-red-500">{errors.translations[lang.code]?.title?.message}</Caption>
-                    )}
-                  </View>
-                )}
-              />
-            </View>
+        {/* Multilingual Fields */}
+        <TranslatableFields
+          t={t}
+          errors={errors}
+          control={control}
+          languages={LANGUAGES}
+          activeLanguage={activeLanguage}
+          titlePlaceholder={t('services.serviceTitlePlaceholder')}
+          descriptionPlaceholder={t('events.descriptionPlaceholder')}
+        />
 
-            {/* Description (Multi-lang) */}
-            <View className="mb-4">
-              <Body className="mb-1 font-nunito-bold text-sm text-gray-700">
-                {t('events.description')} ({lang.label})
-              </Body>
-              <Controller
-                control={control}
-                rules={{required: t('validation.required')}}
-                name={`translations.${lang.code}.description`}
-                render={({field: {onChange, value}}) => (
-                  <View>
-                    <TextInput
-                      className="min-h-[100px] rounded-lg border border-gray-300 bg-white p-3 font-nunito"
-                      placeholder={t('events.descriptionPlaceholder')}
-                      value={value}
-                      multiline
-                      textAlignVertical="top"
-                      onChangeText={onChange}
-                    />
-                    {errors.translations?.[lang.code]?.description && (
-                      <Caption className="mt-1 text-red-500">{errors.translations[lang.code]?.description?.message}</Caption>
-                    )}
-                  </View>
-                )}
-              />
-            </View>
-          </View>
-        ))}
         {/* Images */}
-        <View className="mb-4">
-          <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.images')}</Body>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2 flex-row">
-            {selectedImages.map((img, index) => (
-              <View key={index} className="relative mr-2">
-                <Image source={{uri: img.uri}} className="h-24 w-24 rounded-lg" />
-                <TouchableOpacity onPress={() => removeImage(index)} className="absolute right-1 top-1 rounded-full bg-red-500 p-1">
-                  <AntDesign name="close" size={12} color="white" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            <TouchableOpacity
-              onPress={pickImages}
-              className="h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <Feather name="camera" size={24} color="gray" />
-              <Caption className="mt-1 text-gray-500">{t('events.addPhotos')}</Caption>
-            </TouchableOpacity>
-          </ScrollView>
-          <Controller
-            control={control}
-            name="images"
-            rules={{validate: (val) => val.length > 0 || 'At least one image is required'}}
-            render={() => <></>}
-          />
-          {errors.images && <Caption className="mt-1 text-red-500">{errors.images.message}</Caption>}
-        </View>
+        <ImageInput control={control} name="images" label={t('events.images')} />
 
         {/* Category */}
         <View className="mb-4">
@@ -337,23 +202,7 @@ export default function CreateServiceScreen() {
         </View>
 
         {/* Location Selection */}
-        <View className="mb-6">
-          <Body className="mb-1 font-nunito-bold text-sm text-gray-700">Location</Body>
-          <View className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
-            <View className="flex-row items-center">
-              <View className={`h-8 w-8 items-center justify-center rounded-full ${watch('lat') ? 'bg-primary/10' : 'bg-gray-100'}`}>
-                <Feather name="map-pin" size={16} color={watch('lat') ? '#00594f' : 'gray'} />
-              </View>
-              <Body className={`ml-3 font-nunito ${watch('lat') ? 'font-bold text-primary' : 'text-gray-500'}`}>
-                {watch('lat') ? 'Location Selected' : 'No location selected'}
-              </Body>
-            </View>
-            <TouchableOpacity onPress={() => setLocationPickerVisible(true)} className="rounded-md bg-primary/10 px-3 py-1.5">
-              <Caption className="font-nunito-bold text-primary">{watch('lat') ? 'Change' : 'Pick on Map'}</Caption>
-            </TouchableOpacity>
-          </View>
-          {errors.lat && <Caption className="mt-1 text-red-500">Location is required</Caption>}
-        </View>
+        <LocationInput control={control} setValue={setValue} watch={watch} label="Location" error={errors.lat ? 'Location is required' : undefined} />
 
         {/* Price & Capacity Row */}
         <View className="mb-4 flex-row justify-between gap-4">
@@ -381,11 +230,11 @@ export default function CreateServiceScreen() {
               name="capacity"
               render={({field: {onChange, value}}) => (
                 <TextInput
-                  className="rounded-lg border border-gray-300 bg-white p-3 font-nunito"
+                  value={value}
                   placeholder="e.g. 10"
                   keyboardType="numeric"
-                  value={value}
                   onChangeText={onChange}
+                  className="rounded-lg border border-gray-300 bg-white p-3 font-nunito"
                 />
               )}
             />
@@ -398,8 +247,8 @@ export default function CreateServiceScreen() {
           <View className="flex-1">
             <Body className="mb-1 font-nunito-bold text-sm text-gray-700">{t('events.startTime')}</Body>
             <Controller
-              control={control}
               name="start_at"
+              control={control}
               rules={{required: 'Start time required'}}
               render={({field: {value}, fieldState: {error}}) => (
                 <View className="flex-1">
@@ -486,17 +335,6 @@ export default function CreateServiceScreen() {
             <Body className="font-nunito-bold text-lg text-white">{t('services.createButton')}</Body>
           )}
         </TouchableOpacity>
-
-        {/* Modals */}
-        <LocationPickerModal
-          visible={isLocationPickerVisible}
-          onClose={() => setLocationPickerVisible(false)}
-          onConfirm={(loc) => {
-            setValue('lat', loc.lat);
-            setValue('lng', loc.lng);
-          }}
-          initialLocation={watch('lat') && watch('lng') ? {lat: watch('lat')!, lng: watch('lng')!} : null}
-        />
       </ScrollView>
     </SafeAreaView>
   );

@@ -29,6 +29,7 @@ export type EventFormValues = {
   book_till: Date | null;
   images: EventUnifiedImage[];
   ticket_types: TicketType[];
+  address: string | null;
   lat: number | null;
   lng: number | null;
 };

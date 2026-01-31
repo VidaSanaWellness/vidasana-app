@@ -26,6 +26,7 @@ export type ServiceFormValues = {
   end_at: Date | null;
   week_day: WeekDay[];
   images: UnifiedImage[];
+  address: string | null;
   lat: number | null;
   lng: number | null;
 };

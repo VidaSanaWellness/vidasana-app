@@ -302,6 +302,7 @@ export type Database = {
       events: {
         Row: {
           active: boolean
+          address: string | null
           book_till: string | null
           category: number
           created_at: string
@@ -315,6 +316,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          address?: string | null
           book_till?: string | null
           category: number
           created_at?: string
@@ -328,6 +330,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          address?: string | null
           book_till?: string | null
           category?: number
           created_at?: string
@@ -578,6 +581,7 @@ export type Database = {
       services: {
         Row: {
           active: boolean
+          address: string | null
           capacity: number | null
           category: number
           created_at: string | null
@@ -593,6 +597,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          address?: string | null
           capacity?: number | null
           category: number
           created_at?: string | null
@@ -608,6 +613,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          address?: string | null
           capacity?: number | null
           category?: number
           created_at?: string | null
@@ -906,7 +912,7 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
-      booking_status: "booked" | "cancel" | "pending"
+      booking_status: "booked" | "cancel" | "completed"
       role: "user" | "provider" | "admin"
       user_status: "active" | "onboarding" | "pending" | "delete" | "reject"
       week_day: "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat"
@@ -1037,7 +1043,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      booking_status: ["booked", "cancel", "pending"],
+      booking_status: ["booked", "cancel", "completed"],
       role: ["user", "provider", "admin"],
       user_status: ["active", "onboarding", "pending", "delete", "reject"],
       week_day: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],

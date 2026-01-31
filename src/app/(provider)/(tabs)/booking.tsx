@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import {Ionicons, Feather} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {H2, Body, Caption} from '@/components';
+import {useRouter, Link} from 'expo-router';
 
 export default function ProviderBookingsScreen() {
   const {user} = useAppStore((s) => s.session!);
@@ -73,10 +74,7 @@ export default function ProviderBookingsScreen() {
 
     return Object.keys(groups)
       .sort() // Sort dates ascending
-      .map((dateKey) => ({
-        title: dateKey,
-        data: groups[dateKey],
-      }));
+      .map((dateKey) => ({title: dateKey, data: groups[dateKey]}));
   })();
 
   const renderSectionHeader = ({section: {title}}: any) => {
@@ -172,7 +170,13 @@ export default function ProviderBookingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
-        <H2 className="text-gray-900">Bookings</H2>
+        <H2 className="text-gray-900">{t('bookings.providerTitle')}</H2>
+        <Link href="/(provider)/scan-qr" asChild>
+          <TouchableOpacity className="flex-row items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-2">
+            <Ionicons name="qr-code-outline" size={18} color="#00594f" />
+            <Caption className="ml-2 font-nunito-bold text-sm text-primary">{t('bookings.scan')}</Caption>
+          </TouchableOpacity>
+        </Link>
       </View>
 
       {bookings && bookings.length > 0 ? (
@@ -190,10 +194,10 @@ export default function ProviderBookingsScreen() {
           <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-100">
             <Feather name="calendar" size={32} color="gray" />
           </View>
-          <Body className="text-center font-nunito-bold text-lg text-gray-900">No Bookings Yet</Body>
-          <Body className="mt-2 text-center text-gray-500">Your future bookings will appear here grouped by date.</Body>
+          <Body className="text-center font-nunito-bold text-lg text-gray-900">{t('bookings.noBookingsYet')}</Body>
+          <Body className="mt-2 text-center text-gray-500">{t('bookings.noBookingsMessage')}</Body>
           <TouchableOpacity onPress={() => refetch()} className="mt-6 rounded-full bg-primary px-6 py-3">
-            <Body className="font-nunito-bold text-white">Refresh</Body>
+            <Body className="font-nunito-bold text-white">{t('bookings.refresh')}</Body>
           </TouchableOpacity>
         </View>
       )}
