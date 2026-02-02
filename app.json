@@ -6,8 +6,13 @@
     "scheme": "vidasana",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
-    "platforms": ["ios", "android"],
-    "assetBundlePatterns": ["**/*"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "userInterfaceStyle": "automatic",
     "experiments": {
       "typedRoutes": true,
@@ -23,6 +28,9 @@
       "bundleIdentifier": "com.vidasana",
       "config": {
         "googleMapsApiKey": "AIzaSyD2Q1ArCXQ_-R_FBH8sXrRWwF6NDqHT2Hk"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -36,7 +44,10 @@
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./src/assets/adaptive-icon.png"
       },
-      "permissions": ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"]
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "plugins": [
       "expo-font",
