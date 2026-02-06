@@ -11,6 +11,7 @@ module.exports = {
         primary: '#00594F',
         // Vital Energy Orange: primary CTAs, icons, highlights
         secondary: '#EB3300',
+        'deep-teal': '#045D56',
         // Semantic aliases
         'deep-green': '#00594F',
         sage: '#9DC6BC', // backgrounds, cards, secondary buttons

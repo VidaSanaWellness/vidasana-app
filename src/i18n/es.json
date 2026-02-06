@@ -165,7 +165,10 @@
     "writeReview": "Escribir una Reseña",
     "noReviews": "Aún no hay reseñas. ¡Sé el primero!",
     "submitReview": "Enviar Reseña",
-    "comment": "Comentario"
+    "comment": "Comentario",
+    "deleteTitle": "Eliminar evento",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer.",
+    "deleteButton": "Eliminar"
   },
   "services": {
     "createTitle": "Crear nuevo servicio",
@@ -289,13 +292,14 @@
   "role": {
     "howWillYouUse": "¿Cómo usarás VidaSana?",
     "chooseRole": "Elige tu rol para continuar",
-    "joinEvents": "Unirse a eventos",
+    "joinEventsTitle": "Unirse a",
+    "hostEventsTitle": "Organizar",
+    "eventsAndServices": "(Eventos y Servicios)",
     "joinEventsSubtitle": "Descubre y asiste a experiencias",
-    "hostEvents": "Organizar eventos",
     "hostEventsSubtitle": "Crea y gestiona tus eventos",
     "providerDetails": "Detalles del proveedor",
     "uploadFileNote": "Nota: Carga de archivos para formularios IRS: W-9 (EE. UU.) o W-8BEN/W-8BEN-E (fuera de EE. UU.)",
-    "checkUS": "Marca si eres residente de EE. UU.",
+    "checkUS": "Marca si eres residente estadounidense",
     "stripeAccountId": "ID de cuenta Stripe:",
     "stripePlaceholder": "ID de cuenta Stripe",
     "errorDoc": "Error al obtener el archivo del documento."
@@ -330,5 +334,20 @@
     "cameraPermissionTitle": "Acceso a la cámara necesario",
     "cameraPermissionMessage": "Necesitamos permiso para acceder a tu cámara y escanear los códigos QR de las reservas.",
     "grantPermission": "Conceder permiso"
+  },
+  "sos": {
+    "title": "SOS — Soporte Inmediato",
+    "dangerWarning": "Si estás en peligro inmediato, o sientes que podrías hacerte daño a ti mismo o a otra persona, por favor contacta al soporte de emergencia ahora mismo.",
+    "emergencyServices": "Servicios de Emergencia",
+    "call911": "Llamar al 911",
+    "useThisRisk": "(Usa esto si hay un riesgo o peligro inmediato.)",
+    "crisisSupport": "Soporte de Crisis (24/7, Gratis, Confidencial)",
+    "mexicoTitle": "México (Línea de la Vida)",
+    "call": "Llamar",
+    "mexicoDesc": "Apoyo emocional y consejería en crisis, disponible 24/7.",
+    "usTitle": "Estados Unidos (Línea de Vida 988)",
+    "text": "Mensaje",
+    "usDesc": "Apoyo gratuito y confidencial disponible 24/7.",
+    "supportiveClosing": "Estos servicios son atendidos por profesionales capacitados que pueden ayudarte a atravesar este momento. Si es posible, considera comunicarte con una persona de confianza en tu vida para apoyo adicional."
   }
 }

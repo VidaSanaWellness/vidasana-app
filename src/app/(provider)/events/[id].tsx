@@ -1,19 +1,48 @@
-import {Feather, Ionicons} from '@expo/vector-icons';
+import {Feather} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {Link, useLocalSearchParams, useRouter} from 'expo-router';
-import {ActivityIndicator, ScrollView, TouchableOpacity, View} from 'react-native';
+import React, {useState} from 'react';
+import {ActivityIndicator, ScrollView, TouchableOpacity, View, Modal, Pressable, Alert} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ImageCarousel} from '@/components';
 import {H2, H3, Body, Caption} from '@/components';
+import Toast from 'react-native-toast-message';
 
 export default function EventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
   const {back} = useRouter();
   const {t, i18n} = useTranslation();
+  const queryClient = useQueryClient();
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  // Delete Event Mutation (Soft Delete)
+  const deleteEventMutation = useMutation({
+    mutationFn: async () => {
+      const {error} = await supabase.from('events').update({delete: true}).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['events']});
+      queryClient.invalidateQueries({queryKey: ['events_search_home']});
+      queryClient.invalidateQueries({queryKey: ['event', id]});
+      Toast.show({type: 'success', text1: 'Event deleted successfully'});
+      setMenuVisible(false);
+      back();
+    },
+    onError: (err: any) => Toast.show({type: 'error', text1: 'Delete failed', text2: err.message}),
+  });
+
+  const handleDeleteEvent = () => {
+    setMenuVisible(false);
+    Alert.alert(t('events.deleteTitle'), t('events.deleteConfirm'), [
+      {text: t('common.cancel'), style: 'cancel'},
+      {style: 'destructive', text: t('events.deleteButton'), onPress: () => deleteEventMutation.mutate()},
+    ]);
+  };
 
   const {data: event, isLoading} = useQuery({
     queryKey: ['event', id, i18n.language],
@@ -59,31 +88,48 @@ export default function EventDetailsScreen() {
     );
   }
 
-  const imageUrl = event.images && event.images.length > 0 ? supabase.storage.from('images').getPublicUrl(event.images[0]).data.publicUrl : null;
-
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-white">
+      {/* Header */}
+      <View className="relative z-10 flex-row items-center justify-between border-b border-gray-100 px-4 py-3">
+        <TouchableOpacity onPress={() => back()} className="-ml-2 p-2">
+          <Feather name="arrow-left" size={24} color="black" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setMenuVisible(true)} className="-mr-2 p-2">
+          <Feather name="more-vertical" size={24} color="black" />
+        </TouchableOpacity>
+
+        {/* Custom Menu Modal/Popup */}
+        <Modal transparent visible={menuVisible} animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+          <Pressable className="flex-1 bg-black/10" onPress={() => setMenuVisible(false)}>
+            <View
+              // Calculate top offset based on safe area if needed, but here simple implementation
+              className="absolute right-4 top-24 w-40 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
+              <Link href={`/(provider)/events/edit/${id}`} asChild onPress={() => setMenuVisible(false)}>
+                <Pressable className="flex-row items-center border-b border-gray-50 px-4 py-3 active:bg-gray-50">
+                  <Feather name="edit-2" size={16} color="#374151" />
+                  <Body className="ml-3 text-gray-700">Edit</Body>
+                </Pressable>
+              </Link>
+
+              <Pressable onPress={handleDeleteEvent} className="flex-row items-center px-4 py-3 active:bg-gray-50">
+                <Feather name="trash-2" size={16} color="#EF4444" />
+                <Body className="ml-3 text-red-600">{t('events.deleteButton')}</Body>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Modal>
+      </View>
+
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header Image Carousel */}
         <View className="relative aspect-square w-full bg-gray-200">
           <ImageCarousel images={event?.images} aspectRatio="square" />
-
-          {/* Back Button */}
-          <TouchableOpacity onPress={() => back()} className="absolute left-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
-
-          {/* Edit Button */}
-          <Link href={`/(provider)/events/edit/${id}`} asChild>
-            <TouchableOpacity className="absolute right-4 top-4 rounded-full bg-black/30 p-2 backdrop-blur-md">
-              <Feather name="edit-2" size={20} color="white" />
-            </TouchableOpacity>
-          </Link>
         </View>
 
         {/* Content */}
         <View className="p-5">
-          {/* Category Badge */}
           {/* Category Badge */}
           {event.categories && (
             <View className="mb-3 self-start rounded-full bg-primary/10 px-3 py-1">

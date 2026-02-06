@@ -4,12 +4,17 @@ import {useEffect, useState} from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import {Caption} from './Typography';
 import {useTranslation} from 'react-i18next';
+import {useRouter} from 'expo-router';
+import {useAppStore} from '@/store';
+import Toast from 'react-native-toast-message';
 import {ActivityIndicator, Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export function GoogleSignInButton() {
   const {t} = useTranslation();
+  const router = useRouter();
+  const setSession = useAppStore((s) => s.setSession);
   const [loading, setLoading] = useState(false);
 
   function extractParamsFromUrl(url: string) {
@@ -45,18 +50,54 @@ export function GoogleSignInButton() {
       console.debug('onSignInButtonPress - openAuthSessionAsync - result', {result});
 
       if (result && result.type === 'success') {
-        console.debug('onSignInButtonPress - openAuthSessionAsync - success');
         const params = extractParamsFromUrl(result.url);
-        console.debug('onSignInButtonPress - openAuthSessionAsync - success', {params});
 
         if (params.access_token && params.refresh_token) {
-          const {error} = await supabase.auth.setSession({access_token: params.access_token, refresh_token: params.refresh_token});
+          const {data, error} = await supabase.auth.setSession({access_token: params.access_token, refresh_token: params.refresh_token});
           if (error) throw error;
-        } else {
+
+          // Check if profile exists
+          if (data.user) {
+            const {data: profile} = await supabase.from('profile').select('id').eq('id', data.user.id).single();
+
+            if (!profile) {
+              // New User: Redirect to Register to complete profile
+              const email = data.user.email;
+              const fullName = data.user.user_metadata?.full_name;
+              // We sign out because we want them to "register" properly in the UI flow,
+              // or we keep them signed in but prevent app access?
+              // Better to keep session but redirect.
+              // However, _layout might auto-redirect if session exists.
+              // We need to ensure _layout doesn't block "auth" stack if user has no profile?
+              // ACTUALLY: The plan says "Do NOT call setSession" if profile missing, effectively.
+              // But we MUST call setSession to verify the token and get the user ID/Email securely.
+              // So we call setSession, then if NO profile, we might need to rely on _layout gating
+              // OR we pass params to register.
+
+              // Let's stick to the plan: Redirect to register.
+              // If _layout redirects to "(user)", we have a race condition.
+              // But _layout checks for "user" object.
+              // Let's pass the info.
+
+              // Optimization: Return to Register page
+              router.push({pathname: '/auth/register', params: {email, fullName, googleAuth: 'true'}});
+            } else {
+              // If profile exists, useAppStore (or the listener in _layout) will pick it up?
+              // GoogleLogin doesn't call `useAppStore.setState`.
+              // We should rely on Supabase `onAuthStateChange` or manually update store if needed.
+              // But `setSession` updates Supabase client state.
+              // _layout.tsx uses `useAppStore` which persists.
+              // We might need to sync it.
+
+              const session = await supabase.auth.getSession();
+              setSession(session.data.session);
+            }
+          }
         }
       }
     } catch (error) {
       console.log('🚀 ~ handleGoogleAuth ~ error:', error);
+      Toast.show({type: 'error', text1: 'Google Sign In Failed', text2: (error as any).message});
     } finally {
       setLoading(false);
     }

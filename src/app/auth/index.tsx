@@ -8,9 +8,8 @@ import Toast from 'react-native-toast-message';
 import {useForm, Controller} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
+import {Display, Subtitle, Caption, Body, Button, GoogleSignInButton} from '@/components';
 import {View, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
-import {Display, Subtitle, Caption, Body} from '@/components';
-import {Button} from '@/components';
 
 type LoginFormData = {email: string; password: string};
 
@@ -112,7 +111,8 @@ const Page = () => {
             {/* SUBMIT BUTTON */}
             <Button onPress={handleSubmit(onSubmit)} loading={formState.isSubmitting} label={t('auth.login.loginButton')} fullWidth />
 
-            {/* <GoogleSignInButton /> */}
+            {/* GOOGLE SIGN IN */}
+            <GoogleSignInButton />
 
             {/* SIGN UP LINK */}
             <View className="mt-8 flex-row items-center justify-center">

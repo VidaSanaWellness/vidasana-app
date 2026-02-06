@@ -3,6 +3,7 @@ export * from './Loader';
 export * from './Avatar';
 export * from './BookingCard';
 export * from './GoogleLogin';
+export * from './SOS';
 export * from './SearchHeader';
 export * from './modals/create';
 export * from './ImagePickerRow';
@@ -20,8 +21,6 @@ export {default as FilterModal} from './modals/FilterModal'; // Exports Componen
 export * from './modals/LocationPickerModal';
 export * from './home/CategoryGrid';
 export * from './home/HomeHeader';
-export * from './home/TopEventsList';
-export * from './home/TopServicesList';
 export * from './LanguagePicker';
 export * from './Typography';
 export * from './LanguageTabs';

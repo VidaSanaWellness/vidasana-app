@@ -301,11 +301,11 @@ export type Database = {
       }
       events: {
         Row: {
-          active: boolean
           address: string | null
           book_till: string | null
           category: number
           created_at: string
+          delete: boolean
           end_at: string
           id: string
           images: string[] | null
@@ -315,11 +315,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          active?: boolean
           address?: string | null
           book_till?: string | null
           category: number
           created_at?: string
+          delete?: boolean
           end_at: string
           id?: string
           images?: string[] | null
@@ -329,11 +329,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          active?: boolean
           address?: string | null
           book_till?: string | null
           category?: number
           created_at?: string
+          delete?: boolean
           end_at?: string
           id?: string
           images?: string[] | null

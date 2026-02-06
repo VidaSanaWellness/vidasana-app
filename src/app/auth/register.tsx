@@ -1,17 +1,17 @@
 import {IMAGES} from '@/assets';
 import React, {useState} from 'react';
-import {Link, useRouter} from 'expo-router';
+import {useAppStore} from '@/store';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {supabase, uploadFile} from '@/utils';
 import Toast from 'react-native-toast-message';
 import {useForm, Controller} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {Link, useRouter, useLocalSearchParams} from 'expo-router';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {getDocumentAsync, DocumentPickerAsset} from 'expo-document-picker';
-import {Display, Subtitle, Button, PasswordStrengthBar, PhoneInputField} from '@/components';
-import {View, Alert, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Pressable} from 'react-native';
-import {Body, Caption} from '@/components';
+import {Display, Subtitle, Button, PasswordStrengthBar, PhoneInputField, Body, Caption, GoogleSignInButton} from '@/components';
+import {View, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Pressable} from 'react-native';
 
 type FormData = {email: string; phone: string; fullName: string; password: string};
 type Role = 'user' | 'provider';
@@ -19,6 +19,9 @@ type Role = 'user' | 'provider';
 const Register = () => {
   const {t} = useTranslation();
   const router = useRouter();
+  const {email: googleEmail, fullName: googleName, googleAuth} = useLocalSearchParams<{email: string; fullName: string; googleAuth: string}>();
+  const setSession = useAppStore((s) => s.setSession);
+
   const [role, setRole] = useState<Role>('user');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -28,9 +31,16 @@ const Register = () => {
 
   const [docError, setDocError] = useState<string>('');
 
-  const {control, formState, handleSubmit} = useForm<FormData>({
+  const {control, formState, handleSubmit, setValue} = useForm<FormData>({
     defaultValues: {fullName: '', email: '', phone: '', password: ''},
   });
+
+  React.useEffect(() => {
+    if (googleAuth === 'true') {
+      if (googleEmail) setValue('email', googleEmail);
+      if (googleName) setValue('fullName', googleName);
+    }
+  }, [googleAuth, googleEmail, googleName, setValue]);
 
   const pickPdf = async () => {
     try {
@@ -50,18 +60,27 @@ const Register = () => {
         return Toast.show({type: 'error', text1: t('auth.register.termsRequiredTitle'), text2: t('auth.register.termsRequiredMessage')});
 
       const {email, phone, password, fullName} = data;
+      let userId = '';
 
-      // 1. Sign Up
-      const {data: authData, error: signUpError} = await supabase.auth.signUp({email, password, options: {data: {role: role, full_name: fullName}}});
-      if (signUpError) throw signUpError;
-
-      const userId = authData.user?.id;
-      if (!userId) throw new Error('User ID missing after signup');
+      if (googleAuth === 'true') {
+        const {data: userData, error: userError} = await supabase.auth.updateUser({data: {role: role, full_name: fullName}});
+        if (userError) throw userError;
+        if (!userData.user) throw new Error('User data missing');
+        userId = userData.user.id;
+      } else {
+        const {data: authData, error: signUpError} = await supabase.auth.signUp({
+          email,
+          password,
+          options: {data: {role: role, full_name: fullName}},
+        });
+        if (signUpError) throw signUpError;
+        if (!authData.user?.id) throw new Error('User ID missing after signup');
+        userId = authData.user.id;
+      }
 
       // 2. Create Profile
       const callingCode = selectedCountry?.callingCode || '';
       const fullPhoneNumber = callingCode ? `${callingCode} ${phone}` : phone;
-      // User requested to save calling code (e.g. +1) instead of ISO code in the 'country' column
       const countryValue = callingCode;
 
       const {error: profileError} = await supabase.from('profile').upsert({
@@ -85,7 +104,14 @@ const Register = () => {
 
       Toast.show({type: 'success', text2: t('auth.register.success')});
 
-      if (role === 'provider') router.replace('/(provider)/payment-setup');
+      if (googleAuth === 'true') {
+        const session = await supabase.auth.getSession();
+        if (session.data.session) {
+          setSession(session.data.session);
+        }
+      } else {
+        if (role === 'provider') router.replace('/(provider)/payment-setup');
+      }
     } catch (e: any) {
       Toast.show({type: 'error', text1: e?.message});
     }
@@ -111,17 +137,23 @@ const Register = () => {
           <View className="mx-6 mb-6 flex-row rounded-xl bg-gray-100 p-1">
             <TouchableOpacity
               onPress={() => setRole('user')}
-              className={`flex-1 rounded-lg py-3 ${role === 'user' ? 'bg-white shadow-sm' : 'shadow-none'}`}>
-              <Body className={`text-center font-nunito-bold text-sm ${role === 'user' ? 'text-primary' : 'text-gray-500'}`}>
-                {t('role.joinEvents')}
-              </Body>
+              className={`flex-1 items-center justify-center rounded-lg py-2 ${role === 'user' ? 'bg-white shadow-sm' : 'shadow-none'}`}>
+              <View className="flex-row items-center">
+                <Ionicons name="search-outline" size={16} color={role === 'user' ? '#00594f' : '#9CA3AF'} style={{marginRight: 6}} />
+                <Body className={`font-nunito-bold text-sm ${role === 'user' ? 'text-primary' : 'text-gray-500'}`}>{t('role.joinEventsTitle')}</Body>
+              </View>
+              <Caption className={`text-[10px] ${role === 'user' ? 'text-primary' : 'text-gray-400'}`}>{t('role.eventsAndServices')}</Caption>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setRole('provider')}
-              className={`flex-1 rounded-lg py-3 ${role === 'provider' ? 'bg-white shadow-sm' : 'shadow-none'}`}>
-              <Body className={`text-center font-nunito-bold text-sm ${role === 'provider' ? 'text-primary' : 'text-gray-500'}`}>
-                {t('role.hostEvents')}
-              </Body>
+              className={`flex-1 items-center justify-center rounded-lg py-2 ${role === 'provider' ? 'bg-white shadow-sm' : 'shadow-none'}`}>
+              <View className="flex-row items-center">
+                <Ionicons name="briefcase-outline" size={16} color={role === 'provider' ? '#00594f' : '#9CA3AF'} style={{marginRight: 6}} />
+                <Body className={`font-nunito-bold text-sm ${role === 'provider' ? 'text-primary' : 'text-gray-500'}`}>
+                  {t('role.hostEventsTitle')}
+                </Body>
+              </View>
+              <Caption className={`text-[10px] ${role === 'provider' ? 'text-primary' : 'text-gray-400'}`}>{t('role.eventsAndServices')}</Caption>
             </TouchableOpacity>
           </View>
 
@@ -169,13 +201,14 @@ const Register = () => {
                     className={`rounded-xl border bg-gray-50 ${fieldState.error ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-primary'}`}>
                     <TextInput
                       {...field}
+                      editable={googleAuth !== 'true'}
                       autoCapitalize="none"
                       placeholderTextColor="#999"
                       keyboardType="email-address"
                       onChangeText={field.onChange}
                       placeholder={t('auth.register.emailPlaceholder')}
                       style={{fontFamily: 'Nunito_400Regular'}}
-                      className="m-0 h-14 px-4 text-base leading-5 text-black"
+                      className={`m-0 h-14 px-4 text-base leading-5 text-black ${googleAuth === 'true' ? 'text-gray-500' : ''}`}
                     />
                   </View>
                   {fieldState.error && <Caption className="ml-2 mt-1 text-red-500">{fieldState.error.message}</Caption>}
@@ -226,44 +259,46 @@ const Register = () => {
             )}
 
             {/* PASSWORD */}
-            <Controller
-              name="password"
-              control={control}
-              rules={{
-                required: t('validation.passwordRequired'),
-                minLength: {value: 8, message: t('validation.passwordMinLength', {count: 8})},
-                validate: (val) => {
-                  if (!/[A-Z]/.test(val)) return t('validation.passwordUppercase');
-                  if (!/[a-z]/.test(val)) return t('validation.passwordLowercase');
-                  if (!/[0-9]/.test(val)) return t('validation.passwordNumber');
-                  if (!/[!@#$%^&*(),.?":{}|<>]/.test(val)) return t('validation.passwordSpecial');
-                  return true;
-                },
-              }}
-              render={({field, fieldState}) => (
-                <View className="mb-4">
-                  <View
-                    className={`rounded-xl border bg-gray-50 ${fieldState.error ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-primary'}`}>
-                    <View className="flex-row items-center">
-                      <TextInput
-                        {...field}
-                        placeholderTextColor="#999"
-                        onChangeText={field.onChange}
-                        secureTextEntry={!showPassword}
-                        placeholder={t('auth.register.passwordPlaceholder')}
-                        style={{fontFamily: 'Nunito_400Regular'}}
-                        className="m-0 h-14 flex-1 px-4 text-base leading-5 text-black"
-                      />
-                      <TouchableOpacity className="mr-2 p-2" onPress={() => setShowPassword(!showPassword)}>
-                        <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
-                      </TouchableOpacity>
+            {googleAuth !== 'true' && (
+              <Controller
+                name="password"
+                control={control}
+                rules={{
+                  required: t('validation.passwordRequired'),
+                  minLength: {value: 8, message: t('validation.passwordMinLength', {count: 8})},
+                  validate: (val) => {
+                    if (!/[A-Z]/.test(val)) return t('validation.passwordUppercase');
+                    if (!/[a-z]/.test(val)) return t('validation.passwordLowercase');
+                    if (!/[0-9]/.test(val)) return t('validation.passwordNumber');
+                    if (!/[!@#$%^&*(),.?":{}|<>]/.test(val)) return t('validation.passwordSpecial');
+                    return true;
+                  },
+                }}
+                render={({field, fieldState}) => (
+                  <View className="mb-4">
+                    <View
+                      className={`rounded-xl border bg-gray-50 ${fieldState.error ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-primary'}`}>
+                      <View className="flex-row items-center">
+                        <TextInput
+                          {...field}
+                          placeholderTextColor="#999"
+                          onChangeText={field.onChange}
+                          secureTextEntry={!showPassword}
+                          placeholder={t('auth.register.passwordPlaceholder')}
+                          style={{fontFamily: 'Nunito_400Regular'}}
+                          className="m-0 h-14 flex-1 px-4 text-base leading-5 text-black"
+                        />
+                        <TouchableOpacity className="mr-2 p-2" onPress={() => setShowPassword(!showPassword)}>
+                          <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
+                        </TouchableOpacity>
+                      </View>
+                      <PasswordStrengthBar password={field?.value} visible={!fieldState.error?.message} />
                     </View>
-                    <PasswordStrengthBar password={field?.value} visible={!fieldState.error?.message} />
+                    {fieldState.error && <Caption className="ml-2 mt-1 text-red-500">{fieldState.error.message}</Caption>}
                   </View>
-                  {fieldState.error && <Caption className="ml-2 mt-1 text-red-500">{fieldState.error.message}</Caption>}
-                </View>
-              )}
-            />
+                )}
+              />
+            )}
 
             {/* TERMS */}
             <View className="mb-5 ml-2 flex-row items-center">
@@ -288,7 +323,7 @@ const Register = () => {
               className="mt-4"
             />
 
-            {/* <GoogleSignInButton /> */}
+            {googleAuth !== 'true' && <GoogleSignInButton />}
 
             {/* LOGIN LINK */}
             <View className="my-5 flex-row items-center justify-center">

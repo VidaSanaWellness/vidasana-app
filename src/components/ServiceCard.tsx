@@ -57,11 +57,8 @@ export const ServiceCard = ({
 
   const showProvider = variant === 'user' && provider && provider.name && provider.name.trim().length > 0;
 
-  // Theme Color (~Deep Teal)
-  const THEME_COLOR = '#045D56';
-
   return (
-    <Link href={linkHref} asChild>
+    <Link href={linkHref as any} asChild>
       <Pressable className="mb-5 block overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm shadow-gray-200 active:scale-[0.99]">
         {/* --- Hero Image Section --- */}
         <View className="relative aspect-[16/10] w-full bg-gray-100">
@@ -133,7 +130,7 @@ export const ServiceCard = ({
               {title}
             </H2>
             <View className="items-end">
-              <H2 style={{color: THEME_COLOR}}>${price || 0}</H2>
+              <H2 className="text-deep-teal">${price || 0}</H2>
             </View>
           </View>
 

@@ -24,6 +24,7 @@ export default function EventsScreen() {
         .from('events')
         .select('*, event_translations(*)')
         .eq('provider', user.id)
+        .eq('delete', false)
         .order('created_at', {ascending: false});
 
       if (error) throw error;
@@ -53,7 +54,6 @@ export default function EventsScreen() {
         images={item.images}
         startAt={item.start_at}
         variant="provider"
-        isActive={item.active} // Assuming active field exists like services
         rating={item.rating || 0}
       />
     );

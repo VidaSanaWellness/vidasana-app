@@ -2,6 +2,7 @@ import {useAppStore} from '@/store';
 import {StatusBar} from 'expo-status-bar';
 import storage from 'expo-sqlite/kv-store';
 import {useQueryClientState} from '@/hooks';
+import {SOSFAB, SOSModal} from '@/components';
 import {supabase, toastConfig} from '@/utils';
 import {ReactElement, useEffect} from 'react';
 import Toast from 'react-native-toast-message';
@@ -28,13 +29,15 @@ const AppProvider = ({children}: {children: ReactElement}) => {
 
   return (
     <>
-      <StatusBar translucent style="auto" backgroundColor="transparent" />
       <GestureHandlerRootView className="flex-1">
         <PersistQueryClientProvider client={queryClient} persistOptions={{persister: createAsyncStoragePersister({storage})}}>
           <KeyboardProvider>{children}</KeyboardProvider>
         </PersistQueryClientProvider>
       </GestureHandlerRootView>
+      <StatusBar translucent style="auto" backgroundColor="transparent" />
       <Toast position="top" topOffset={top} config={toastConfig} />
+      <SOSModal />
+      <SOSFAB />
     </>
   );
 };

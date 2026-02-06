@@ -165,7 +165,10 @@
     "writeReview": "Écrire un Avis",
     "noReviews": "Aucun avis pour le moment. Soyez le premier !",
     "submitReview": "Soumettre l'Avis",
-    "comment": "Commentaire"
+    "comment": "Commentaire",
+    "deleteTitle": "Supprimer l'événement",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible.",
+    "deleteButton": "Supprimer"
   },
   "services": {
     "createTitle": "Créer un nouveau service",
@@ -289,9 +292,10 @@
   "role": {
     "howWillYouUse": "Comment allez-vous utiliser VidaSana ?",
     "chooseRole": "Choisissez votre rôle pour continuer",
-    "joinEvents": "Rejoindre des événements",
+    "joinEventsTitle": "Rejoindre",
+    "hostEventsTitle": "Organiser",
+    "eventsAndServices": "(Événements et Services)",
     "joinEventsSubtitle": "Découvrez et participez à des expériences",
-    "hostEvents": "Organiser des événements",
     "hostEventsSubtitle": "Créez et gérez vos événements",
     "providerDetails": "Détails du fournisseur",
     "uploadFileNote": "Note : Téléchargement de fichier pour formulaires IRS : W-9 (U.S.) ou W-8BEN/W-8BEN-E (hors U.S.)",
@@ -330,5 +334,20 @@
     "cameraPermissionTitle": "Accès à la caméra requis",
     "cameraPermissionMessage": "Nous avons besoin de la permission d'accéder à votre caméra pour scanner les codes QR de réservation.",
     "grantPermission": "Accorder la permission"
+  },
+  "sos": {
+    "title": "SOS — Soutien Immédiat",
+    "dangerWarning": "Si vous êtes en danger immédiat, ou si vous pensez que vous pourriez vous blesser ou blesser quelqu'un d'autre, veuillez contacter les services d'urgence dès maintenant.",
+    "emergencyServices": "Services d'Urgence",
+    "call911": "Appeler le 911",
+    "useThisRisk": "(Utilisez ceci s'il y a un risque ou un danger immédiat.)",
+    "crisisSupport": "Soutien de Crise (24/7, Gratuit, Confidentiel)",
+    "mexicoTitle": "Mexique (Línea de la Vida)",
+    "call": "Appeler",
+    "mexicoDesc": "Soutien émotionnel et conseil de crise, disponible 24/7.",
+    "usTitle": "États-Unis (988 Lifeline)",
+    "text": "SMS",
+    "usDesc": "Soutien gratuit et confidentiel disponible 24/7.",
+    "supportiveClosing": "Ces services sont assurés par des professionnels formés qui peuvent vous aider à traverser ce moment. Si possible, envisagez de contacter une personne de confiance dans votre vie pour un soutien supplémentaire."
   }
 }

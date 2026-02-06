@@ -165,7 +165,10 @@
     "writeReview": "Write a Review",
     "noReviews": "No reviews yet. Be the first!",
     "submitReview": "Submit Review",
-    "comment": "Comment"
+    "comment": "Comment",
+    "deleteTitle": "Delete Event",
+    "deleteConfirm": "Are you sure you want to delete this event? This action cannot be undone.",
+    "deleteButton": "Delete"
   },
   "services": {
     "createTitle": "Create New Service",
@@ -303,13 +306,14 @@
   "role": {
     "howWillYouUse": "How will you use VidaSana?",
     "chooseRole": "Choose your role to continue",
-    "joinEvents": "Join Events",
+    "joinEventsTitle": "Join",
+    "hostEventsTitle": "Host",
+    "eventsAndServices": "(Events and Services)",
     "joinEventsSubtitle": "Discover and attend experiences",
-    "hostEvents": "Host Events",
     "hostEventsSubtitle": "Create and manage your events",
     "providerDetails": "Provider Details",
     "uploadFileNote": "Note: File upload for IRS forms: W-9 (U.S.) or W-8BEN/W-8BEN-E (non-U.S.)",
-    "checkUS": "Check if you are US resident",
+    "checkUS": "Check if you are american resident",
     "stripeAccountId": "Stripe Account ID:",
     "stripePlaceholder": "Stripe Account ID",
     "errorDoc": "Error while getting doc file."
@@ -330,5 +334,20 @@
     "cameraPermissionTitle": "Camera Access Needed",
     "cameraPermissionMessage": "We need permission to access your camera to scan booking QR codes.",
     "grantPermission": "Grant Permission"
+  },
+  "sos": {
+    "title": "SOS — Immediate Support",
+    "dangerWarning": "If you are in immediate danger, or feel you might harm yourself or someone else, please contact emergency support right now.",
+    "emergencyServices": "Emergency Services",
+    "call911": "Call 911",
+    "useThisRisk": "(Use this if there is immediate risk or danger.)",
+    "crisisSupport": "Crisis Support (24/7, Free, Confidential)",
+    "mexicoTitle": "Mexico (Línea de la Vida)",
+    "call": "Call",
+    "mexicoDesc": "Emotional support and crisis counseling, available 24/7.",
+    "usTitle": "United States (988 Lifeline)",
+    "text": "Text",
+    "usDesc": "Free, confidential support available 24/7.",
+    "supportiveClosing": "These services are staffed by trained professionals who can help you through this moment. If possible, consider reaching out to a trusted person in your life for additional support."
   }
 }
