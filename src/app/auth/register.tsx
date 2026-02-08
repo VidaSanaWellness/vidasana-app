@@ -11,7 +11,7 @@ import {Link, useRouter, useLocalSearchParams} from 'expo-router';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {getDocumentAsync, DocumentPickerAsset} from 'expo-document-picker';
 import {Display, Subtitle, Button, PasswordStrengthBar, PhoneInputField, Body, Caption, GoogleSignInButton} from '@/components';
-import {View, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Pressable} from 'react-native';
+import {View, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Pressable, Linking} from 'react-native';
 
 type FormData = {email: string; phone: string; fullName: string; password: string};
 type Role = 'user' | 'provider';
@@ -309,8 +309,10 @@ const Register = () => {
               </TouchableOpacity>
 
               <Body className="flex-1 text-sm text-gray-600">
-                {t('auth.register.agreeTo')} <Body className="font-nunito-bold text-secondary">{t('auth.register.terms')}</Body> {t('common.and')}{' '}
-                <Body className="font-nunito-bold text-secondary">{t('auth.register.conditions')}</Body>
+                {t('auth.register.agreeTo')}{' '}
+                <Body onPress={() => Linking.openURL('https://vidasanawellness.com/terms')} className="font-nunito-bold text-secondary">
+                  {t('auth.register.terms&conditions')}
+                </Body>
               </Body>
             </View>
 

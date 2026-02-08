@@ -27,3 +27,4 @@ export * from './LanguageTabs';
 export * from './TranslatableFields';
 export * from './ImageInput';
 export * from './LocationInput';
+export * from './ProfileScreen';
