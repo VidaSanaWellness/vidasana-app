@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, ScrollView, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Image, Modal} from 'react-native';
+import {View, ScrollView, TouchableOpacity, Alert, Modal} from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {Ionicons, Feather} from '@expo/vector-icons';
 import {supabase} from '@/utils';
@@ -12,9 +12,10 @@ import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
 import {H3, Body, Caption, Loader} from '@/components';
 import {IMAGES} from '@/assets/images';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 export default function ReceiptScreen() {
-  const router = useRouter();
+  const {back, navigate} = useRouter();
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const {id, type} = useLocalSearchParams<{id: string; type?: string}>();
 
@@ -26,18 +27,7 @@ export default function ReceiptScreen() {
       if (type === 'event') {
         const {data, error} = await supabase
           .from('event_booking')
-          .select(
-            `
-              *,
-              event:events (
-                  *,
-                  provider:profile (*),
-                  event_translations (*)
-              ),
-              ticket:event_ticket_types (*),
-              payment:payments (*)
-          `
-          )
+          .select(` *, event:events ( *, provider:profile (*), event_translations (*)), ticket:event_ticket_types (*), payment:payments (*)`)
           .eq('id', id)
           .single();
 
@@ -65,6 +55,7 @@ export default function ReceiptScreen() {
           location: locationAddress,
           ticketType: data.ticket?.name,
           quantity: data.quantity || 1,
+          status: data.status,
         };
       }
 
@@ -100,10 +91,20 @@ export default function ReceiptScreen() {
         date: data.appointed,
         price: data.price,
         isEvent: false,
+        status: data.status,
       };
     },
     enabled: !!id,
   });
+
+  // Dispute Logic
+  const now = dayjs();
+  const endTime = booking?.date ? dayjs(booking.date).add(1, 'hour') : now; // Fallback duration 1h if unavailable
+  // Note: For services, duration might be variable, but 1h is safe default or we should fetch it.
+  // Ideally `booking.date` + duration. For now, assuming standard logic or just using start time if end time missing?
+  // User booking uses `item.end_time` or `start_time + duration`.
+  // Let's use `booking.date` as start.
+  const canDispute = booking && now.isAfter(endTime) && now.isBefore(endTime.add(72, 'hour')) && booking.status !== 'disputed';
 
   const generateHtml = () => {
     if (!booking) return '';
@@ -134,9 +135,7 @@ export default function ReceiptScreen() {
 
   const handlePrint = async () => {
     try {
-      await Print.printAsync({
-        html: generateHtml(),
-      });
+      await Print.printAsync({html: generateHtml()});
       setIsMenuVisible(false);
     } catch (e) {
       Alert.alert('Error', 'Failed to print receipt');
@@ -170,7 +169,7 @@ export default function ReceiptScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="relative flex-row items-center justify-between border-b border-gray-100 p-4 pb-3">
-        <TouchableOpacity onPress={() => router.back()} className="rounded-full bg-gray-100 p-2">
+        <TouchableOpacity onPress={() => back()} className="rounded-full bg-gray-100 p-2">
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
         <H3 className="text-gray-900">E-Receipt</H3>
@@ -188,7 +187,7 @@ export default function ReceiptScreen() {
                 setIsMenuVisible(false);
                 handleShare();
               }}
-              className="flex-row items-center rounded-t-2xl p-4 active:bg-gray-50">
+              className={`flex-row items-center p-4 active:bg-gray-50 ${!canDispute && booking?.status !== 'disputed' ? 'rounded-t-2xl' : ''}`}>
               <Feather name="send" size={20} color="#00594f" />
               <Body className="font-nunito-semibold ml-3 text-gray-900">Share E-Receipt</Body>
             </TouchableOpacity>
@@ -212,6 +211,37 @@ export default function ReceiptScreen() {
               <Feather name="printer" size={20} color="#00594f" />
               <Body className="font-nunito-semibold ml-3 text-gray-900">Print</Body>
             </TouchableOpacity>
+
+            {/* Dispute Options */}
+            {canDispute && (
+              <>
+                <View className="mx-4 h-[1px] bg-gray-100" />
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsMenuVisible(false);
+                    navigate(`/(user)/dispute/create?bookingId=${booking?.id}&type=${type}` as any);
+                  }}
+                  className="flex-row items-center rounded-t-2xl p-4 active:bg-gray-50">
+                  <Feather name="alert-circle" size={20} color="#EF4444" />
+                  <Body className="font-nunito-semibold ml-3 text-red-500">Report Issue</Body>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {booking?.status === 'disputed' && (
+              <>
+                <View className="mx-4 h-[1px] bg-gray-100" />
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsMenuVisible(false);
+                    navigate(`/(user)/dispute/${booking?.id}` as any);
+                  }}
+                  className="flex-row items-center rounded-t-2xl p-4 active:bg-gray-50">
+                  <Feather name="eye" size={20} color="#EF4444" />
+                  <Body className="font-nunito-semibold ml-3 text-red-500">View Dispute</Body>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </TouchableOpacity>
       </Modal>
@@ -270,6 +300,21 @@ export default function ReceiptScreen() {
           <View className="mt-2 flex-row justify-between border-t border-gray-200 pt-4">
             <Body className="text-gray-500">{booking?.isEvent ? 'Organizer' : 'Provider'}</Body>
             <Body className="font-nunito-bold text-gray-900">{booking?.providerName || 'N/A'}</Body>
+          </View>
+
+          {/* View Service/Event Details */}
+          <View className="mt-4 border-t border-gray-200 pt-4">
+            <TouchableOpacity
+              onPress={() => {
+                const targetPath = booking?.isEvent
+                  ? `/(user)/events/${booking.event_id || booking.event?.id}`
+                  : `/(user)/services/${booking.service_id || booking.service?.id}`;
+                navigate(targetPath as any);
+              }}
+              className="flex-row items-center justify-center space-x-2 rounded-xl bg-gray-100 py-3 active:bg-gray-200">
+              <Body className="font-nunito-bold text-primary">View {booking?.isEvent ? 'Event' : 'Service'} Details</Body>
+              <Ionicons name="chevron-forward" size={16} color="#00594f" />
+            </TouchableOpacity>
           </View>
         </View>
 

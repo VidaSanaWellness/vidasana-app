@@ -52,20 +52,27 @@ export default function QRScannerScreen() {
     setLoading(true);
 
     try {
-      // Assuming QR code contains just the UUID of the booking
-      // Ideally format is: "booking:<uuid>" or just "<uuid>"
-      // We will try to clean it if it has prefixes, but for now assuming direct UUID
       const bookingId = data.trim();
-
       console.log('Scanned Booking ID:', bookingId);
 
-      // Validate UUID format roughly
       if (bookingId.length < 10) {
         throw new Error('Invalid QR Code format');
       }
 
-      // Verify booking ownership and status
-      const {data: booking, error} = await supabase
+      // Define a Booking Helper Type locally or import it if available
+      type BookingResult = {
+        id: string;
+        status: string;
+        providerId: string;
+        userName: string;
+        type: 'service' | 'event';
+        table: 'services_booking' | 'event_booking';
+      };
+
+      let result: BookingResult | null = null;
+
+      // 1. Try Service Booking
+      const {data: serviceBooking, error: serviceError} = await supabase
         .from('services_booking')
         .select(
           `
@@ -76,30 +83,65 @@ export default function QRScannerScreen() {
         `
         )
         .eq('id', bookingId)
-        .single();
+        .maybeSingle();
 
-      if (error || !booking) {
-        console.error('Lookup error:', error);
-        throw new Error('Booking not found');
+      if (serviceBooking) {
+        result = {
+          id: serviceBooking.id,
+          status: serviceBooking.status,
+          // @ts-ignore: Supabase types for joins can be tricky, safe to ignore here or cast
+          providerId: serviceBooking.service?.provider,
+          // @ts-ignore
+          userName: serviceBooking.user?.name || 'Client',
+          type: 'service',
+          table: 'services_booking',
+        };
       }
 
-      // Check if this booking belongs to the current provider
-      // @ts-ignore
-      if (booking.service?.provider !== user?.id) throw new Error('This booking belongs to another service provider.');
+      // 2. Try Event Booking if not found
+      if (!result) {
+        const {data: eventBooking, error: eventError} = await supabase
+          .from('event_booking')
+          .select(`id, status, event:events!inner(provider), user:profile(name)`)
+          .eq('id', bookingId)
+          .maybeSingle();
 
-      if (booking.status === 'completed')
-        return Alert.alert('Already Completed', `This booking for ${booking.user?.name || 'Client'} has already been marked as completed.`, [
+        if (eventBooking) {
+          result = {
+            id: eventBooking.id,
+            status: eventBooking.status,
+            // @ts-ignore
+            providerId: eventBooking.event?.provider,
+            // @ts-ignore
+            userName: eventBooking.user?.name || 'Client',
+            type: 'event',
+            table: 'event_booking',
+          };
+        }
+      }
+
+      if (!result) {
+        throw new Error('Booking not found in Service or Event records');
+      }
+
+      // Check Ownership
+      if (result.providerId !== user?.id) {
+        throw new Error('This booking belongs to another service provider.');
+      }
+
+      // Check Status
+      if (result.status === 'completed') {
+        return Alert.alert('Already Completed', `This booking for ${result.userName} has already been marked as completed.`, [
           {text: 'OK', onPress: () => setScanned(false)},
         ]);
+      }
 
-      if (booking.status === 'cancel')
+      if (result.status === 'cancel') {
         return Alert.alert('Cancelled Booking', `This booking was cancelled.`, [{text: 'OK', onPress: () => setScanned(false)}]);
+      }
 
-      // Mark as completed/checked-in
-      const {error: updateError} = await supabase
-        .from('services_booking')
-        .update({status: 'completed'}) // Or 'checked_in' if you prefer
-        .eq('id', bookingId);
+      // Mark as Completed
+      const {error: updateError} = await supabase.from(result.table).update({status: 'completed'}).eq('id', bookingId);
 
       if (updateError) throw updateError;
 
@@ -107,12 +149,10 @@ export default function QRScannerScreen() {
       Toast.show({
         type: 'success',
         text1: 'Check-in Successful',
-        text2: `${booking.user?.name || 'Client'} has been verified.`,
+        text2: `${result.userName} has been verified for ${result.type}.`,
       });
 
-      // Navigate back after short delay or stay to scan more?
-      // Usually better to ask or just reset
-      Alert.alert('Success!', `Checked in ${booking.user?.name || 'Client'}`, [
+      Alert.alert('Success!', `Checked in ${result.userName}`, [
         {text: 'Scan Another', onPress: () => setScanned(false)},
         {text: 'Done', onPress: () => router.back(), style: 'cancel'},
       ]);

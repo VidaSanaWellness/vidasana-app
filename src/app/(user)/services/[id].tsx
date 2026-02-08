@@ -211,6 +211,24 @@ export default function UserServiceDetailsScreen() {
     return {title: translation?.title, description: translation?.description};
   })();
 
+  // Fetch User's Bookings for this Service
+  const {data: userBookings} = useQuery({
+    queryKey: ['user_service_bookings', id, user.id],
+    queryFn: async () => {
+      const {data, error} = await supabase.from('services_booking').select('*').eq('service', id).eq('user', user.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id && !!user,
+  });
+
+  const canReview = userBookings?.some((b) => {
+    const isCompleted = b.status === 'completed';
+    const appointedTime = dayjs(b.appointed);
+    const isPast = appointedTime.add(1, 'hour').isBefore(dayjs());
+    return (isCompleted || (b.status === 'booked' && isPast)) && b.status !== 'cancelled';
+  });
+
   // Capacity Logic
   const availableSeats = (() => {
     if (!service || service.capacity === null) return null;
@@ -425,12 +443,22 @@ export default function UserServiceDetailsScreen() {
               </View>
             )}
 
-            <TouchableOpacity
-              onPress={() => setReviewModalVisible(true)}
-              className="mt-2 flex-row items-center justify-center rounded-xl bg-gray-50 py-3 active:bg-gray-100">
-              <Ionicons name="create-outline" size={18} color="#4B5563" />
-              <Body className="ml-2 font-nunito-bold text-gray-700">Write a Review</Body>
-            </TouchableOpacity>
+            {/* Write Review Button - Gated */}
+            {(() => {
+              // Fetch user bookings for this service (Optimized: Check if any valid booking exists)
+              // We'll use a specific query for this check to avoid fetching ALL bookings if not needed,
+              // but for now, let's just use the logic we planned.
+              // Since we can't easily hook a new useQuery inside this callback, we need to move the query up top.
+              // Logic placeholder: See the changes in the upper part of the file for the query.
+              return canReview ? (
+                <TouchableOpacity
+                  onPress={() => setReviewModalVisible(true)}
+                  className="mt-2 flex-row items-center justify-center rounded-xl bg-gray-50 py-3 active:bg-gray-100">
+                  <Ionicons name="create-outline" size={18} color="#4B5563" />
+                  <Body className="ml-2 font-nunito-bold text-gray-700">Write a Review</Body>
+                </TouchableOpacity>
+              ) : null;
+            })()}
           </View>
         </View>
       </ScrollView>

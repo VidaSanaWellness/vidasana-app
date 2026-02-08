@@ -15,6 +15,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
 } from 'react-native';
+import dayjs from 'dayjs';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
@@ -240,6 +241,26 @@ export default function UserEventDetailsScreen() {
 
       return bookingMap;
     },
+  });
+
+  // Fetch User's Bookings for this Event
+  const {data: userEventBookings} = useQuery({
+    queryKey: ['user_event_bookings', id, user.id],
+    queryFn: async () => {
+      const {data, error} = await supabase.from('event_booking').select('*').eq('event_id', id).eq('user', user.id);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id && !!user,
+  });
+
+  const canReview = userEventBookings?.some((b: any) => {
+    const isCompleted = b.status === 'completed';
+    // For events, we check if the event end time has passed
+    const eventEndTime = event?.end_at ? dayjs(event.end_at) : dayjs().add(1, 'year');
+    const isPast = eventEndTime.isBefore(dayjs());
+    return (isCompleted || (b.status === 'booked' && isPast)) && b.status !== 'cancelled';
   });
 
   const toggleLikeMutation = useMutation({
@@ -488,9 +509,11 @@ export default function UserEventDetailsScreen() {
           <View className="mt-4">
             <View className="mb-4 flex-row items-center justify-between">
               <H3 className="text-lg font-bold text-gray-900">Reviews</H3>
-              <TouchableOpacity onPress={() => setReviewModalVisible(true)}>
-                <Body className="font-semibold text-green-700">Write a Review</Body>
-              </TouchableOpacity>
+              {canReview && (
+                <TouchableOpacity onPress={() => setReviewModalVisible(true)}>
+                  <Body className="font-semibold text-green-700">Write a Review</Body>
+                </TouchableOpacity>
+              )}
             </View>
 
             {/* Review List */}

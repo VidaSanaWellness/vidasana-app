@@ -348,5 +348,55 @@
     "text": "Text",
     "usDesc": "Free, confidential support available 24/7.",
     "supportiveClosing": "These services are staffed by trained professionals who can help you through this moment. If possible, consider reaching out to a trusted person in your life for additional support."
+  },
+  "dispute": {
+    "title": "Dispute Details",
+    "createTitle": "Report an Issue",
+    "reason": "Reason for Dispute",
+    "description": "Description",
+    "descriptionPlaceholder": "Please provide details about what went wrong...",
+    "evidence": "Evidence (Photos)",
+    "addPhoto": "Add Photo",
+    "submit": "Submit Report",
+    "submitting": "Submitting...",
+    "success": "Dispute submitted successfully",
+    "error": "Error",
+    "evidenceRequired": "Evidence Required",
+    "evidenceMessage": "Please upload at least one photo as evidence.",
+    "status": "Status",
+    "submittedOn": "Submitted on",
+    "bookingId": "Booking ID",
+    "yourReport": "Your Report",
+    "client": "Client",
+    "provider": "Provider",
+    "providerResponse": "Provider Response",
+    "responseFrom": "Response from",
+    "provideResponse": "Please provide your perspective on this issue to help us resolve it.",
+    "responsePlaceholder": "Type your response here...",
+    "submitResponse": "Submit Response",
+    "responseSuccess": "Response submitted successfully",
+    "resolution": "Resolution",
+    "notFound": "Dispute Not Found",
+    "notFoundMessage": "We couldn't find a dispute record for this booking.",
+    "goBack": "Go Back",
+    "reasons": {
+      "notAsDescribed": "Service not as described",
+      "noShow": "Provider did not show up",
+      "quality": "Quality issues",
+      "safety": "Safety concerns",
+      "other": "Other"
+    },
+    "statusLabels": {
+      "open": "Open",
+      "provider_replied": "Provider Replied",
+      "resolved_refund": "Refund Issued",
+      "resolved_payout": "Payout Released",
+      "closed": "Closed"
+    },
+    "resolutionLabels": {
+      "client_win": "Refund Issued to Client",
+      "provider_win": "Dispute Resolved in Your Favor",
+      "resolved": "Resolved"
+    }
   }
 }

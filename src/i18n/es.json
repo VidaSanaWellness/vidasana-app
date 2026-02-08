@@ -348,5 +348,55 @@
     "text": "Mensaje",
     "usDesc": "Apoyo gratuito y confidencial disponible 24/7.",
     "supportiveClosing": "Estos servicios son atendidos por profesionales capacitados que pueden ayudarte a atravesar este momento. Si es posible, considera comunicarte con una persona de confianza en tu vida para apoyo adicional."
+  },
+  "dispute": {
+    "title": "Detalles de la Disputa",
+    "createTitle": "Reportar un Problema",
+    "reason": "Razón de la Disputa",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Por favor proporcione detalles sobre lo qué salió mal...",
+    "evidence": "Evidencia (Fotos)",
+    "addPhoto": "Añadir Foto",
+    "submit": "Enviar Reporte",
+    "submitting": "Enviando...",
+    "success": "Disputa enviada exitosamente",
+    "error": "Error",
+    "evidenceRequired": "Evidencia Requerida",
+    "evidenceMessage": "Por favor suba al menos una foto como evidencia.",
+    "status": "Estado",
+    "submittedOn": "Enviado el",
+    "bookingId": "ID de Reserva",
+    "yourReport": "Tu Reporte",
+    "client": "Cliente",
+    "provider": "Proveedor",
+    "providerResponse": "Respuesta del Proveedor",
+    "responseFrom": "Respuesta de",
+    "provideResponse": "Por favor proporcione su perspectiva sobre este problema para ayudarnos a resolverlo.",
+    "responsePlaceholder": "Escriba su respuesta aquí...",
+    "submitResponse": "Enviar Respuesta",
+    "responseSuccess": "Respuesta enviada exitosamente",
+    "resolution": "Resolución",
+    "notFound": "Disputa No Encontrada",
+    "notFoundMessage": "No pudimos encontrar un registro de disputa para esta reserva.",
+    "goBack": "Regresar",
+    "reasons": {
+      "notAsDescribed": "Servicio no como se describió",
+      "noShow": "El proveedor no se presentó",
+      "quality": "Problemas de calidad",
+      "safety": "Problemas de seguridad",
+      "other": "Otro"
+    },
+    "statusLabels": {
+      "open": "Abierto",
+      "provider_replied": "Proveedor Respondió",
+      "resolved_refund": "Reembolso Emitido",
+      "resolved_payout": "Pago Liberado",
+      "closed": "Cerrado"
+    },
+    "resolutionLabels": {
+      "client_win": "Reembolso Emitido al Cliente",
+      "provider_win": "Disputa Resuelta a su Favor",
+      "resolved": "Resuelto"
+    }
   }
 }

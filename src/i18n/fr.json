@@ -348,5 +348,55 @@
     "text": "SMS",
     "usDesc": "Soutien gratuit et confidentiel disponible 24/7.",
     "supportiveClosing": "Ces services sont assurés par des professionnels formés qui peuvent vous aider à traverser ce moment. Si possible, envisagez de contacter une personne de confiance dans votre vie pour un soutien supplémentaire."
+  },
+  "dispute": {
+    "title": "Détails du Litige",
+    "createTitle": "Signaler un Problème",
+    "reason": "Raison du Litige",
+    "description": "Description",
+    "descriptionPlaceholder": "Veuillez fournir des détails sur ce qui s'est mal passé...",
+    "evidence": "Preuve (Photos)",
+    "addPhoto": "Ajouter Photo",
+    "submit": "Soumettre le Rapport",
+    "submitting": "Envoi en cours...",
+    "success": "Litige soumis avec succès",
+    "error": "Erreur",
+    "evidenceRequired": "Preuve Requise",
+    "evidenceMessage": "Veuillez télécharger au moins une photo comme preuve.",
+    "status": "Statut",
+    "submittedOn": "Soumis le",
+    "bookingId": "ID de Réservation",
+    "yourReport": "Votre Rapport",
+    "client": "Client",
+    "provider": "Fournisseur",
+    "providerResponse": "Réponse du Fournisseur",
+    "responseFrom": "Réponse de",
+    "provideResponse": "Veuillez donner votre point de vue sur ce problème pour nous aider à le résoudre.",
+    "responsePlaceholder": "Tapez votre réponse ici...",
+    "submitResponse": "Soumettre la Réponse",
+    "responseSuccess": "Réponse soumise avec succès",
+    "resolution": "Résolution",
+    "notFound": "Litige Non Trouvé",
+    "notFoundMessage": "Nous n'avons pas trouvé de dossier de litige pour cette réservation.",
+    "goBack": "Retour",
+    "reasons": {
+      "notAsDescribed": "Service non conforme à la description",
+      "noShow": "Le fournisseur ne s'est pas présenté",
+      "quality": "Problèmes de qualité",
+      "safety": "Problèmes de sécurité",
+      "other": "Autre"
+    },
+    "statusLabels": {
+      "open": "Ouvert",
+      "provider_replied": "Réponse du Fournisseur",
+      "resolved_refund": "Remboursement Émis",
+      "resolved_payout": "Paiement Libéré",
+      "closed": "Fermé"
+    },
+    "resolutionLabels": {
+      "client_win": "Remboursement Émis au Client",
+      "provider_win": "Litige Résolu en Votre Faveur",
+      "resolved": "Résolu"
+    }
   }
 }

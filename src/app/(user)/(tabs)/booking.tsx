@@ -65,7 +65,7 @@ export default function BookingsScreen() {
         .from('event_booking')
         .select(
           `
-          id, created_at, total_price,
+          id, created_at, status, total_price,
           events (
             start_at,
             location, 
@@ -95,7 +95,7 @@ export default function BookingsScreen() {
         ...(eventBookings || []).map((b: any) => ({
           id: b.id,
           created_at: b.created_at,
-          status: 'booked',
+          status: b.status || 'booked',
           event_start_at: b.events?.start_at,
           title: b.events?.event_translations?.[0]?.title || 'Event',
           description: b.events?.event_translations?.[0]?.description,
@@ -144,10 +144,13 @@ export default function BookingsScreen() {
   );
 
   const renderItem = ({item}: {item: Booking}) => {
-    const startTime = dayjs(item.appointed || item.event_start_at).format('h:mm a');
-    const endTime = dayjs(item.appointed || item.event_start_at)
-      .add(1, 'hour')
-      .format('h:mm a'); // Mock duration for now
+    const startTime = dayjs(item.appointed || item.event_start_at);
+    const endTime = startTime.add(1, 'hour'); // Mock duration
+    const now = dayjs();
+
+    // Dispute Logic:
+    // Show if (Now > EndTime) AND (Now < EndTime + 72h) AND (Status != 'disputed')
+    const canDispute = now.isAfter(endTime) && now.isBefore(endTime.add(72, 'hour')) && item.status !== 'disputed';
 
     // Resolve Image URL
     let imageUrl = item.images?.[0];
@@ -156,16 +159,39 @@ export default function BookingsScreen() {
     }
 
     return (
-      <BookingCard
-        title={item.title}
-        description={item.description}
-        startTime={startTime}
-        endTime={endTime}
-        // location={item.location} // Removed from BookingCard props
-        image={imageUrl}
-        price={item.price}
-        onPress={() => router.push(`/(user)/receipt/${item.id}?type=${item.type}` as any)}
-      />
+      <View className="mb-4">
+        <BookingCard
+          title={item.title}
+          description={item.description}
+          startTime={startTime.format('h:mm a')}
+          endTime={endTime.format('h:mm a')}
+          image={imageUrl}
+          price={item.price}
+          status={item.status}
+          onPress={() => router.push(`/(user)/receipt/${item.id}?type=${item.type}` as any)}
+        />
+
+        {/* Status / Action Footer */}
+        <View className="mt-2 flex-row items-center justify-end px-1">
+          {canDispute && (
+            <TouchableOpacity
+              onPress={() => router.push(`/(user)/dispute/create?bookingId=${item.id}&type=${item.type}` as any)}
+              className="flex-row items-center space-x-1">
+              <Feather name="alert-circle" size={14} color="#EF4444" />
+              <Caption className="font-nunito-bold text-red-500">Report Issue</Caption>
+            </TouchableOpacity>
+          )}
+
+          {item.status === 'disputed' && (
+            <TouchableOpacity
+              onPress={() => router.push(`/(user)/dispute/${item.id}` as any)}
+              className="flex-row items-center space-x-1 rounded-full border border-red-100 bg-red-50 px-3 py-1">
+              <Feather name="eye" size={14} color="#EF4444" />
+              <Caption className="ml-1 font-nunito-bold text-red-500">View Dispute</Caption>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
     );
   };
 

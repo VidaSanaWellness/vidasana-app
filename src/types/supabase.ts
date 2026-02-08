@@ -74,6 +74,86 @@ export type Database = {
         }
         Relationships: []
       }
+      disputes: {
+        Row: {
+          admin_notes: string | null
+          client_id: string
+          created_at: string
+          event_booking_id: string | null
+          evidence_client: Json | null
+          evidence_provider: Json | null
+          id: string
+          provider_id: string
+          reason: string
+          resolution: string | null
+          response_provider: string | null
+          service_booking_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          client_id: string
+          created_at?: string
+          event_booking_id?: string | null
+          evidence_client?: Json | null
+          evidence_provider?: Json | null
+          id?: string
+          provider_id: string
+          reason: string
+          resolution?: string | null
+          response_provider?: string | null
+          service_booking_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          client_id?: string
+          created_at?: string
+          event_booking_id?: string | null
+          evidence_client?: Json | null
+          evidence_provider?: Json | null
+          id?: string
+          provider_id?: string
+          reason?: string
+          resolution?: string | null
+          response_provider?: string | null
+          service_booking_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_event_booking_id_fkey"
+            columns: ["event_booking_id"]
+            isOneToOne: false
+            referencedRelation: "event_booking"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_service_booking_id_fkey"
+            columns: ["service_booking_id"]
+            isOneToOne: false
+            referencedRelation: "services_booking"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_booking: {
         Row: {
           created_at: string
@@ -81,6 +161,7 @@ export type Database = {
           id: string
           payment_id: string
           quantity: number
+          status: Database["public"]["Enums"]["event_booking_status"]
           ticket_type_id: string
           total_price: number
           unit_price: number
@@ -93,6 +174,7 @@ export type Database = {
           id?: string
           payment_id: string
           quantity: number
+          status?: Database["public"]["Enums"]["event_booking_status"]
           ticket_type_id: string
           total_price: number
           unit_price: number
@@ -105,6 +187,7 @@ export type Database = {
           id?: string
           payment_id?: string
           quantity?: number
+          status?: Database["public"]["Enums"]["event_booking_status"]
           ticket_type_id?: string
           total_price?: number
           unit_price?: number
@@ -912,7 +995,8 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
-      booking_status: "booked" | "cancel" | "completed"
+      booking_status: "booked" | "cancel" | "completed" | "disputed"
+      event_booking_status: "booked" | "completed" | "cancelled" | "disputed"
       role: "user" | "provider" | "admin"
       user_status: "active" | "onboarding" | "pending" | "delete" | "reject"
       week_day: "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat"
@@ -1043,7 +1127,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      booking_status: ["booked", "cancel", "completed"],
+      booking_status: ["booked", "cancel", "completed", "disputed"],
+      event_booking_status: ["booked", "completed", "cancelled", "disputed"],
       role: ["user", "provider", "admin"],
       user_status: ["active", "onboarding", "pending", "delete", "reject"],
       week_day: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],

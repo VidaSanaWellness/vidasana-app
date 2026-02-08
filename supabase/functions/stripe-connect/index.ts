@@ -126,9 +126,13 @@ serve(async (req) => {
       };
 
       if (destinationValid) {
-        // Platform fee 20%
-        piParams['application_fee_amount'] = Math.round(amount * 0.2);
-        piParams['transfer_data'] = {destination: stripeAccountId};
+        // Manual Payout Flow (100% to Provider, no fee for now)
+        // We do NOT set transfer_data here. Funds stay in Platform.
+        // We will manually transfer via `handle-payouts` Edge Function.
+        piParams['metadata'] = {
+          provider_id: providerId,
+          manual_payout: 'true',
+        };
       } else {
         piParams['metadata'] = {manual_payout: 'true'};
       }

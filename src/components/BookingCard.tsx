@@ -11,12 +11,13 @@ type BookingCardProps = {
   image?: string;
 
   price?: number;
+  status?: string;
   onPress?: () => void;
 };
 
-export const BookingCard = ({title, startTime, endTime, description, image, price, onPress}: BookingCardProps) => {
+export const BookingCard = ({title, startTime, endTime, description, image, price, status, onPress}: BookingCardProps) => {
   return (
-    <View className="mb-3 flex-row">
+    <View className="flex-row">
       {/* Card Content */}
       <TouchableOpacity
         activeOpacity={0.9}
@@ -41,7 +42,16 @@ export const BookingCard = ({title, startTime, endTime, description, image, pric
           </View>
 
           {/* Price / Relevant Info */}
-          <View className="flex-row items-center">
+          <View className="flex-row items-center gap-4">
+            {status && (
+              <View
+                className={`rounded-full px-2 py-0.5 ${status === 'booked' ? 'bg-sage/20' : status === 'disputed' ? 'bg-red-100' : 'bg-gray-100'}`}>
+                <Caption
+                  className={`font-nunito-bold text-xs capitalize ${status === 'booked' ? 'text-sage' : status === 'disputed' ? 'text-red-700' : 'text-gray-500'}`}>
+                  {status}
+                </Caption>
+              </View>
+            )}
             <H2 className="font-nunito-bold text-sm text-primary">{price ? `$${price}` : 'Free'}</H2>
           </View>
         </View>
