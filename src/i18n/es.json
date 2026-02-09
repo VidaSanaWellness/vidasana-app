@@ -233,7 +233,21 @@
     "paymentDetails": "Detalles del Pago",
     "amount": "Monto",
     "paymentDate": "Fecha de Pago",
-    "transactionId": "ID de Transacción"
+    "transactionId": "ID de Transacción",
+    "headerTitle": "Recibo de VidaSana Wellness",
+    "bookingId": "ID de Reserva",
+    "event": "Evento",
+    "service": "Servicio",
+    "organizer": "Organizador",
+    "provider": "Proveedor",
+    "unpaid": "No Pagado",
+    "pending": "Pendiente",
+    "viewEventDetails": "Ver Detalles del Evento",
+    "viewServiceDetails": "Ver Detalles del Servicio",
+    "paymentMethod": "Método de Pago",
+    "card": "Tarjeta",
+    "copied": "¡Copiado!",
+    "idCopied": "ID de transacción copiado"
   },
   "provider": {
     "services": "Servicios",

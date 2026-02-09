@@ -3,21 +3,15 @@ import {useAppStore} from '@/store';
 import {Display, Subtitle, Body} from './';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {View, Modal, TouchableOpacity, Linking} from 'react-native';
 
 export const SOSFAB = () => {
-  const {bottom} = useSafeAreaInsets();
   const setSOSOpen = useAppStore((s) => s.setSOSOpen);
-
-  // Adjusted bottom padding to avoid conflict with tab bar if present,
-  // though FAB usually sits above it.
-  const bottomOffset = bottom + 80;
 
   return (
     <TouchableOpacity
       onPress={() => setSOSOpen(true)}
-      className="elevation-5 bottom-safe-offset-16 absolute right-5 z-50 h-14 w-14 items-center justify-center rounded-full bg-red-600 shadow-lg">
+      className="elevation-5 bottom-safe-offset-16 android:mb-4 absolute right-5 z-50 h-14 w-14 items-center justify-center rounded-full bg-red-600 shadow-lg">
       <Ionicons name="medical" size={28} color="white" />
     </TouchableOpacity>
   );

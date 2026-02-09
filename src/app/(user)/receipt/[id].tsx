@@ -13,8 +13,10 @@ import Toast from 'react-native-toast-message';
 import {H3, Body, Caption, Loader} from '@/components';
 import {IMAGES} from '@/assets/images';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 
 export default function ReceiptScreen() {
+  const {t} = useTranslation();
   const {back, navigate} = useRouter();
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const {id, type} = useLocalSearchParams<{id: string; type?: string}>();
@@ -115,18 +117,18 @@ export default function ReceiptScreen() {
         </head>
         <body style="text-align: center;">
           <h1 style="font-size: 50px; font-family: Helvetica Neue; font-weight: normal;">
-            VidaSana Wellness Receipt
+            ${t('receipt.headerTitle')}
           </h1>
           <h3 style="color: #666; font-family: Helvetica Neue;">
-            booking ID: ${booking.id.split('-')[0]}
+            ${t('receipt.bookingId')}: ${booking.id.split('-')[0]}
           </h3>
           <p>
-            ${booking.isEvent ? 'Event' : 'Service'}: ${booking.title} <br />
-            ${booking.isEvent ? 'Organizer' : 'Provider'}: ${booking.providerName} <br />
-            Date: ${dayjs(booking.date).format('MMM D, YYYY | h:mm A')} <br />
-            Amount: $${booking.price} <br />
-            Status: ${booking.payment?.status || 'Unpaid'} <br />
-            Transaction ID: ${booking.payment?.id || 'N/A'}
+            ${booking.isEvent ? t('receipt.event') : t('receipt.service')}: ${booking.title} <br />
+            ${booking.isEvent ? t('receipt.organizer') : t('receipt.provider')}: ${booking.providerName} <br />
+            ${t('receipt.date')}: ${dayjs(booking.date).format('MMM D, YYYY | h:mm A')} <br />
+            ${t('receipt.amount')}: $${booking.price} <br />
+            ${t('receipt.status')}: ${booking.payment?.status || t('receipt.unpaid')} <br />
+            ${t('receipt.transactionId')}: ${booking.payment?.id || 'N/A'}
           </p>
         </body>
       </html>
@@ -172,7 +174,7 @@ export default function ReceiptScreen() {
         <TouchableOpacity onPress={() => back()} className="rounded-full bg-gray-100 p-2">
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <H3 className="text-gray-900">E-Receipt</H3>
+        <H3 className="text-gray-900">{t('receipt.title')}</H3>
         <TouchableOpacity onPress={() => setIsMenuVisible(!isMenuVisible)} className="rounded-full bg-gray-100 p-2">
           <Feather name="more-horizontal" size={24} color="black" />
         </TouchableOpacity>
@@ -189,7 +191,7 @@ export default function ReceiptScreen() {
               }}
               className={`flex-row items-center p-4 active:bg-gray-50 ${!canDispute && booking?.status !== 'disputed' ? 'rounded-t-2xl' : ''}`}>
               <Feather name="send" size={20} color="#00594f" />
-              <Body className="font-nunito-semibold ml-3 text-gray-900">Share E-Receipt</Body>
+              <Body className="font-nunito-semibold ml-3 text-gray-900">{t('receipt.share')}</Body>
             </TouchableOpacity>
             <View className="mx-4 h-[1px] bg-gray-100" />
             <TouchableOpacity
@@ -199,7 +201,7 @@ export default function ReceiptScreen() {
               }}
               className="flex-row items-center p-4 active:bg-gray-50">
               <Feather name="download" size={20} color="#00594f" />
-              <Body className="font-nunito-semibold ml-3 text-gray-900">Download E-Receipt</Body>
+              <Body className="font-nunito-semibold ml-3 text-gray-900">{t('receipt.download')}</Body>
             </TouchableOpacity>
             <View className="mx-4 h-[1px] bg-gray-100" />
             <TouchableOpacity
@@ -209,7 +211,7 @@ export default function ReceiptScreen() {
               }}
               className="flex-row items-center rounded-b-2xl p-4 active:bg-gray-50">
               <Feather name="printer" size={20} color="#00594f" />
-              <Body className="font-nunito-semibold ml-3 text-gray-900">Print</Body>
+              <Body className="font-nunito-semibold ml-3 text-gray-900">{t('receipt.print')}</Body>
             </TouchableOpacity>
 
             {/* Dispute Options */}
@@ -223,7 +225,7 @@ export default function ReceiptScreen() {
                   }}
                   className="flex-row items-center rounded-t-2xl p-4 active:bg-gray-50">
                   <Feather name="alert-circle" size={20} color="#EF4444" />
-                  <Body className="font-nunito-semibold ml-3 text-red-500">Report Issue</Body>
+                  <Body className="font-nunito-semibold ml-3 text-red-500">{t('dispute.createTitle')}</Body>
                 </TouchableOpacity>
               </>
             )}
@@ -238,7 +240,7 @@ export default function ReceiptScreen() {
                   }}
                   className="flex-row items-center rounded-t-2xl p-4 active:bg-gray-50">
                   <Feather name="eye" size={20} color="#EF4444" />
-                  <Body className="font-nunito-semibold ml-3 text-red-500">View Dispute</Body>
+                  <Body className="font-nunito-semibold ml-3 text-red-500">{t('dispute.title')}</Body>
                 </TouchableOpacity>
               </>
             )}
@@ -265,7 +267,7 @@ export default function ReceiptScreen() {
         <View className="mb-5 rounded-2xl bg-gray-50 p-5">
           <View className="mb-5 border-b border-gray-200 pb-4">
             <Caption className="mb-1 text-center uppercase tracking-wide text-gray-400">
-              {booking?.isEvent ? 'Event Booking' : 'Service Booking'}
+              {booking?.isEvent ? t('receipt.event') : t('receipt.service')}
             </Caption>
             <H3 className="text-center text-xl font-extrabold text-primary">{booking?.title || 'N/A'}</H3>
             {booking?.isEvent && booking?.ticketType && (
@@ -277,19 +279,19 @@ export default function ReceiptScreen() {
 
           {/* Date & Time with proper spacing */}
           <View className="mb-3 flex-row justify-between py-2">
-            <Body className="text-gray-500">Date</Body>
+            <Body className="text-gray-500">{t('receipt.date')}</Body>
             <Body className="font-nunito-bold text-gray-900">{booking?.date ? dayjs(booking.date).format('MMM D, YYYY') : 'N/A'}</Body>
           </View>
 
           <View className="mb-3 flex-row justify-between py-2">
-            <Body className="text-gray-500">Time</Body>
+            <Body className="text-gray-500">{t('receipt.time')}</Body>
             <Body className="font-nunito-bold text-gray-900">{booking?.date ? dayjs(booking.date).format('h:mm A') : 'N/A'}</Body>
           </View>
 
           {/* Location for events */}
           {booking?.isEvent && booking?.location && (
             <View className="mb-3 flex-row justify-between py-2">
-              <Body className="text-gray-500">Location</Body>
+              <Body className="text-gray-500">{t('receipt.location')}</Body>
               <Body className="max-w-[60%] text-right font-nunito-bold text-gray-900" numberOfLines={2}>
                 {booking.location}
               </Body>
@@ -298,7 +300,7 @@ export default function ReceiptScreen() {
 
           {/* Provider/Organizer */}
           <View className="mt-2 flex-row justify-between border-t border-gray-200 pt-4">
-            <Body className="text-gray-500">{booking?.isEvent ? 'Organizer' : 'Provider'}</Body>
+            <Body className="text-gray-500">{booking?.isEvent ? t('receipt.organizer') : t('receipt.provider')}</Body>
             <Body className="font-nunito-bold text-gray-900">{booking?.providerName || 'N/A'}</Body>
           </View>
 
@@ -312,7 +314,9 @@ export default function ReceiptScreen() {
                 navigate(targetPath as any);
               }}
               className="flex-row items-center justify-center space-x-2 rounded-xl bg-gray-100 py-3 active:bg-gray-200">
-              <Body className="font-nunito-bold text-primary">View {booking?.isEvent ? 'Event' : 'Service'} Details</Body>
+              <Body className="font-nunito-bold text-primary">
+                {booking?.isEvent ? t('receipt.viewEventDetails') : t('receipt.viewServiceDetails')}
+              </Body>
               <Ionicons name="chevron-forward" size={16} color="#00594f" />
             </TouchableOpacity>
           </View>
@@ -321,35 +325,35 @@ export default function ReceiptScreen() {
         {/* Payment Details Card */}
         <View className="mb-8 rounded-2xl bg-gray-50 p-5">
           <View className="mb-5 flex-row items-center justify-between">
-            <Body className="font-nunito-bold text-gray-700">Payment Details</Body>
+            <Body className="font-nunito-bold text-gray-700">{t('receipt.paymentDetails')}</Body>
             <Ionicons name="card-outline" size={20} color="#00594f" />
           </View>
 
           <View className="mb-3 flex-row justify-between py-2">
-            <Body className="text-gray-500">Amount</Body>
+            <Body className="text-gray-500">{t('receipt.amount')}</Body>
             <Body className="font-nunito-extrabold text-lg text-primary">${booking?.price ? Number(booking.price).toFixed(2) : '0.00'}</Body>
           </View>
 
           <View className="mb-3 flex-row justify-between py-2">
-            <Body className="text-gray-500">Payment Method</Body>
-            <Body className="font-nunito-bold text-gray-900">Card •••• ••••</Body>
+            <Body className="text-gray-500">{t('receipt.paymentMethod')}</Body>
+            <Body className="font-nunito-bold text-gray-900">{t('receipt.card')} •••• ••••</Body>
           </View>
 
           <View className="mb-3 flex-row justify-between py-2">
-            <Body className="text-gray-500">Payment Date</Body>
+            <Body className="text-gray-500">{t('receipt.paymentDate')}</Body>
             <Body className="font-nunito-bold text-gray-900">
               {booking?.payment?.created_at ? dayjs(booking.payment.created_at).format('MMM D, YYYY') : 'N/A'}
             </Body>
           </View>
 
           <View className="mb-3 flex-row items-center justify-between py-2">
-            <Body className="text-gray-500">Transaction ID</Body>
+            <Body className="text-gray-500">{t('receipt.transactionId')}</Body>
             <TouchableOpacity
               className="flex-row items-center"
               onPress={async () => {
                 if (booking?.payment?.id) {
                   await Clipboard.setStringAsync(booking.payment.id);
-                  Toast.show({type: 'success', text1: 'Copied!', text2: 'Transaction ID copied'});
+                  Toast.show({type: 'success', text1: t('receipt.copied'), text2: t('receipt.idCopied')});
                 }
               }}>
               <Body className="mr-2 max-w-[140px] font-nunito-bold text-xs text-gray-900" numberOfLines={1}>
@@ -360,9 +364,9 @@ export default function ReceiptScreen() {
           </View>
 
           <View className="mt-2 flex-row items-center justify-between border-t border-gray-200 pt-4">
-            <Body className="text-gray-500">Status</Body>
+            <Body className="text-gray-500">{t('receipt.status')}</Body>
             <View className="rounded-full bg-green-50 px-3 py-1.5">
-              <Caption className="font-nunito-bold capitalize text-green-700">{booking?.payment?.status || 'Pending'}</Caption>
+              <Caption className="font-nunito-bold capitalize text-green-700">{booking?.payment?.status || t('receipt.pending')}</Caption>
             </View>
           </View>
         </View>

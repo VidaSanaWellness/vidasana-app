@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator, Platform} from 'react-native';
+import {View, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator, Platform, Linking} from 'react-native';
 import {useRouter} from 'expo-router';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
@@ -222,8 +222,8 @@ export const ProfileScreen = () => {
           <H3 className="mb-4 font-nunito-bold text-lg text-black">{t('settings.support')}</H3>
 
           <TouchableOpacity
-            className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
-            onPress={() => Alert.alert('Coming Soon', 'This feature will be available soon!')}>
+            onPress={() => Linking.openURL('mailto:mary@vidasanawellness.com')}
+            className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3">
             <Ionicons name="help-circle-outline" size={24} color="#00594f" />
             <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.helpCenter')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
@@ -231,7 +231,7 @@ export const ProfileScreen = () => {
 
           <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
-            onPress={() => router.push('/TermsAndConditions' as any)}>
+            onPress={() => Linking.openURL('https://vidasanawellness.com/terms' as any)}>
             <Ionicons name="document-text-outline" size={24} color="#00594f" />
             <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.termsAndConditions')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
@@ -239,7 +239,7 @@ export const ProfileScreen = () => {
 
           <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
-            onPress={() => router.push('/PrivacyPolicy' as any)}>
+            onPress={() => Linking.openURL('https://vidasanawellness.com/privacy' as any)}>
             <Ionicons name="shield-checkmark-outline" size={24} color="#00594f" />
             <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.privacyPolicy')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />

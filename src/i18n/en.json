@@ -233,7 +233,21 @@
     "paymentDetails": "Payment Details",
     "amount": "Amount",
     "paymentDate": "Payment Date",
-    "transactionId": "Transaction ID"
+    "transactionId": "Transaction ID",
+    "headerTitle": "VidaSana Wellness Receipt",
+    "bookingId": "Booking ID",
+    "event": "Event",
+    "service": "Service",
+    "organizer": "Organizer",
+    "provider": "Provider",
+    "unpaid": "Unpaid",
+    "pending": "Pending",
+    "viewEventDetails": "View Event Details",
+    "viewServiceDetails": "View Service Details",
+    "paymentMethod": "Payment Method",
+    "card": "Card",
+    "copied": "Copied!",
+    "idCopied": "Transaction ID copied"
   },
   "provider": {
     "services": "Services",

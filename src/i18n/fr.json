@@ -233,7 +233,21 @@
     "paymentDetails": "Détails du Paiement",
     "amount": "Montant",
     "paymentDate": "Date de Paiement",
-    "transactionId": "ID de Transaction"
+    "transactionId": "ID de Transaction",
+    "headerTitle": "Reçu VidaSana Wellness",
+    "bookingId": "ID de Réservation",
+    "event": "Événement",
+    "service": "Service",
+    "organizer": "Organisateur",
+    "provider": "Fournisseur",
+    "unpaid": "Non Payé",
+    "pending": "En Attente",
+    "viewEventDetails": "Voir les Détails de l'Événement",
+    "viewServiceDetails": "Voir les Détails du Service",
+    "paymentMethod": "Méthode de Paiement",
+    "card": "Carte",
+    "copied": "Copié !",
+    "idCopied": "ID de transaction copié"
   },
   "provider": {
     "services": "Services",

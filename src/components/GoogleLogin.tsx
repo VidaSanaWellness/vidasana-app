@@ -1,5 +1,5 @@
 import {supabase} from '@/utils';
-import {expo} from '@/../app.json';
+import * as Linking from 'expo-linking';
 import {useEffect, useState} from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import {Caption} from './Typography';
@@ -36,16 +36,24 @@ export function GoogleSignInButton() {
     try {
       setLoading(true);
       console.debug('onSignInButtonPress - start');
+
+      const redirectUrl = Linking.createURL('google-auth');
+      console.log('Redirect URL:', redirectUrl);
+
       const res = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {skipBrowserRedirect: true, queryParams: {prompt: 'consent'}, redirectTo: `${expo.scheme}://google-auth`},
+        options: {
+          skipBrowserRedirect: true,
+          queryParams: {prompt: 'consent'},
+          redirectTo: redirectUrl,
+        },
       });
 
       const googleOAuthUrl = res.data.url;
 
       if (!googleOAuthUrl) return console.error('no oauth url found!');
 
-      const result = await WebBrowser.openAuthSessionAsync(googleOAuthUrl, `${expo.scheme}://google-auth`, {showInRecents: true});
+      const result = await WebBrowser.openAuthSessionAsync(googleOAuthUrl, redirectUrl, {showInRecents: true});
 
       console.debug('onSignInButtonPress - openAuthSessionAsync - result', {result});
 

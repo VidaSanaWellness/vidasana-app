@@ -13,9 +13,7 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {PersistQueryClientProvider} from '@tanstack/react-query-persist-client';
 import {createAsyncStoragePersister} from '@tanstack/query-async-storage-persister';
 
-const queryClient = new QueryClient({
-  defaultOptions: {queries: {retry: 2, staleTime: __DEV__ ? 0 : 1000 * 60 * 10}},
-});
+const queryClient = new QueryClient({defaultOptions: {queries: {retry: 2, staleTime: __DEV__ ? 0 : 1000 * 60 * 10}}});
 
 const AppProvider = ({children}: {children: ReactElement}) => {
   useQueryClientState();
