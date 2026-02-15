@@ -31,7 +31,7 @@ interface FilterModalProps {
   mode?: 'service' | 'event';
 }
 
-export default function FilterModal({visible, onClose, onApply, initialFilters, userLocation, mode = 'service'}: FilterModalProps) {
+export function FilterModal({visible, onClose, onApply, initialFilters, userLocation, mode = 'service'}: FilterModalProps) {
   const {t} = useTranslation();
 
   // Local State

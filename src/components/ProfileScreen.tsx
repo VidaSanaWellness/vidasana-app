@@ -4,6 +4,7 @@ import {useRouter} from 'expo-router';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as WebBrowser from 'expo-web-browser';
 import {useTranslation} from 'react-i18next';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
@@ -134,6 +135,14 @@ export const ProfileScreen = () => {
     fetchProfile(); // Refresh data
   };
 
+  const handleOpenLink = async (url: string) => {
+    try {
+      await WebBrowser.openBrowserAsync(url);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open link.');
+    }
+  };
+
   if (isFetchingProfile && !userInfo.fullName && !currentUser) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
@@ -231,7 +240,7 @@ export const ProfileScreen = () => {
 
           <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
-            onPress={() => Linking.openURL('https://vidasanawellness.com/terms' as any)}>
+            onPress={() => handleOpenLink('https://vidasanawellness.com/terms')}>
             <Ionicons name="document-text-outline" size={24} color="#00594f" />
             <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.termsAndConditions')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />
@@ -239,7 +248,7 @@ export const ProfileScreen = () => {
 
           <TouchableOpacity
             className="mb-2 flex-row items-center rounded-xl bg-gray-50 px-4 py-3"
-            onPress={() => Linking.openURL('https://vidasanawellness.com/privacy' as any)}>
+            onPress={() => handleOpenLink('https://vidasanawellness.com/privacy')}>
             <Ionicons name="shield-checkmark-outline" size={24} color="#00594f" />
             <Body className="ml-3 flex-1 font-nunito-bold text-base text-primary">{t('settings.privacyPolicy')}</Body>
             <Ionicons name="chevron-forward" size={24} color="#00594f" />

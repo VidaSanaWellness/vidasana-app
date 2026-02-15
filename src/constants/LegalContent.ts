@@ -1,0 +1,161 @@
+export const TERMS_AND_CONDITIONS = `VIDASANA WELLNESS TERMS AND CONDITIONS
+Effective Date: January 27, 2026
+Company: VidaSana Wellness, Inc ("VidaSana", "we", "us", "our")
+Jurisdiction: Global
+
+1. Acceptance of Terms
+By accessing, Browse, registering for an account, or otherwise using any part of the VidaSana Wellness platform (which includes, but is not limited to, our website, mobile application, AI Companion, various services, programs, courses, workshops, retreats, business tools, community forums, or any related content, data, or materials), you ("user", "participant", "you") explicitly acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions and our Privacy Policy. These documents form a legally binding agreement between you and VidaSana Wellness. If you do not agree with any part of these Terms or the Privacy Policy, you must immediately cease all access and use of the platform. Your continued use of the platform constitutes your unequivocal and ongoing acceptance of these Terms.
+
+2. Nature of the Platform
+VidaSana Wellness operates solely as a technology platform designed to facilitate connections between users and independent wellness providers, offer access to informational business tools, and curate various wellness experiences. It is crucial to understand our distinct role and inherent limitations:
+No Direct Services: We do not directly provide any wellness, medical, psychological, psychiatric, therapeutic, diagnostic, legal, financial, or specific business consulting services. Our function is strictly limited to facilitating a marketplace and providing informational resources.
+Independent Providers: We do not employ any wellness providers. All providers accessible through our platform are independent third-party contractors, businesses, or professionals. We do not verify, endorse, or guarantee any specific provider's credentials, qualifications, licensure, certifications, insurance, or the specific outcomes of any services they provide, unless explicitly stated otherwise for certain verified programs where such verification processes are transparently outlined.
+AI Wellness Companion: The AI Wellness Companion is an automated informational tool providing algorithmic, data-driven, and general guidance only. It is not a substitute for professional advice and should not be relied upon as such.
+Business Tools and Resources: We offer business tools and resources for general informational and educational purposes. We provide no guarantee of success, specific accuracy, or suitability for your individual business needs or objectives.
+
+3. No Professional, Medical, Legal, or Business Advice
+All content available on the VidaSana Wellness platform, including but not limited to AI Companion guidance, course materials, retreat content, articles, blog posts, community discussions, and business tools, is provided for general informational and educational purposes only. This content is not, and should not be considered, relied upon, or interpreted as:
+Medical, Psychological, Psychiatric, or Therapeutic Advice: It is not a substitute for professional medical diagnosis, treatment, therapy, or personalized healthcare.
+Legal, Financial, or Business Consulting: It does not constitute legal, financial, tax, or specific business consulting or guidance.
+Substitute for Professional Consultation: It is explicitly not a replacement for consultation with qualified, licensed, and regulated professionals in any relevant field.
+User Responsibility: You are solely responsible for consulting with appropriate licensed medical, psychological, legal, financial, or business professionals before making any health, wellness, legal, financial, or business decisions or implementing any strategies discussed or referenced on the platform. Never disregard professional advice or delay in seeking it because of something you have read, heard, or accessed on the VidaSana Wellness platform.
+
+4. User Responsibilities and Assumption of Risk
+By using the VidaSana Wellness platform, you acknowledge, understand, and agree to the following inherent responsibilities and assumption of risk:
+Voluntary Participation: You understand that your participation in any wellness activities, programs, retreats, classes, or your use of business tools facilitated or referenced by VidaSana Wellness is entirely voluntary and undertaken at your own sole risk.
+Self-Evaluation of Fitness: You are solely responsible for evaluating your own physical, emotional, and mental fitness, health conditions, allergies, and limitations before participating in any activity, commencing any program, or using any tool. If you have any health concerns, known conditions, or are taking medication, you must consult with a qualified healthcare professional before participation.
+Immediate Cessation of Activity: You agree to immediately stop any activity or discontinue use of any tool if you experience any discomfort, pain, injury, emotional distress, or any other adverse or unexpected effects, and you will promptly seek appropriate professional assistance if needed.
+Accurate Information: You agree to provide accurate, complete, current, and truthful information about yourself, including any relevant health conditions, limitations, or other pertinent details, to any providers you engage with through the platform.
+Adherence to Guidelines and Consent: You will strictly adhere to all community safety guidelines, consent policies, codes of conduct, and instructions provided by VidaSana Wellness and individual providers.
+Business Tool Usage: You are solely and entirely responsible for your use of any business tools, the interpretations you derive from their output, any business decisions you make based on their guidance, and the results obtained from such decisions. VidaSana Wellness bears no responsibility or liability for your business outcomes, financial performance, or any related losses.
+
+5. AI Wellness Companion and Business Tools Disclaimer
+The AI Wellness Companion and any business tools provided by VidaSana Wellness are sophisticated algorithmic and data-driven systems, and as such, they come with inherent limitations and disclaimers:
+Informational Only: They provide automated, algorithmic, and data-driven suggestions and information that are generated from training data. As a result, their output may be incomplete, inaccurate, outdated, biased, or not applicable to your specific or unique circumstances. They are not capable of independent judgment, empathy, or understanding personal context.
+No Guarantees: We make no guarantees that the AI Companion or business tools will function without interruption, errors, or achieve any specific outcome, success, or desired result for you.
+Discretion and Responsibility: You must use the AI Companion and business tools with your own discretion, critical judgment, and independent verification. You remain solely responsible for any actions taken or decisions made based on their guidance or output, and you assume all risks associated with such reliance.
+Evolution and Liability: These tools are subject to continuous development and may evolve, be updated, or change over time, potentially altering their functionality or output. VidaSana Wellness is not liable for any errors, interruptions, misuse, misinterpretations, or consequences arising from the use of or reliance upon the AI Companion or business tools.
+Crisis Support & Emergency Disclaimer
+VidaSana Wellness and its AI companion are not emergency services and are not a substitute for professional medical, mental health, or crisis care.
+If you are experiencing thoughts of self-harm, harm to others, or believe you may be in immediate danger, you should contact local emergency services immediately or reach out to a qualified crisis support provider.
+Crisis support resources may be presented within the platform for informational purposes only. VidaSana Wellness does not provide crisis intervention services and does not monitor user activity for emergency situations.
+By using this platform, you acknowledge and agree that:
+The AI companion does not diagnose, treat, or manage mental health conditions.
+
+
+You are responsible for seeking appropriate professional or emergency care when needed.
+
+
+VidaSana Wellness is not liable for decisions made or actions taken based on interactions with the AI companion.
+
+
+
+6. Independent Third-Party Providers
+As explicitly stated, providers listed on or accessible through the VidaSana Wellness platform are independent contractors, businesses, or professionals, and are not employees, agents, partners, or affiliates of VidaSana Wellness. Our responsibilities regarding providers are strictly limited:
+No Verification Guarantees: Unless explicitly and specifically stated otherwise for a particular program or feature (e.g., "VidaSana Verified Provider Program"), VidaSana Wellness does not verify, endorse, or guarantee the qualifications, licensure, certifications, insurance, background, or competence of any independent third-party providers. It is your exclusive responsibility to conduct your own due diligence, verify credentials, and assess the suitability of any provider before engaging their services.
+No Responsibility for Actions: We are not responsible or liable for any acts, errors, omissions, negligence, misconduct, malpractice, or any direct or indirect harm by any independent third-party providers, whether occurring on or off the platform. Your interactions, agreements, and engagements with providers are solely between you and the provider.
+No Guarantee of Quality or Results: We do not guarantee the safety, quality, efficacy, or results of any services, programs, or advice delivered by third-party providers. Any testimonials or reviews reflect individual experiences and are not guarantees of similar outcomes.
+
+7. Liability and Indemnification
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
+LIMITATION OF LIABILITY: VIDASANA WELLNESS, INCLUDING ITS FOUNDERS, OFFICERS, DIRECTORS, EMPLOYEES, CONTRACTORS, AGENTS, AFFILIATES, LICENSORS, SUPPLIERS, AND PARTNERS (COLLECTIVELY, THE "VIDASANA PARTIES"), SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, PUNITIVE, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, OR ANY OTHER DAMAGES OF ANY KIND, INCLUDING BUT NOT LIMITED TO, INJURY, DEATH, ILLNESS, EMOTIONAL DISTRESS, PSYCHOLOGICAL HARM, SEXUAL HARM, FINANCIAL LOSS, LOSS OF PROFITS, LOSS OF REVENUE, BUSINESS INTERRUPTION, LOSS OF DATA, OR PROPERTY DAMAGE, ARISING FROM OR IN CONNECTION WITH YOUR ACCESS TO, USE OF, OR INABILITY TO USE THE PLATFORM OR PARTICIPATION IN ANY SERVICES, COURSES, RETREATS, OR USE OF BUSINESS TOOLS, WHETHER BASED ON WARRANTY, CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, OR ANY OTHER LEGAL THEORY, EVEN IF ANY OF THE VIDASANA PARTIES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+SCOPE OF EXCLUDED DAMAGES: This limitation of liability specifically includes, but is not limited to, damages resulting from:
+Physical, emotional, mental, sexual, or spiritual harm.
+Abuse, harassment, discrimination, boundary violations, or any other inappropriate conduct by any other user or provider encountered through or outside of the platform.
+Travel, lodging, transportation, or any other third-party activities related to retreats, events, or services facilitated by the platform.
+Errors, inaccuracies, omissions, interruptions, delays, or failures in AI Companion or business tools output, or any reliance thereon.
+Data loss, data breaches, cybersecurity incidents, unauthorized access, or misuse of personal information, unless directly and solely caused by VidaSana's proven gross negligence or willful misconduct.
+Any other harm, loss, or damage arising from your engagement with independent providers, your use of the platform's features, or any content obtained therefrom.
+INDEMNIFICATION: You agree to indemnify, defend, and hold harmless VidaSana Wellness and its founders, officers, directors, employees, contractors, agents, affiliates, licensors, suppliers, and partners from and against any and all claims, demands, liabilities, damages, losses, costs, expenses (including reasonable attorneys' fees and legal costs), or investigations arising out of or in any way connected with:
+Your breach of these Terms and Conditions.
+Your use of the VidaSana Wellness platform, including any content you submit or access.
+Your interaction with any independent provider or other user.
+Your violation of any applicable law, regulation, or the rights of another person or entity.
+
+8. Prohibited Conduct and Acceptable Use Policy
+VidaSana Wellness strictly prohibits certain activities and behaviors on its platform. You agree that you will not use the platform to:
+Engage in any form of sexual, emotional, verbal, physical, or psychological abuse or harassment of any user, provider, or VidaSana personnel.
+Engage in exploitative, coercive, or manipulative behavior.
+Violate any consent boundaries or community safety guidelines.
+Post, upload, transmit, or otherwise make available any content that is unlawful, harmful, threatening, abusive, harassing, tortious, defamatory, vulgar, obscene, libelous, invasive of another's privacy, hateful, or racially, ethnically, or otherwise objectionable.
+Infringe upon the intellectual property rights, privacy rights, or publicity rights of any person or entity.
+Transmit any unsolicited or unauthorized advertising, promotional materials, "junk mail," "spam," "chain letters," "pyramid schemes," or any other form of solicitation.
+Transmit any worms, viruses, malware, or any code of a destructive nature or that may damage or interfere with the platform's operation.
+Attempt to gain unauthorized access to any part of the platform, other user accounts, or computer systems or networks connected to the platform.
+Interfere with or disrupt the integrity or performance of the platform or the data contained therein.
+Attempt to reverse engineer, decompile, or disassemble any aspect of the platform, including the AI Companion or business tools.
+Use the platform for any illegal or unauthorized purpose, or in violation of any applicable local, state, national, or international law or regulation.
+Impersonate any person or entity, or falsely state or otherwise misrepresent your affiliation with a person or entity.
+Collect or store personal data about other users without their express consent.
+Engage in any activity that could disable, overburden, or impair the proper working or appearance of the platform.
+VidaSana Wellness reserves the right, but has no obligation, to investigate and take appropriate legal action against anyone who, in our sole discretion, violates this provision, including without limitation, removing the offending communication from the platform and terminating the access of such violators.
+
+9. Minors and Parental Consent
+Age Restriction: Users under the age of eighteen (18) years old, or the age of majority in their specific jurisdiction, may not register for an account or use any part of the VidaSana Wellness platform without verifiable parental or legal guardian consent. We are not responsible for independently verifying the age of users.
+Parental Responsibility: If a minor accesses or uses the platform with such verifiable consent, the parent or legal guardian acknowledges and accepts full responsibility and liability for the minor's participation, use of services, courses, tools, any interactions, and compliance with these Terms.
+Account Suspension: We reserve the right to immediately suspend or terminate any account if it is discovered or reasonably suspected that a minor is using the platform without the required verifiable parental or guardian consent.
+
+10. Corporate Partnerships and B2B Use
+Corporate Client Responsibility: Corporate clients or business-to-business (B2B) partners utilizing our platform or AI tools for employee wellness programs, business development services, or any other corporate-level use cases acknowledge and accept full responsibility for compliance with all applicable workplace laws, data privacy standards (e.g., HIPAA, GDPR, CCPA, if applicable), and internal company policies.
+No Corporate Program Guarantees: VidaSana Wellness disclaims any and all liability for the specific outcomes, results, or employee/member participation rates of corporate wellness programs, business development initiatives, or any other corporate program implemented using our platform or tools.
+Informed Consent: Corporations must ensure they obtain all necessary informed consents, waivers, and releases from their employees, members, or other participants for any data collected, services offered, or programs initiated through the VidaSana Wellness platform. VidaSana Wellness is not responsible for obtaining such consents on behalf of the corporate client.
+
+11. Wearables and Data Tracking
+Consent to Data Collection: If you choose to integrate or use third-party wearables, fitness trackers, or other data-tracking devices/applications with the VidaSana Wellness platform, you explicitly consent to the collection, storage, and processing of your health, activity, biometric, and behavioral data ("Wearable Data") by VidaSana Wellness in accordance with our Privacy Policy. This may include sensitive personal information.
+Third-Party Hardware/Software Disclaimer: We do not manufacture, endorse, guarantee the accuracy, reliability, or safety of any third-party hardware, software, or applications associated with wearables or data tracking. You acknowledge that such third-party products are governed by their own terms and privacy policies, and VidaSana Wellness has no control over them.
+User Responsibility for Devices: You are solely responsible for the proper use, maintenance, and understanding of the limitations of your wearable devices and associated applications.
+No Liability for Wearables: VidaSana Wellness disclaims any and all liability for any harm, injury, loss, damage, or inaccuracy arising from your use of, or reliance upon, any wearable device, its data, or its integration with our platform.
+
+12. Intellectual Property
+Platform Ownership: All content, features, functionality, trademarks, service marks, logos, software, AI algorithms, business tools, designs, graphics, text, images, video, audio, and other materials on the VidaSana Wellness platform ("Platform IP") are owned by VidaSana Wellness, its licensors, or other providers of such material and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
+Limited License: You are granted a limited, non-exclusive, non-transferable, non-sublicensable license to access and use the Platform IP solely for your personal, non-commercial use, as permitted by these Terms.
+Restrictions: You may not copy, reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, republish, download, store, or transmit any of the Platform IP without the prior written consent of VidaSana Wellness. Unauthorized use is strictly prohibited.
+User-Generated Content (UGC): You retain ownership of any content you create, submit, post, or display on or through the platform ("User-Generated Content" or "UGC"). However, by submitting UGC, you grant VidaSana Wellness a worldwide, perpetual, irrevocable, royalty-free, non-exclusive, fully paid, and transferable license to use, reproduce, modify, adapt, publish, translate, create derivative works from, distribute, perform, and display such UGC (in whole or in part) in any form, media, or technology now known or hereafter developed, for the purposes of operating, improving, promoting, and marketing the platform and its services. You represent and warrant that you have all necessary rights to grant this license.
+UGC Moderation: VidaSana Wellness reserves the absolute right, but has no obligation, to monitor, review, edit, move, delete, or remove any UGC, in whole or in part, that we deem, in our sole discretion, to be in violation of these Terms, harmful, offensive, illegal, or for any other reason, or for no reason, without notice or liability to you.
+
+13. Payment and Refunds
+Separate Terms: Any payments for courses, retreats, premium services, subscriptions, or business tools are subject to separate payment terms, pricing structures, and refund policies as explicitly posted on the relevant sections of the platform or provided to you at the time of purchase.
+No Guaranteed Refunds: We do not guarantee refunds for any purchases, except where explicitly stated in our specific refund policies or as required by mandatory applicable law. All sales are generally final.
+Suspension for Non-Payment: Access to paid services may be suspended or terminated immediately for non-payment, chargebacks, or any violation of these payment terms.
+
+14. Termination and Suspension
+VidaSana's Right to Terminate: We reserve the absolute right, in our sole discretion, to suspend, restrict, or terminate your access to all or any part of the platform, including your account and any associated data or content, at any time, for any reason, or for no reason, with or without prior notice, and without liability. Grounds for termination or suspension may include, but are not limited to:
+Any breach of these Terms and Conditions.
+Engagement in illegal activity.
+Conduct harmful to the platform, other users, providers, or VidaSana's reputation.
+Non-payment for services.
+Violation of our acceptable use policy.
+Effect of Termination: Upon termination, your right to use the platform will immediately cease. Any provisions of these Terms that, by their nature, should survive termination shall survive termination, including, without limitation, ownership provisions, warranty disclaimers, indemnity, and limitations of liability.
+No Waiver: Termination does not waive any rights or obligations that accrued before termination.
+
+15. Privacy and Data Security
+Privacy Policy: Our collection, use, storage, and protection of your personal data are governed by our separate Privacy Policy, which is incorporated into these Terms by reference. By using the platform, you agree to the collection, use, and storage of your data as described therein.
+Data Security Disclaimer: While VidaSana Wellness implements reasonable administrative, technical, and physical safeguards designed to protect your personal data, you acknowledge and agree that no data transmission over the Internet or any wireless network can be guaranteed to be 100% secure. Therefore, while we strive to protect your personal information, we cannot guarantee the absolute security of any information you transmit to us, and you do so at your own risk. VidaSana Wellness is not responsible for circumvention of any privacy settings or security measures contained on the platform.
+Login Credentials: You are solely responsible for maintaining the confidentiality of your login credentials, including your username and password, and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use of your account.
+
+16. Modifications to Terms
+VidaSana Wellness reserves the right to modify, amend, or update these Terms and Conditions at any time, in our sole discretion, by posting the updated version on the platform with a revised "Effective Date." Your continued use of the platform after such modifications signifies your binding acceptance of the updated Terms. We strongly recommend that you review these Terms regularly to stay informed of any changes. If you do not agree to the modified Terms, you must discontinue your use of the platform.
+
+17. Governing Law and Dispute Resolution
+Governing Law: These Terms and Conditions, and any dispute or claim arising out of or in connection with them or their subject matter or formation (including non-contractual disputes or claims), shall be governed by and construed in accordance with the laws of the jurisdiction where VidaSana Wellness is registered, without regard to its conflict of law principles. This choice of law is a fundamental term of this agreement.
+Binding Arbitration: To the fullest extent permitted by law, any dispute, controversy, or claim arising out of or relating to these Terms or the breach, termination, enforcement, interpretation, or validity thereof, including the determination of the scope or applicability of this agreement to arbitrate, shall be resolved exclusively through binding arbitration. The arbitration shall be conducted in [Insert City, State/Country of Jurisdiction where VidaSana is registered] before a single arbitrator. The arbitration shall be administered by [Insert Name of Arbitration Association, e.g., American Arbitration Association (AAA) or International Chamber of Commerce (ICC)] in accordance with its [Commercial Arbitration Rules or relevant rules].
+Waiver of Class Action and Jury Trial: You and VidaSana Wellness agree that any arbitration shall be conducted solely on an individual basis and not in a class, consolidated, or representative action. You expressly waive any right to a jury trial and any right to participate in a class action lawsuit or class-wide arbitration.
+Exceptions: Notwithstanding the foregoing, either party may seek injunctive or other equitable relief in a court of competent jurisdiction to prevent the actual or threatened infringement, misappropriation, or violation of a party's copyrights, trademarks, trade secrets, patents, or other intellectual property rights.
+
+18. Miscellaneous
+Force Majeure: VidaSana Wellness shall not be liable for any delay or failure in performance resulting from causes beyond our reasonable control, including, without limitation, acts of God, natural disasters, war, terrorism, riots, embargoes, acts of civil or military authorities, fire, floods, accidents, epidemics, pandemics, government restrictions, strikes, shortages of transportation facilities, fuel, energy, labor, or materials, cyberattacks, denial-of-service attacks, data breaches, or failures of telecommunications or information services (each, a "Force Majeure Event").
+Severability: If any provision of these Terms is found to be invalid, illegal, or unenforceable by a court of competent jurisdiction, the remaining provisions shall remain in full force and effect. The invalid or unenforceable provision shall be replaced by a valid and enforceable provision that most closely achieves the intent and economic effect of the original provision.
+Entire Agreement: These Terms and Conditions, together with our Privacy Policy, constitute the entire and exclusive understanding and agreement between you and VidaSana Wellness regarding your use of the platform, and they supersede and replace all prior or contemporaneous understandings or agreements, whether oral or written, between you and VidaSana Wellness concerning the platform.
+No Waiver: No waiver by VidaSana Wellness of any term or condition set forth in these Terms shall be deemed a further or continuing waiver of such term or condition or a waiver of any other term or condition, and any failure of VidaSana Wellness to assert a right or provision under these Terms shall not constitute a waiver of such right or provision.
+Headings: The headings in these Terms are for convenience only and have no legal or contractual effect.
+
+19. Contact Information
+For any questions, reports of violations, or legal notices concerning these Terms or the VidaSana Wellness platform, please contact:
+VidaSana Wellness, Inc
+1325 Manhattan Beach Blvd Manhattan Beach CA, 90266
+vidasana.main@gmail.com
+`;
+
+export const PRIVACY_POLICY = `VIDASANA WELLNESS PRIVACY POLICY
+
+(Content coming soon)`;

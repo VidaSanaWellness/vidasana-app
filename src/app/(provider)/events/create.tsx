@@ -90,10 +90,9 @@ export default function CreateEventScreen() {
           category: data.category!,
           start_at: data.start_at!.toISOString(),
           end_at: data.end_at!.toISOString(),
-          // book_till: data.book_till ? data.book_till.toISOString() : null,
+          book_till: data.book_till ? data.book_till.toISOString() : null,
           images: uploadedImagePaths,
           provider: user.id,
-          active: true,
           location: data.lat && data.lng ? `POINT(${data.lng} ${data.lat})` : null,
           address: data.address,
         })

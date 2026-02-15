@@ -1,3 +1,4 @@
+export * from './LegalContent';
 import {Enums} from '@/types/supabase';
 
 export type WeekDay = Enums<'week_day'>;

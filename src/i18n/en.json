@@ -326,6 +326,8 @@
     "hostEventsSubtitle": "Create and manage your events",
     "providerDetails": "Provider Details",
     "uploadFileNote": "Note: File upload for IRS forms: W-9 (U.S.) or W-8BEN/W-8BEN-E (non-U.S.)",
+    "uploadW9": "Upload completed W-9 Form",
+    "uploadW8": "Upload completed W-8BEN or W-8BEN-E Form",
     "checkUS": "Check if you are american resident",
     "stripeAccountId": "Stripe Account ID:",
     "stripePlaceholder": "Stripe Account ID",
@@ -349,7 +351,7 @@
     "grantPermission": "Grant Permission"
   },
   "sos": {
-    "title": "SOS — Immediate Support",
+    "title": " — Immediate Support",
     "dangerWarning": "If you are in immediate danger, or feel you might harm yourself or someone else, please contact emergency support right now.",
     "emergencyServices": "Emergency Services",
     "call911": "Call 911",

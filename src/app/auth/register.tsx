@@ -1,17 +1,19 @@
 import {IMAGES} from '@/assets';
-import React, {useState} from 'react';
 import {useAppStore} from '@/store';
+import React, {useState} from 'react';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 import {supabase, uploadFile} from '@/utils';
 import Toast from 'react-native-toast-message';
+import {TERMS_AND_CONDITIONS} from '@/constants';
 import {useForm, Controller} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Link, useRouter, useLocalSearchParams} from 'expo-router';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {getDocumentAsync, DocumentPickerAsset} from 'expo-document-picker';
-import {Display, Subtitle, Button, PasswordStrengthBar, PhoneInputField, Body, Caption, GoogleSignInButton} from '@/components';
-import {View, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Pressable, Linking} from 'react-native';
+import {Display, Subtitle, Button, PasswordStrengthBar, PhoneInputField, Body, Caption, GoogleSignInButton, LegalModal} from '@/components';
+import {View, Image, Platform, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Pressable, Linking, Modal} from 'react-native';
+import CountrySelect, {ICountry} from 'react-native-country-select';
 
 type FormData = {email: string; phone: string; fullName: string; password: string};
 type Role = 'user' | 'provider';
@@ -27,7 +29,10 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
   const [document, setDocument] = useState<DocumentPickerAsset | null>(null);
-  const [isUSResident, setIsUSResident] = useState(false);
+  const [providerCountry, setProviderCountry] = useState<ICountry | null>(null);
+  const [countryError, setCountryError] = useState<string>('');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const [docError, setDocError] = useState<string>('');
 
@@ -55,7 +60,10 @@ const Register = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      if (role === 'provider' && !document) return setDocError(t('validation.docRequired'));
+      if (role === 'provider') {
+        if (!document) return setDocError(t('validation.docRequired'));
+        if (!providerCountry) return setCountryError('Please select a country');
+      }
       if (!agreeToTerms)
         return Toast.show({type: 'error', text1: t('auth.register.termsRequiredTitle'), text2: t('auth.register.termsRequiredMessage')});
 
@@ -98,7 +106,12 @@ const Register = () => {
       if (role === 'provider') {
         const file = await uploadFile(document!, 'provider_docs', `${userId}/${document?.name}`);
         if (file.error) throw file.error;
-        const {error: providerError} = await supabase.from('provider').insert({id: userId, US: isUSResident, document: file.data?.path});
+        const {error: providerError} = await supabase.from('provider').insert({
+          id: userId,
+          US: providerCountry?.name?.common === 'United States',
+          document: file.data?.path,
+          country: providerCountry!.name.common,
+        });
         if (providerError) throw providerError;
       }
 
@@ -236,25 +249,77 @@ const Register = () => {
             {/* PROVIDER FIELDS */}
             {role === 'provider' && (
               <Animated.View entering={FadeInDown.delay(100)} className="mb-4">
+                {/* Country Selection */}
+                <View className="mb-4">
+                  <TouchableOpacity
+                    onPress={() => setShowCountryPicker(true)}
+                    className={`h-14 flex-row items-center justify-between rounded-xl border bg-gray-50 px-4 ${countryError ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
+                    <View className="flex-row items-center">
+                      {providerCountry ? (
+                        <>
+                          <Body className="mr-2 text-xl">{providerCountry.flag}</Body>
+                          <Body className="text-base text-black">{providerCountry.name.common}</Body>
+                        </>
+                      ) : (
+                        <Body className="text-base text-[#999]">Select Country</Body>
+                      )}
+                    </View>
+                    <Ionicons name="chevron-down" size={20} color="#999" />
+                  </TouchableOpacity>
+                  {countryError ? <Caption className="ml-2 mt-1 text-red-500">{countryError}</Caption> : null}
+                </View>
+
                 {/* Document Upload */}
                 <Pressable
                   onPress={pickPdf}
                   className={`h-32 w-full items-center justify-center overflow-hidden rounded-lg border border-dashed bg-gray-50 ${docError ? 'border-red-300 bg-red-50' : !document ? 'border-gray-300' : 'border-primary bg-primary/5'}`}>
                   <Ionicons size={32} color={document ? '#00594f' : '#9CA3AF'} name={document ? 'document-text-outline' : 'cloud-upload-outline'} />
                   <Body className={`mt-2 px-4 text-center text-sm ${document ? 'font-bold text-primary' : 'text-gray-500'}`}>
-                    {document ? document.name : t('role.uploadFileNote')}
+                    {document
+                      ? document.name
+                      : providerCountry?.name?.common === 'United States'
+                        ? t('role.uploadW9')
+                        : providerCountry
+                          ? t('role.uploadW8')
+                          : t('role.uploadFileNote')}
                   </Body>
                 </Pressable>
                 {docError ? <Caption className="ml-2 mt-1 text-red-500">{docError}</Caption> : null}
 
-                {/* US Resident Checkbox */}
-                <Pressable onPress={() => setIsUSResident(!isUSResident)} className="mt-4 flex-row items-center">
-                  <View
-                    className={`mr-3 h-6 w-6 items-center justify-center rounded-lg border-2 ${isUSResident ? 'border-primary bg-primary' : 'border-gray-300 bg-white'}`}>
-                    {isUSResident && <Ionicons name="checkmark" size={16} color="white" />}
+                {/* Tax Forms Download */}
+                {providerCountry && (
+                  <View className="mb-4 mt-2">
+                    {providerCountry.name.common === 'United States' ? (
+                      <TouchableOpacity
+                        onPress={() =>
+                          Linking.openURL(
+                            'https://rkklysphyvikclqgivgq.supabase.co/storage/v1/object/sign/provider_docs/Certificates/fw9.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9jZTNjZDU5NC00M2Y1LTQ5YjAtOGM5OC1kYTE2ZTYyMTFiZmUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm92aWRlcl9kb2NzL0NlcnRpZmljYXRlcy9mdzkucGRmIiwiaWF0IjoxNzcxMTY0ODYyLCJleHAiOjQ5MjQ3NjQ4NjJ9.fiTvuZ8fKFAHkfKmQctGyxIoKoOie10Rr42cZMkliD0'
+                          )
+                        }>
+                        <Body className="text-sm text-secondary underline">Download W-9 Form</Body>
+                      </TouchableOpacity>
+                    ) : (
+                      <View className="flex-row gap-4">
+                        <TouchableOpacity
+                          onPress={() =>
+                            Linking.openURL(
+                              'https://rkklysphyvikclqgivgq.supabase.co/storage/v1/object/sign/provider_docs/Certificates/fw8ben.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9jZTNjZDU5NC00M2Y1LTQ5YjAtOGM5OC1kYTE2ZTYyMTFiZmUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm92aWRlcl9kb2NzL0NlcnRpZmljYXRlcy9mdzhiZW4ucGRmIiwiaWF0IjoxNzcxMTY0ODQzLCJleHAiOjQ5MjQ3NjQ4NDN9.bls1cQ93adnLTDr2BGUuJ3fQk6Tbypzcb-aMnrOgzog'
+                            )
+                          }>
+                          <Body className="text-sm text-secondary underline">Download W-8BEN Form</Body>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() =>
+                            Linking.openURL(
+                              'https://rkklysphyvikclqgivgq.supabase.co/storage/v1/object/sign/provider_docs/Certificates/fw8ben-e.pdf?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9jZTNjZDU5NC00M2Y1LTQ5YjAtOGM5OC1kYTE2ZTYyMTFiZmUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm92aWRlcl9kb2NzL0NlcnRpZmljYXRlcy9mdzhiZW4tZS5wZGYiLCJpYXQiOjE3NzExNjQ3MTMsImV4cCI6NDkyNDc2NDcxM30.nOFy8GVHnosGHdmx865PbkxvGkjkEOIyEd8fCR7Pznk'
+                            )
+                          }>
+                          <Body className="text-sm text-secondary underline">Download W-8BEN-E Form</Body>
+                        </TouchableOpacity>
+                      </View>
+                    )}
                   </View>
-                  <Body className="text-gray-700">{t('role.checkUS')}</Body>
-                </Pressable>
+                )}
               </Animated.View>
             )}
 
@@ -310,7 +375,7 @@ const Register = () => {
 
               <Body className="flex-1 text-sm text-gray-600">
                 {t('auth.register.agreeTo')}{' '}
-                <Body onPress={() => Linking.openURL('https://vidasanawellness.com/terms')} className="font-nunito-bold text-secondary">
+                <Body onPress={() => setShowTermsModal(true)} className="font-nunito-bold text-secondary">
                   {t('auth.register.terms&conditions')}
                 </Body>
               </Body>
@@ -337,6 +402,29 @@ const Register = () => {
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <LegalModal
+        visible={showTermsModal}
+        content={TERMS_AND_CONDITIONS}
+        onClose={() => setShowTermsModal(false)}
+        title={t('auth.register.terms&conditions')}
+      />
+
+      <CountrySelect
+        visible={showCountryPicker}
+        onClose={() => setShowCountryPicker(false)}
+        onSelect={(country) => {
+          setCountryError('');
+          setProviderCountry(country);
+          setShowCountryPicker(false);
+        }}
+        countryItemComponent={(item) => (
+          <View className="flex-row items-center border-b border-gray-100 py-3">
+            <Body className="mr-3 text-2xl">{item.flag}</Body>
+            <Body className="text-base text-black">{item.name.common}</Body>
+          </View>
+        )}
+      />
     </SafeAreaView>
   );
 };

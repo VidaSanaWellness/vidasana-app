@@ -312,6 +312,8 @@
     "hostEventsSubtitle": "Crea y gestiona tus eventos",
     "providerDetails": "Detalles del proveedor",
     "uploadFileNote": "Nota: Carga de archivos para formularios IRS: W-9 (EE. UU.) o W-8BEN/W-8BEN-E (fuera de EE. UU.)",
+    "uploadW9": "Subir formulario W-9 completado",
+    "uploadW8": "Subir formulario W-8BEN o W-8BEN-E completado",
     "checkUS": "Marca si eres residente estadounidense",
     "stripeAccountId": "ID de cuenta Stripe:",
     "stripePlaceholder": "ID de cuenta Stripe",
@@ -349,7 +351,7 @@
     "grantPermission": "Conceder permiso"
   },
   "sos": {
-    "title": "SOS — Soporte Inmediato",
+    "title": " — Soporte Inmediato",
     "dangerWarning": "Si estás en peligro inmediato, o sientes que podrías hacerte daño a ti mismo o a otra persona, por favor contacta al soporte de emergencia ahora mismo.",
     "emergencyServices": "Servicios de Emergencia",
     "call911": "Llamar al 911",

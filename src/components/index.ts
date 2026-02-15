@@ -9,20 +9,20 @@ export * from './modals/create';
 export * from './ImagePickerRow';
 export * from './PasswordStrengthBar';
 export * from './LikeButton';
-export {default as ImageCarousel} from './ImageCarousel';
+export * from './ImageCarousel';
 export * from './Button';
-export * from './Typography';
 export * from './PhoneInputField';
 export * from './ServiceCard';
 export * from './EventCard';
 export * from './modals/MoodCheckInModal';
 export * from './modals/FilterModal'; // Exports FilterState
-export {default as FilterModal} from './modals/FilterModal'; // Exports Component
+export * from './modals/FilterModal';
+export * from './LegalModal';
+export * from './Typography';
 export * from './modals/LocationPickerModal';
 export * from './home/CategoryGrid';
 export * from './home/HomeHeader';
 export * from './LanguagePicker';
-export * from './Typography';
 export * from './LanguageTabs';
 export * from './TranslatableFields';
 export * from './ImageInput';

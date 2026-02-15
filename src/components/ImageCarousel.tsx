@@ -12,7 +12,7 @@ interface ImageCarouselProps {
 
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
-export default function ImageCarousel({images, aspectRatio = 'square'}: ImageCarouselProps) {
+export function ImageCarousel({images, aspectRatio = 'square'}: ImageCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   // Filter valid images

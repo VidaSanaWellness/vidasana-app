@@ -88,7 +88,7 @@ export type Database = {
           resolution: string | null
           response_provider: string | null
           service_booking_id: string | null
-          status: string
+          status: Database["public"]["Enums"]["dispute_status"] | null
           updated_at: string
         }
         Insert: {
@@ -104,7 +104,7 @@ export type Database = {
           resolution?: string | null
           response_provider?: string | null
           service_booking_id?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["dispute_status"] | null
           updated_at?: string
         }
         Update: {
@@ -120,7 +120,7 @@ export type Database = {
           resolution?: string | null
           response_provider?: string | null
           service_booking_id?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["dispute_status"] | null
           updated_at?: string
         }
         Relationships: [
@@ -556,25 +556,25 @@ export type Database = {
       }
       provider: {
         Row: {
+          country: string
           created_at: string
           document: string | null
           id: string
           stripe: string | null
-          US: boolean | null
         }
         Insert: {
+          country: string
           created_at?: string
           document?: string | null
           id?: string
           stripe?: string | null
-          US?: boolean | null
         }
         Update: {
+          country?: string
           created_at?: string
           document?: string | null
           id?: string
           stripe?: string | null
-          US?: boolean | null
         }
         Relationships: []
       }
@@ -996,6 +996,12 @@ export type Database = {
     }
     Enums: {
       booking_status: "booked" | "cancel" | "completed" | "disputed"
+      dispute_status:
+        | "open"
+        | "under_review"
+        | "resolved_refund"
+        | "resolved_payout"
+        | "dismissed"
       event_booking_status: "booked" | "completed" | "cancelled" | "disputed"
       role: "user" | "provider" | "admin"
       user_status: "active" | "onboarding" | "pending" | "delete" | "reject"
@@ -1128,6 +1134,13 @@ export const Constants = {
   public: {
     Enums: {
       booking_status: ["booked", "cancel", "completed", "disputed"],
+      dispute_status: [
+        "open",
+        "under_review",
+        "resolved_refund",
+        "resolved_payout",
+        "dismissed",
+      ],
       event_booking_status: ["booked", "completed", "cancelled", "disputed"],
       role: ["user", "provider", "admin"],
       user_status: ["active", "onboarding", "pending", "delete", "reject"],
