@@ -89,14 +89,14 @@ const Register = () => {
       // 2. Create Profile
       const callingCode = selectedCountry?.callingCode || '';
       const fullPhoneNumber = callingCode ? `${callingCode} ${phone}` : phone;
-      const countryValue = callingCode;
+      const countryCode = selectedCountry?.cca2 || '';
 
       const {error: profileError} = await supabase.from('profile').upsert({
         id: userId,
         role: role,
         name: fullName,
         phone: fullPhoneNumber,
-        country_code: countryValue,
+        country_code: countryCode,
         status: role === 'provider' ? 'onboarding' : 'active',
       });
 
@@ -104,11 +104,14 @@ const Register = () => {
 
       // 3. Provider Specifics
       if (role === 'provider') {
+        // Refresh session to Ensure JWT has the new role
+        const {error: sessionError} = await supabase.auth.refreshSession();
+        if (sessionError) throw sessionError;
+
         const file = await uploadFile(document!, 'provider_docs', `${userId}/${document?.name}`);
         if (file.error) throw file.error;
         const {error: providerError} = await supabase.from('provider').insert({
           id: userId,
-          US: providerCountry?.name?.common === 'United States',
           document: file.data?.path,
           country: providerCountry!.name.common,
         });
@@ -121,11 +124,17 @@ const Register = () => {
         const session = await supabase.auth.getSession();
         if (session.data.session) {
           setSession(session.data.session);
+          if (role === 'provider') {
+            router.replace('/(provider)/(tabs)/(topTab)');
+          } else {
+            router.replace('/(user)/(tabs)/home');
+          }
         }
       } else {
         if (role === 'provider') router.replace('/(provider)/payment-setup');
       }
     } catch (e: any) {
+      console.log('🚀 ~ onSubmit ~ e:', e);
       Toast.show({type: 'error', text1: e?.message});
     }
   };
@@ -393,12 +402,14 @@ const Register = () => {
             {googleAuth !== 'true' && <GoogleSignInButton />}
 
             {/* LOGIN LINK */}
-            <View className="my-5 flex-row items-center justify-center">
-              <Body className="text-sm text-gray-600">{t('auth.register.alreadyMember')} </Body>
-              <Link replace href="/auth">
-                <Body className="font-nunito-bold text-sm font-semibold text-secondary">{t('auth.register.loginLink')}</Body>
-              </Link>
-            </View>
+            {googleAuth !== 'true' && (
+              <View className="my-5 flex-row items-center justify-center">
+                <Body className="text-sm text-gray-600">{t('auth.register.alreadyMember')} </Body>
+                <Link replace href="/auth">
+                  <Body className="font-nunito-bold text-sm font-semibold text-secondary">{t('auth.register.loginLink')}</Body>
+                </Link>
+              </View>
+            )}
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>

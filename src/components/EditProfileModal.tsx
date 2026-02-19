@@ -47,7 +47,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({visible, onCl
 
       const {data, error} = await supabase
         .from('profile')
-        .update({name: trimmedName, phone: fullPhoneNumber || null, country: countryCode})
+        .update({name: trimmedName, phone: fullPhoneNumber || null, country_code: countryCode})
         .eq('id', currentUser.id)
         .select('name, phone')
         .single();

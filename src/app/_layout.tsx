@@ -68,7 +68,7 @@ export default function RootLayout() {
     <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}>
       <AppProvider>
         <Stack screenOptions={{headerShown: false}}>
-          <Stack.Protected guard={!user}>
+          <Stack.Protected guard={!user?.user_metadata?.role}>
             <Stack.Screen name="auth" />
           </Stack.Protected>
           <Stack.Protected guard={user?.user_metadata?.role === 'user'}>
@@ -77,7 +77,7 @@ export default function RootLayout() {
           <Stack.Protected guard={user?.user_metadata?.role === 'provider'}>
             <Stack.Screen name="(provider)" />
           </Stack.Protected>
-          <Stack.Protected guard={!!user}>
+          <Stack.Protected guard={!!user && !!user.user_metadata?.role}>
             <Stack.Screen name="edit-profile" />
           </Stack.Protected>
         </Stack>

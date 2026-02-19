@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, RefreshControl} from 'react-native';
-import {Stack, Link} from 'expo-router';
+import {Stack, Link, useRouter} from 'expo-router';
 import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
 import {Ionicons} from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import {H2, Body, Caption} from '@/components';
 
 export default function PaymentSetupScreen() {
   const {user} = useAppStore((s) => s.session!);
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [status, setStatus] = useState<{
@@ -97,6 +98,18 @@ export default function PaymentSetupScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      setLoading(true);
+      await supabase.auth.signOut();
+      router.replace('/auth');
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View className="flex-1 bg-white">
       <Stack.Screen options={{title: 'Payout Setup', headerBackTitle: 'Settings'}} />
@@ -152,6 +165,10 @@ export default function PaymentSetupScreen() {
                   disabled={loading}
                   className="w-full flex-row items-center justify-center rounded-xl bg-primary py-3 shadow-sm">
                   {loading ? <ActivityIndicator color="white" /> : <Body className="font-nunito-bold text-white">Complete Setup</Body>}
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={handleLogout} disabled={loading} className="mt-4 p-2">
+                  <Body className="font-nunito-bold text-gray-500 underline">Back to Login</Body>
                 </TouchableOpacity>
               </View>
             )}
