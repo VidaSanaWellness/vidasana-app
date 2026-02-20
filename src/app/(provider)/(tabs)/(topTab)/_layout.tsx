@@ -11,9 +11,9 @@ export default function TopTabsLayout() {
     <SafeAreaView edges={['top']} className="flex-1 bg-white">
       <MaterialTopTabs
         screenOptions={{
-          tabBarActiveTintColor: '#15803d',
+          tabBarActiveTintColor: '#2d5016',
           tabBarInactiveTintColor: '#6B7280',
-          tabBarIndicatorStyle: {backgroundColor: '#15803d', height: 3},
+          tabBarIndicatorStyle: {backgroundColor: '#2d5016', height: 3},
           tabBarLabelStyle: {fontWeight: 'bold', textTransform: 'capitalize'},
           tabBarStyle: {elevation: 0, shadowOpacity: 0, borderBottomWidth: 1, borderBottomColor: '#f3f4f6'},
         }}>

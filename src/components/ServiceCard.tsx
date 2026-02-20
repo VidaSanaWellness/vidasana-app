@@ -3,7 +3,7 @@ import {View, Image, TouchableOpacity, Pressable} from 'react-native';
 import {Ionicons, Feather} from '@expo/vector-icons';
 import {supabase} from '@/utils/supabase';
 import {Link} from 'expo-router';
-import {Display, H1, Subtitle, Caption, H2, H3} from './Typography';
+import {Subtitle, Caption, H2, H3} from './Typography';
 import {Avatar} from './Avatar';
 
 interface ServiceCardProps {

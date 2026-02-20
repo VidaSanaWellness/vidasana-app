@@ -20,6 +20,7 @@ export default function LikedItemsScreen() {
     isLoading,
     refetch,
     isRefetching,
+    error,
   } = useQuery({
     queryKey: ['liked-items', user?.id, activeTab],
     queryFn: async () => {
@@ -64,21 +65,14 @@ export default function LikedItemsScreen() {
         const {data: bookmarks, error} = await supabase
           .from('event_bookmarks')
           .select(
-            `
-            id,
-            created_at,
-            event:events (
-              id, start_at, end_at, images, category,
-              event_translations!event_translations_event_fkey (*)
-            )
-          `
+            'id, created_at, event:events (id, start_at, end_at, images, category, delete, event_translations!event_translations_event_id_fkey (*))'
           )
           .eq('user', user.id);
 
         if (error) throw error;
 
         return bookmarks
-          .filter((b) => b.event)
+          .filter((b) => b.event && !b.event.delete)
           .map((b) => {
             const e = b.event as any;
             const tr =
@@ -96,6 +90,7 @@ export default function LikedItemsScreen() {
     },
     enabled: !!user?.id,
   });
+  console.log('🚀 ~ LikedItemsScreen ~ error:', error);
 
   const renderServiceItem = ({item}: {item: any}) => {
     const imageUrl = item.images && item.images.length > 0 ? supabase.storage.from('images').getPublicUrl(item.images[0]).data.publicUrl : null;

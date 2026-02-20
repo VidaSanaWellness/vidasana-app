@@ -88,7 +88,7 @@ export default function ServicesScreen() {
 
       {/* FAB */}
       <Link href="/(provider)/services/create" asChild>
-        <Pressable className="absolute bottom-6 h-14 w-14 items-center justify-center self-center rounded-full bg-green-700 shadow-lg">
+        <Pressable className="absolute bottom-6 h-14 w-14 items-center justify-center self-center rounded-full bg-primary shadow-lg">
           <Feather name="plus" size={30} color="white" />
         </Pressable>
       </Link>

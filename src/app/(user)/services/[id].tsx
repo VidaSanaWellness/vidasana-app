@@ -523,7 +523,7 @@ export default function UserServiceDetailsScreen() {
             <TouchableOpacity
               onPress={() => submitReviewMutation.mutate()}
               disabled={submitReviewMutation.isPending}
-              className={`items-center rounded-xl py-4 ${submitReviewMutation.isPending ? 'bg-gray-400' : 'bg-green-700'}`}>
+              className={`items-center rounded-xl py-4 ${submitReviewMutation.isPending ? 'bg-gray-400' : 'bg-primary'}`}>
               {submitReviewMutation.isPending ? (
                 <ActivityIndicator color="white" />
               ) : (

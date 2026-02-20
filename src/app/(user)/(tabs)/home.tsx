@@ -36,6 +36,7 @@ type Event = {
   start_at: string;
   dist_meters?: number;
   price?: number;
+  is_bookmarked?: boolean;
 };
 
 export default function HomeScreen() {
@@ -181,6 +182,15 @@ export default function HomeScreen() {
         console.error('Search Events Error:', error);
         throw error;
       }
+
+      // Fetch bookmarks
+      if (rpcData && rpcData.length > 0 && user?.id) {
+        const eventIds = rpcData.map((s: any) => s.id);
+        const {data: bookmarks} = await supabase.from('event_bookmarks').select('event').eq('user', user.id).in('event', eventIds);
+        const bookmarkedSet = new Set(bookmarks?.map((b) => b.event));
+        return rpcData.map((s: any) => ({...s, is_bookmarked: bookmarkedSet.has(s.id)})) as unknown as RpcEvent[];
+      }
+
       return rpcData as unknown as RpcEvent[];
     },
     getNextPageParam: (lastPage, allPages) => (lastPage.length === 10 ? allPages.length * 10 : undefined),
@@ -253,6 +263,34 @@ export default function HomeScreen() {
     onSettled: () => queryClient.invalidateQueries({queryKey: servicesQueryKey}),
   });
 
+  // -- Events Bookmark Mutation --
+  const toggleEventBookmarkMutation = useMutation({
+    mutationFn: async ({eventId, isBookmarked}: {eventId: string; isBookmarked: boolean}) => {
+      if (isBookmarked) {
+        await supabase.from('event_bookmarks').delete().eq('event', eventId).eq('user', user.id);
+      } else {
+        await supabase.from('event_bookmarks').insert({event: eventId, user: user.id});
+      }
+    },
+    onMutate: async ({eventId, isBookmarked}) => {
+      await queryClient.cancelQueries({queryKey: eventsQueryKey});
+      const previousData = queryClient.getQueryData(eventsQueryKey);
+      queryClient.setQueryData(eventsQueryKey, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: any[]) => page.map((event: any) => (event.id === eventId ? {...event, is_bookmarked: !isBookmarked} : event))),
+        };
+      });
+      return {previousData};
+    },
+    onError: (err, variables, context: any) => {
+      if (context?.previousData) queryClient.setQueryData(eventsQueryKey, context.previousData);
+      Toast.show({type: 'error', text1: 'Failed to update bookmark'});
+    },
+    onSettled: () => queryClient.invalidateQueries({queryKey: eventsQueryKey}),
+  });
+
   const renderServiceItem = ({item}: {item: Service}) => (
     <View className="px-4">
       <ServiceCard
@@ -298,6 +336,8 @@ export default function HomeScreen() {
         distance={item.dist_meters}
         provider={item.provider}
         rating={item.avg_rating}
+        isBookmarked={item.is_bookmarked || false}
+        onBookmarkToggle={() => toggleEventBookmarkMutation.mutate({eventId: item.id, isBookmarked: item.is_bookmarked || false})}
       />
     </View>
   );

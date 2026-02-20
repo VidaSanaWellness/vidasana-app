@@ -8,9 +8,9 @@ import * as WebBrowser from 'expo-web-browser';
 import {useTranslation} from 'react-i18next';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
-
 import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
+import Constants from 'expo-constants';
 import {H2, H3, Body, Caption} from './Typography';
 import {LanguagePicker} from './LanguagePicker';
 import {EditProfileModal} from './EditProfileModal';
@@ -154,7 +154,7 @@ export const ProfileScreen = () => {
 
   return (
     <Animated.View entering={FadeIn} exiting={FadeOut} className="flex-1 bg-white">
-      <ScrollView className="flex-1" contentInsetAdjustmentBehavior="never" contentContainerStyle={{paddingBottom: insets.bottom + 32}}>
+      <ScrollView className="flex-1" contentInsetAdjustmentBehavior="never" contentContainerStyle={{paddingBottom: 14}}>
         {/* Profile Header */}
         <View className="items-center rounded-b-3xl bg-gray-50 pb-8" style={{paddingTop: insets.top + 30}}>
           <TouchableOpacity onPress={handleImagePick}>
@@ -264,6 +264,11 @@ export const ProfileScreen = () => {
           <Ionicons name="log-out-outline" size={24} color="#E03C31" />
           <Body className="ml-2 font-nunito-bold text-base text-[#E03C31]">{t('settings.logOut')}</Body>
         </AnimatedTouchableOpacity>
+
+        {/* App Version */}
+        <View className="mb-4 items-center">
+          <Caption className="text-gray-400">Version {Constants.expoConfig?.version || Constants.manifest2?.extra?.expoClient?.version}</Caption>
+        </View>
       </ScrollView>
 
       {/* EDIT MODE SHEET */}

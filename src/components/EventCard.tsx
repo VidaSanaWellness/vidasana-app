@@ -21,6 +21,8 @@ interface EventCardProps {
   basePath?: string;
   rating?: number;
   variant?: 'user' | 'provider';
+  isBookmarked?: boolean;
+  onBookmarkToggle?: () => void;
 }
 
 export const EventCard = ({
@@ -35,6 +37,8 @@ export const EventCard = ({
   basePath,
   rating,
   variant = 'user',
+  isBookmarked,
+  onBookmarkToggle,
 }: EventCardProps) => {
   const imageUrl = images && images.length > 0 ? supabase.storage.from('images').getPublicUrl(images[0]).data.publicUrl : null;
   const startDate = new Date(startAt);
@@ -75,9 +79,14 @@ export const EventCard = ({
           {/* User: Like Button (Top Right) */}
           {variant === 'user' && (
             <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onBookmarkToggle?.();
+              }}
               className="absolute right-4 top-4 h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm"
               activeOpacity={0.7}>
-              <Ionicons name="heart-outline" size={20} color="#1F2937" />
+              <Ionicons name={isBookmarked ? 'heart' : 'heart-outline'} size={20} color={isBookmarked ? '#EF4444' : '#1F2937'} />
             </TouchableOpacity>
           )}
         </View>

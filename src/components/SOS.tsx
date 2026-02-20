@@ -1,18 +1,17 @@
 import React from 'react';
+import {IMAGES} from '@/assets';
 import {useAppStore} from '@/store';
 import {Display, Subtitle, Body} from './';
 import {Ionicons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
-import {View, Modal, TouchableOpacity, Linking, ScrollView, Text} from 'react-native';
+import {View, Modal, TouchableOpacity, Linking, ScrollView, Text, Image} from 'react-native';
 
 export const SOSFAB = () => {
   const setSOSOpen = useAppStore((s) => s.setSOSOpen);
 
   return (
-    <TouchableOpacity
-      onPress={() => setSOSOpen(true)}
-      className="elevation-5 bottom-safe-offset-16 android:mb-4 absolute right-5 z-50 h-14 w-14 items-center justify-center rounded-full bg-red-600 shadow-lg">
-      <Ionicons name="medical" size={28} color="white" />
+    <TouchableOpacity onPress={() => setSOSOpen(true)} className="elevation-5 bottom-safe-offset-16 android:mb-4 absolute left-5 z-50 shadow-lg">
+      <Image source={IMAGES.sos} className="h-14 w-14" />
     </TouchableOpacity>
   );
 };
