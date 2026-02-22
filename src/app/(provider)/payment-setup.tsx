@@ -1,15 +1,16 @@
-import React, {useEffect, useState} from 'react';
-import {View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, RefreshControl} from 'react-native';
-import {Stack, Link, useRouter} from 'expo-router';
+import Constants from 'expo-constants';
 import {supabase} from '@/utils';
 import {useAppStore} from '@/store';
 import {Ionicons} from '@expo/vector-icons';
+import {Link, useRouter} from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import {H2, Body, Caption} from '@/components';
+import React, {useEffect, useState} from 'react';
+import {H2, Body, Caption, Loader} from '@/components';
+import {View, TouchableOpacity, ScrollView, Alert, RefreshControl} from 'react-native';
 
 export default function PaymentSetupScreen() {
-  const {user} = useAppStore((s) => s.session!);
   const router = useRouter();
+  const {user} = useAppStore((s) => s.session!);
   const [loading, setLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [status, setStatus] = useState<{
@@ -112,104 +113,103 @@ export default function PaymentSetupScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <Stack.Screen options={{title: 'Payout Setup', headerBackTitle: 'Settings'}} />
-
       <ScrollView
         className="flex-1 p-6"
         contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
-        refreshControl={<RefreshControl refreshing={checkingStatus} onRefresh={checkStatus} />}>
+        refreshControl={
+          <RefreshControl
+            tintColor="#00594f"
+            titleColor="#00594f"
+            colors={['#00594f']}
+            onRefresh={checkStatus}
+            refreshing={checkingStatus}
+            progressBackgroundColor="#ffffff"
+          />
+        }>
         <View className="mb-8 mt-4 items-center">
           <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-primary/10">
             <Ionicons name="card-outline" size={40} color="#00594f" />
           </View>
           <H2 className="text-gray-900">Get Paid with Stripe</H2>
           <Body className="mt-2 text-center text-gray-500">Connect your bank account to receive payouts from your bookings instantly.</Body>
+
+          <TouchableOpacity
+            onPress={checkStatus}
+            disabled={checkingStatus}
+            className={`mt-6 flex-row items-center justify-center rounded-full px-5 py-2 ${checkingStatus ? 'bg-gray-100' : 'bg-primary/10'}`}>
+            <Ionicons name="refresh" size={18} color={checkingStatus ? '#9ca3af' : '#00594f'} />
+            <Body className={`ml-2 font-nunito-bold ${checkingStatus ? 'text-gray-400' : 'text-primary'}`}>
+              {checkingStatus ? 'Refreshing...' : 'Refresh Status'}
+            </Body>
+          </TouchableOpacity>
         </View>
 
-        {checkingStatus ? (
-          <ActivityIndicator size="large" color="#00594f" />
-        ) : (
-          <View>
-            {/* 1. NOT CONNECTED -> Connect Button */}
-            {!status?.isConnected && (
-              <View>
-                <TouchableOpacity
-                  onPress={handleConnect}
-                  disabled={loading}
-                  className="flex-row items-center justify-center rounded-xl bg-primary py-4 shadow-sm">
-                  {loading ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <>
-                      <Body className="mr-2 font-nunito-bold text-lg text-white">Connect Stripe</Body>
-                      <Ionicons name="arrow-forward" size={20} color="white" />
-                    </>
-                  )}
-                </TouchableOpacity>
-                <Caption className="mt-4 text-center text-gray-400">You will be redirected to completely secure onboarding hosted by Stripe.</Caption>
-              </View>
-            )}
+        <View>
+          {/* 1. NOT CONNECTED -> Connect Button */}
+          {!status?.isConnected && (
+            <View>
+              <TouchableOpacity onPress={handleConnect} className="flex-row items-center justify-center rounded-xl bg-primary py-4 shadow-sm">
+                <Body className="mr-2 font-nunito-bold text-lg text-white">Connect Stripe</Body>
+                <Ionicons name="arrow-forward" size={20} color="white" />
+              </TouchableOpacity>
+              <Caption className="mt-4 text-center text-gray-400">You will be redirected to completely secure onboarding hosted by Stripe.</Caption>
+            </View>
+          )}
 
-            {/* 2. CONNECTED BUT INCOMPLETE -> Continue Setup */}
-            {status?.isConnected && !status?.details_submitted && (
-              <View className="items-center">
-                <View className="mb-4 flex-row items-center rounded-xl border border-yellow-200 bg-yellow-50 p-4">
-                  <Ionicons name="warning-outline" size={24} color="#ca8a04" />
-                  <View className="ml-3 flex-1">
-                    <Body className="font-nunito-bold text-yellow-800">Setup Incomplete</Body>
-                    <Caption className="text-yellow-700">You need to provide more information to start receiving payouts.</Caption>
-                  </View>
+          {/* 2. CONNECTED BUT INCOMPLETE -> Continue Setup */}
+          {status?.isConnected && !status?.details_submitted && (
+            <View className="items-center">
+              <View className="mb-4 flex-row items-center rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+                <Ionicons name="warning-outline" size={24} color="#ca8a04" />
+                <View className="ml-3 flex-1">
+                  <Body className="font-nunito-bold text-yellow-800">Setup Incomplete</Body>
+                  <Caption className="text-yellow-700">You need to provide more information to start receiving payouts.</Caption>
                 </View>
-                <TouchableOpacity
-                  onPress={handleConnect}
-                  disabled={loading}
-                  className="w-full flex-row items-center justify-center rounded-xl bg-primary py-3 shadow-sm">
-                  {loading ? <ActivityIndicator color="white" /> : <Body className="font-nunito-bold text-white">Complete Setup</Body>}
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={handleLogout} disabled={loading} className="mt-4 p-2">
-                  <Body className="font-nunito-bold text-gray-500 underline">Back to Login</Body>
-                </TouchableOpacity>
               </View>
-            )}
+              <TouchableOpacity onPress={handleConnect} className="w-full flex-row items-center justify-center rounded-xl bg-primary py-3 shadow-sm">
+                <Body className="font-nunito-bold text-white">Complete Setup</Body>
+              </TouchableOpacity>
 
-            {/* 3. FULLY ACTIVE -> Manage Dashboard */}
-            {status?.isConnected && status?.details_submitted && (
-              <View>
-                <View className="mb-6 flex-row items-center rounded-xl border border-sage/30 bg-sage/20 p-4">
-                  <Ionicons name="checkmark-circle" size={24} color="#00594f" />
-                  <View className="ml-3">
-                    <Body className="font-nunito-bold text-gray-800">Stripe Connected</Body>
-                    <Caption className="text-gray-600">Your account is ready to receive payouts.</Caption>
-                  </View>
+              <TouchableOpacity onPress={handleLogout} className="mt-4 p-2">
+                <Body className="font-nunito-bold text-gray-500 underline">Back to Login</Body>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* 3. FULLY ACTIVE -> Manage Dashboard */}
+          {status?.isConnected && status?.details_submitted && (
+            <View>
+              <View className="mb-6 flex-row items-center rounded-xl border border-sage/30 bg-sage/20 p-4">
+                <Ionicons name="checkmark-circle" size={24} color="#00594f" />
+                <View className="ml-3">
+                  <Body className="font-nunito-bold text-gray-800">Stripe Connected</Body>
+                  <Caption className="text-gray-600">Your account is ready to receive payouts.</Caption>
                 </View>
-
-                <TouchableOpacity
-                  onPress={handleLoginLink}
-                  disabled={loading}
-                  className="mb-4 w-full flex-row items-center justify-center rounded-xl bg-gray-100 py-3">
-                  {loading ? (
-                    <ActivityIndicator color="black" />
-                  ) : (
-                    <>
-                      <Body className="mr-2 font-nunito-bold text-gray-800">Manage Payouts</Body>
-                      <Ionicons name="open-outline" size={18} color="black" />
-                    </>
-                  )}
-                </TouchableOpacity>
-
-                <Link href="/" replace asChild>
-                  <TouchableOpacity className="mb-4 w-full flex-row items-center justify-center rounded-xl bg-primary py-3 shadow-sm">
-                    <Body className="mr-2 font-nunito-bold text-white">Go Home</Body>
-                    <Ionicons name="home-outline" size={18} color="white" />
-                  </TouchableOpacity>
-                </Link>
-                <Caption className="text-center text-gray-400">View your balance and edit bank details on Stripe.</Caption>
               </View>
-            )}
-          </View>
-        )}
+
+              <TouchableOpacity onPress={handleLoginLink} className="mb-4 w-full flex-row items-center justify-center rounded-xl bg-gray-100 py-3">
+                <Body className="mr-2 font-nunito-bold text-gray-800">Manage Payouts</Body>
+                <Ionicons name="open-outline" size={18} color="black" />
+              </TouchableOpacity>
+
+              <Link href="/" replace asChild>
+                <TouchableOpacity className="mb-4 w-full flex-row items-center justify-center rounded-xl bg-primary py-3 shadow-sm">
+                  <Body className="mr-2 font-nunito-bold text-white">Go Home</Body>
+                  <Ionicons name="home-outline" size={18} color="white" />
+                </TouchableOpacity>
+              </Link>
+            </View>
+          )}
+        </View>
+
+        {/* App Version */}
+        <View className="mb-4 mt-8 items-center">
+          <Caption className="text-gray-400">
+            Version {Constants.expoConfig?.version || Constants.manifest2?.extra?.expoClient?.version || '1.0.0'}
+          </Caption>
+        </View>
       </ScrollView>
+      <Loader visible={loading} />
     </View>
   );
 }

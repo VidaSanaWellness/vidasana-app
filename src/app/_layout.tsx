@@ -2,10 +2,9 @@ import '@/i18n';
 import '../../global.css';
 import '../../nativewind-interop';
 import {useEffect} from 'react';
+import {Stack} from 'expo-router';
 import {useAppStore} from '@/store';
 import AppProvider from '@/provider';
-import {supabase} from '@/utils/supabase';
-import {Stack, useRouter} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {StripeProvider} from '@stripe/stripe-react-native';
 import {
@@ -27,7 +26,6 @@ export const unstable_settings = {initialRouteName: 'index'};
 export default function RootLayout() {
   const session = useAppStore((e) => e.session!);
   const user = session?.user;
-  const router = useRouter();
 
   const [fontsLoaded] = useFonts({
     Nunito_700Bold,
@@ -43,26 +41,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
-
-  // Global status check for reject/delete (applies to both users and providers)
-  useEffect(() => {
-    const checkUserStatus = async () => {
-      if (!user) return;
-      const {data} = await supabase.from('profile').select('status').eq('id', user.id).single();
-      const status = data?.status;
-      if (status === 'reject') {
-        router.replace('/contact-support?reason=reject');
-      } else if (status === 'delete') {
-        router.replace('/contact-support?reason=delete');
-      }
-    };
-
-    checkUserStatus();
-  }, [user]);
-
-  if (!fontsLoaded) {
-    return null; // Or a minimal splash view, but native splash handles this usually
-  }
 
   return (
     <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}>

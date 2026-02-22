@@ -1,7 +1,7 @@
 import {ActivityIndicator, TouchableOpacity, View, Platform, Linking, Modal, TextInput, KeyboardAvoidingView, ScrollView} from 'react-native';
 import {Feather, Ionicons} from '@expo/vector-icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {supabase, formatTime, stripe} from '@/utils';
+import {supabase, formatTime} from '@/utils';
 import {Link, useLocalSearchParams, useRouter} from 'expo-router';
 import {useState} from 'react';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
@@ -157,10 +157,10 @@ export default function UserServiceDetailsScreen() {
   const toggleBookmarkMutation = useMutation({
     mutationFn: async ({isBookmarked}: {isBookmarked: boolean}) => {
       if (isBookmarked) {
-        const {error} = await supabase.from('bookmark').delete().eq('service', id).eq('user', user.id);
+        const {error} = await supabase.from('services_bookmark').delete().eq('service', id).eq('user', user.id);
         if (error) throw error;
       } else {
-        const {error} = await supabase.from('bookmark').insert({service: id, user: user.id});
+        const {error} = await supabase.from('services_bookmark').insert({service: id, user: user.id});
         if (error) throw error;
       }
     },

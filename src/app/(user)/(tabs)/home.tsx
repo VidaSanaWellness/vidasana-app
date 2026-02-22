@@ -119,7 +119,7 @@ export default function HomeScreen() {
       // Fetch bookmarks
       if (rpcData && rpcData.length > 0 && user?.id) {
         const serviceIds = rpcData.map((s: any) => s.id);
-        const {data: bookmarks} = await supabase.from('bookmark').select('service').eq('user', user.id).in('service', serviceIds);
+        const {data: bookmarks} = await supabase.from('services_bookmark').select('service').eq('user', user.id).in('service', serviceIds);
         const bookmarkedSet = new Set(bookmarks?.map((b) => b.service));
         return rpcData.map((s: any) => ({...s, is_bookmarked: bookmarkedSet.has(s.id)})) as Service[];
       }
@@ -237,9 +237,9 @@ export default function HomeScreen() {
   const toggleBookmarkMutation = useMutation({
     mutationFn: async ({serviceId, isBookmarked}: {serviceId: string; isBookmarked: boolean}) => {
       if (isBookmarked) {
-        await supabase.from('bookmark').delete().eq('service', serviceId).eq('user', user.id);
+        await supabase.from('services_bookmark').delete().eq('service', serviceId).eq('user', user.id);
       } else {
-        await supabase.from('bookmark').insert({service: serviceId, user: user.id});
+        await supabase.from('services_bookmark').insert({service: serviceId, user: user.id});
       }
     },
     onMutate: async ({serviceId, isBookmarked}) => {

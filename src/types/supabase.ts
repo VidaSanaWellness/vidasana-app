@@ -14,42 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      bookmark: {
-        Row: {
-          created_at: string
-          id: string
-          service: string
-          user: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          service: string
-          user?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          service?: string
-          user?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookmark_service_fkey"
-            columns: ["service"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookmark_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "profile"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       categories: {
         Row: {
           created_at: string
@@ -442,43 +406,26 @@ export type Database = {
           },
         ]
       }
-      locations: {
+      events_tickets: {
         Row: {
-          address: string
-          created_at: string | null
-          id: string
-          latitude: number
-          longitude: number
-          service_id: string
-          updated_at: string | null
+          created_at: string
+          id: number
+          message: string | null
+          user: string
         }
         Insert: {
-          address: string
-          created_at?: string | null
-          id?: string
-          latitude: number
-          longitude: number
-          service_id: string
-          updated_at?: string | null
+          created_at?: string
+          id?: number
+          message?: string | null
+          user?: string
         }
         Update: {
-          address?: string
-          created_at?: string | null
-          id?: string
-          latitude?: number
-          longitude?: number
-          service_id?: string
-          updated_at?: string | null
+          created_at?: string
+          id?: number
+          message?: string | null
+          user?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "locations_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       payments: {
         Row: {
@@ -785,6 +732,42 @@ export type Database = {
           },
         ]
       }
+      services_bookmark: {
+        Row: {
+          created_at: string
+          id: string
+          service: string
+          user: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          service: string
+          user?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          service?: string
+          user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmark_service_fkey"
+            columns: ["service"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmark_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_webhooks: {
         Row: {
           created_at: string | null
@@ -815,27 +798,6 @@ export type Database = {
           payload?: Json
           processed_at?: string | null
           status?: string | null
-        }
-        Relationships: []
-      }
-      tickets: {
-        Row: {
-          created_at: string
-          id: number
-          message: string | null
-          user: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          message?: string | null
-          user?: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          message?: string | null
-          user?: string
         }
         Relationships: []
       }
@@ -901,6 +863,25 @@ export type Database = {
           user_id: string
           user_image: string
           user_name: string
+        }[]
+      }
+      get_services_booking_report: {
+        Args: never
+        Returns: {
+          description: string
+          price: number
+          pymtstatus: string
+          status: string
+          title: string
+          usuario: string
+          vendor: string
+        }[]
+      }
+      get_vendor_service_counts: {
+        Args: never
+        Returns: {
+          count: number
+          vendor: string
         }[]
       }
       handle_checkout_session_completed: {

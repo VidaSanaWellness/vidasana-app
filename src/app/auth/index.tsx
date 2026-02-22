@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import {IMAGES} from '@/assets';
 import {Link} from 'expo-router';
 import {supabase} from '@/utils';
@@ -120,6 +121,13 @@ const Page = () => {
               <Link replace href="/auth/register">
                 <Body className="font-semibold text-secondary">{t('auth.login.signUp')}</Body>
               </Link>
+            </View>
+
+            {/* App Version */}
+            <View className="mb-4 mt-8 items-center">
+              <Caption className="text-gray-400">
+                Version {Constants.expoConfig?.version || Constants.manifest2?.extra?.expoClient?.version || '1.0.0'}
+              </Caption>
             </View>
           </Animated.View>
         </ScrollView>

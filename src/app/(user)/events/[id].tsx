@@ -1,5 +1,4 @@
 import {Feather, Ionicons} from '@expo/vector-icons';
-import {supabase} from '@/utils/supabase';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {
@@ -20,13 +19,12 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useAppStore} from '@/store';
-import {LikeButton, ImageCarousel} from '@/components';
-import {H2, H3, Body, Caption} from '@/components';
 import {Rating} from 'react-native-ratings';
 import Toast from 'react-native-toast-message';
 import {useEffect, useState} from 'react';
 import {useStripe} from '@stripe/stripe-react-native';
-import {fetchPaymentSheetParams} from '@/utils/stripe';
+import {supabase, fetchPaymentSheetParams} from '@/utils';
+import {LikeButton, ImageCarousel, H2, H3, Body, Caption} from '@/components';
 
 export default function UserEventDetailsScreen() {
   const {id: idParam} = useLocalSearchParams();

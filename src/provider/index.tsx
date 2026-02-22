@@ -1,4 +1,5 @@
 import {useAppStore} from '@/store';
+import {useRouter} from 'expo-router';
 import {StatusBar} from 'expo-status-bar';
 import storage from 'expo-sqlite/kv-store';
 import {useQueryClientState} from '@/hooks';
@@ -17,13 +18,33 @@ const queryClient = new QueryClient({defaultOptions: {queries: {retry: 2, staleT
 
 const AppProvider = ({children}: {children: ReactElement}) => {
   useQueryClientState();
+  const router = useRouter();
   const {top} = useSafeAreaInsets();
+  const session = useAppStore((e) => e.session!);
   const setSession = useAppStore((s) => s.setSession);
+
+  const user = session?.user;
 
   useEffect(() => {
     const {data} = supabase.auth.onAuthStateChange((e, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
+
+  // Global status check for reject/delete (applies to both users and providers)
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      if (!user) return;
+      const {data} = await supabase.from('profile').select('status').eq('id', user.id).single();
+      const status = data?.status;
+      if (status === 'reject') {
+        router.replace('/contact-support?reason=reject');
+      } else if (status === 'delete') {
+        router.replace('/contact-support?reason=delete');
+      }
+    };
+    // supabase.auth.signOut();
+    checkUserStatus();
+  }, [user]);
 
   return (
     <>

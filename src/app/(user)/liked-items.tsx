@@ -27,7 +27,7 @@ export default function LikedItemsScreen() {
       if (activeTab === 'services') {
         // Fetch Service Bookmarks
         const {data: bookmarks, error} = await supabase
-          .from('bookmark')
+          .from('services_bookmark')
           .select(
             `
             id,
